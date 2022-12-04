@@ -1,2 +1,3 @@
 # cpi_proj_nourish_2wave
-project nourish second wave data collection
+
+This is the main repo for collaborative work with CPI on project nourish 2nd wave data collection. 
