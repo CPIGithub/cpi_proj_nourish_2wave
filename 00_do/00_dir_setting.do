@@ -28,10 +28,10 @@ di "`user'"
 if "`user'" == "Nicholus Tint Zaw" {
     * Nicholus Directory
 	
-	global dir		"J:\.shortcut-targets-by-id\1qS9e_FKPO2IwvcIAch8aqRrLnWosl6ja\2nd round Project Nourish Survey"
+	global dir		"H:\.shortcut-targets-by-id\1qS9e_FKPO2IwvcIAch8aqRrLnWosl6ja\2nd round Project Nourish Survey"
+	global github	"C:\Users\Nicholus Tint Zaw\Documents\GitHub\cpi_proj_nourish_2wave"
 	
 }
-
 
 // Adam, please update your machine directory 
 else if "`user'" == "XX" {
@@ -49,7 +49,7 @@ else if "`user'" == "XX" {
 global	wflow	"$dir/02_workflow"
 global	sample	"$dir/01_sampling"
 
-global 	do		"$wflow/00_do"
+global 	do		"$github/00_do"
 global	hfc		"$do/HFC"
 global  raw	 	"$wflow/01_raw"
 global 	dta		"$wflow/02_dta"

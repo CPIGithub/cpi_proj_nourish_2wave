@@ -61,6 +61,7 @@ tab stratum, m
 preserve
 
 keep if stratum == 0 
+replace stratum = 2 if stratum == 0
 tab emergency_vill, m // 59 villages 
 
 set seed 234
@@ -147,7 +148,8 @@ use `stratum1', clear
 append using `stratum2'
 
 * keep only required variables
-keep township_name townshippcode fieldnamevillagetracteho villagenameeho
+keep township_name townshippcode fieldnamevillagetracteho villagenameeho stratum num_cluster vill_samplesize sample_check
+replace stratum = 2 if stratum == 0
 
 * generate pseudo code
 gen vt_sir_num = _n + 1000

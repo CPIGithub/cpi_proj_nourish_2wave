@@ -19,7 +19,7 @@ do "00_dir_setting.do"
 * household survey *
 ********************************************************************************
 
-use "$dta/pn_hh_pnourish_secondwave.dta", clear 
+use "$dta/pnourish_hh_svy.dta", clear 
 
 // duplicate by geo-person
 duplicates tag geo_town geo_vt geo_vill respd_name respd_age respd_status, gen(dup_resp)

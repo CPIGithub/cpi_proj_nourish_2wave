@@ -19,7 +19,7 @@ do "00_dir_setting.do"
 * household survey *
 ********************************************************************************
 
-use "$dta/pn_hh_pnourish_secondwave.dta", clear 
+use "$dta/pnourish_hh_svy.dta", clear 
 
 // missing per variables 
 foreach var of varlist _all {
@@ -45,8 +45,6 @@ keep sir *_m_t
 
 drop cla_* calc_* cal_*
 
-rename _* *
-
 rename *_m_t m_t_*
 
 drop *note*
@@ -68,8 +66,6 @@ bysort svy_team enu_name: keep if _n == 1
 keep sir *_em svy_team enu_name
 
 drop cla_* calc_* cal_* svy_team_* enu_name_*
-
-rename _* *
 
 rename *_em em_*
 

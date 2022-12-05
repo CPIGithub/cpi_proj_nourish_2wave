@@ -19,7 +19,9 @@ do "00_dir_setting.do"
 * household survey *
 ********************************************************************************
 
-use "$dta/pn_hh_pnourish_secondwave.dta", clear 
+use "$dta/pnourish_hh_svy.dta", clear 
+
+drop starttime-note_title id submission_time-index my_seed cal_* calc_* 
 
 // outlier per variables 
     
@@ -40,20 +42,38 @@ foreach v of varlist _all {
 				tab `v'_ol
 				
 				order `v'_ol, after(`v')
-			    
-				
+				gen var_`v' = `v'
+				drop `v'
 			}
-
-	}
-	else {
-		
-		//drop `v'
 	}
 }
 
-	
+merge 1:1 uuid using "$dta/pnourish_hh_svy.dta", keepusing(svy_team enu_name)
+
+drop _merge 
+
+gen sir = _n
+
+keep *_ol var_* sir enu_name svy_team
+
+rename *_ol ol_*
+
+reshape long ol_ var_ , i(sir) j(var_name) string 
+
+drop sir 
+
+rename var_ values
+rename ol_ outlier_yes
+
+order svy_team enu_name var_name values outlier_yes
+
+keep if outlier_yes == 1
 
 // export table
-export excel using "$out/03_hfc_hh_outlier.xlsx", sheet("01_demo") firstrow(varlabels) sheetreplace
+if _N > 0 {
+	
+	export excel using "$out/03_hfc_hh_outlier.xlsx", sheet("01_demo") firstrow(varlabels) sheetreplace
+}
+
  
 
