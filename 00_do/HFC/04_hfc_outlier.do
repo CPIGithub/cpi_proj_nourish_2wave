@@ -54,7 +54,7 @@ drop _merge
 
 gen sir = _n
 
-keep *_ol var_* sir enu_name svy_team
+keep *_ol var_* sir uuid enu_name svy_team
 
 rename *_ol ol_*
 
@@ -65,7 +65,7 @@ drop sir
 rename var_ values
 rename ol_ outlier_yes
 
-order svy_team enu_name var_name values outlier_yes
+order svy_team enu_name uuid var_name values outlier_yes
 
 keep if outlier_yes == 1
 

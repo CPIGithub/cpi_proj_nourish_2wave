@@ -22,7 +22,7 @@ do "00_dir_setting.do"
 use "$dta/pnourish_hh_svy.dta", clear 
 
 ** Other Specify ** 
-gen oth_not_miss = .
+gen oth_not_miss = 0
 /*
 replace oth_not_miss = 1 if !mi(hh_mem_highedu_oth) & hh_mem_highedu == 888
 replace oth_not_miss = 1 if !mi(hh_mem_occup_oth) & hh_mem_occup == 888
