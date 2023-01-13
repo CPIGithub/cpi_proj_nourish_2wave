@@ -110,25 +110,56 @@ global momdiet				mom_rice* mom_potatoes* mom_beans* mom_nuts* mom_yogurt* ///
 							mom_mango* mom_veg* mom_fruit* mom_fat* mom_sweets* mom_condiments* mom_meal_freq* 
 							
 							
-global momanc 				anc_adopt* anc_yn* anc_where* /*anc_where_oth*/ ///
-							anc_home_who* /*anc_home_who_oth*/ anc_home_visit* ///
-							anc_hosp_who* /*anc_hosp_who_oth*/ anc_hosp_dist_dry* anc_hosp_dist_wet* anc_hosp_visit* ///
-							anc_pc_who* anc_pc_oth* anc_pc_dist_dry* anc_pc_dist_wet* anc_pc_visit* ///
-							anc_rhc_who* /*anc_rhc_who_oth*/ anc_rhc_dist_dry* anc_rhc_dist_wet* anc_rhc_visit* ///
-							anc_ehoc_who* /*anc_ehoc_who_oth*/ anc_ehoc_dist_dry* anc_ehoc_dist_wet* anc_ehoc_visit* ///
-							anc_ehom_who* anc_ehom_oth* anc_ehom_dist_dry* anc_ehom_dist_wet* anc_ehom_visit* ///
-							anc_vill_who* /*anc_vill_who_oth*/ anc_vill_dist_dry* anc_vill_dist_wet* anc_vill_visit* ///
-							anc_othp_who* /*anc_othp_who_oth*/ anc_othp_dist_dry* anc_othp_dist_wet* anc_othp_visit* ///
+global momanc 				anc_adopt* anc_yn* anc_where_1 anc_where_2 anc_where_3 anc_where_4 ///
+							anc_where_5 anc_where_6 anc_where_7 anc_where_8 anc_where_9 anc_where_10 ///
+							anc_where_11 anc_where_12 /*anc_where_oth*/ ///
+							anc_home_who_1 anc_home_who_2 anc_home_who_3 anc_home_who_4 anc_home_who_5 ///
+							anc_home_who_6 anc_home_who_7 anc_home_who_8 anc_home_who_9 anc_home_who_10 ///
+							anc_home_who_11 anc_home_who_12 /*anc_home_who_oth*/ anc_home_visit* ///
+							anc_hosp_who_1 anc_hosp_who_2 anc_hosp_who_3 anc_hosp_who_4 anc_hosp_who_5 ///
+							anc_hosp_who_6 anc_hosp_who_7 anc_hosp_who_8 anc_hosp_who_9 anc_hosp_who_10 ///
+							anc_hosp_who_11 anc_hosp_who_12 /*anc_hosp_who_oth*/ ///
+							anc_hosp_dist_dry* anc_hosp_dist_wet* anc_hosp_visit* ///
+							anc_pc_who* /*anc_pc_oth*/ anc_pc_dist_dry* anc_pc_dist_wet* anc_pc_visit* ///
+							anc_rhc_who_1 anc_rhc_who_2 anc_rhc_who_3 anc_rhc_who_4 anc_rhc_who_5 ///
+							anc_rhc_who_6 anc_rhc_who_7 anc_rhc_who_8 anc_rhc_who_9 anc_rhc_who_10 ///
+							anc_rhc_who_11 anc_rhc_who_12 /*anc_rhc_who_oth*/ anc_rhc_dist_dry* anc_rhc_dist_wet* anc_rhc_visit* ///
+							anc_ehoc_who_1 anc_ehoc_who_2 anc_ehoc_who_3 anc_ehoc_who_4 anc_ehoc_who_5 ///
+							anc_ehoc_who_6 anc_ehoc_who_7 anc_ehoc_who_8 anc_ehoc_who_9 anc_ehoc_who_10 ///
+							anc_ehoc_who_11 anc_ehoc_who_12 /*anc_ehoc_who_oth*/ anc_ehoc_dist_dry* anc_ehoc_dist_wet* anc_ehoc_visit* ///
+							anc_ehom_who* /*anc_ehom_oth*/ anc_ehom_dist_dry* anc_ehom_dist_wet* anc_ehom_visit* ///
+							anc_vill_who_1 anc_vill_who_2 anc_vill_who_3 anc_vill_who_4 anc_vill_who_5 ///
+							anc_vill_who_6 anc_vill_who_7 anc_vill_who_8 anc_vill_who_9 anc_vill_who_10 ///
+							anc_vill_who_11 anc_vill_who_12 /*anc_vill_who_oth*/ anc_vill_dist_dry* anc_vill_dist_wet* anc_vill_visit* ///
+							anc_othp_who_1 anc_othp_who_2 anc_othp_who_3 anc_othp_who_4 anc_othp_who_5 ///
+							anc_othp_who_6 anc_othp_who_7 anc_othp_who_8 anc_othp_who_9 anc_othp_who_10 ///
+							anc_othp_who_11 anc_othp_who_12 /*anc_othp_who_oth*/ anc_othp_dist_dry* anc_othp_dist_wet* anc_othp_visit* ///
 							anc_bf_counselling* anc_nut_counselling* ///
-							anc_cost* anc_cope* /*anc_cope_oth*/ ///
-							anc_noreason* /*anc_noreason_oth*/ anc_restrict_1 anc_restrict_2 anc_restrict_3 ///
+							anc_cost* anc_cope_1 anc_cope_2 anc_cope_3 anc_cope_4 anc_cope_5 ///
+							anc_cope_6 anc_cope_7 anc_cope_8 anc_cope_9 anc_cope_10 anc_cope_11 anc_cope_12 /*anc_cope_oth*/ ///
+							anc_noreason_1 anc_noreason_2 anc_noreason_3 anc_noreason_4 anc_noreason_5 ///
+							anc_noreason_6 anc_noreason_7 anc_noreason_8 anc_noreason_9 anc_noreason_10 ///
+							anc_noreason_11 anc_noreason_12 /*anc_noreason_oth*/ anc_restrict_1 anc_restrict_2 anc_restrict_3 ///
 							anc_restrict_4 anc_restrict_5 anc_restrict_6 anc_restrict_7 anc_restrict_8 ///
 							anc_restrict_9 anc_restrict_10 anc_restrict_11 anc_restrict_12 ///
 							anc_restrict_item_1 anc_restrict_item_2 anc_restrict_item_3 anc_restrict_item_4 ///
 							anc_restrict_item_5 anc_restrict_item_6 anc_restrict_item_7 anc_restrict_item_8 ///
 							anc_restrict_item_9 anc_restrict_item_10 anc_restrict_item_11 anc_restrict_item_12 ///
 							/*anc_restrict_item anc_restrict_item_oth anc_restrict_why anc_restrict_why_oth*/ ///
-							anc_bone* anc_rion* ///
+							anc_restrict_why_1 anc_restrict_why_2 anc_restrict_why_3 anc_restrict_why_4 ///
+							anc_restrict_why_5 anc_restrict_why_6 anc_restrict_why_7 anc_restrict_why_8 ///
+							anc_restrict_why_9 anc_restrict_why_10 anc_restrict_why_11 anc_restrict_why_12 ///
+							anc_bone* anc_rion_1 anc_rion_2 anc_rion_3 anc_rion_4 anc_rion_5 anc_rion_6 ///
+							anc_rion_7 anc_rion_8 anc_rion_9 anc_rion_10 anc_rion_11 anc_rion_12 ///
+							anc_iron_freq_1 anc_iron_freq_2 anc_iron_freq_3 anc_iron_freq_4 anc_iron_freq_5 ///
+							anc_iron_freq_6 anc_iron_freq_7 anc_iron_freq_8 anc_iron_freq_9 anc_iron_freq_10 ///
+							anc_iron_freq_11 anc_iron_freq_12 ///
+							anc_iron_count_* anc_rion_length_1 anc_rion_length_2 anc_rion_length_3 ///
+							anc_rion_length_4 anc_rion_length_5 anc_rion_length_6 anc_rion_length_7 ///
+							anc_rion_length_8 anc_rion_length_9 anc_rion_length_10 anc_rion_length_11 anc_rion_length_12 ///
+							anc_iron_cost_* anc_iron_source_1 anc_iron_source_2 anc_iron_source_3 anc_iron_source_4 ///
+							anc_iron_source_5 anc_iron_source_6 anc_iron_source_7 anc_iron_source_8 anc_iron_source_9 ///
+							anc_iron_source_10 anc_iron_source_11 anc_iron_source_12
 							/*anc_iron_freq anc_iron_count anc_rion_length anc_rion_length_oth anc_iron_cost anc_iron_source anc_iron_source_oth*/ 
 							
 							
@@ -260,8 +291,8 @@ global svynote 				svy_visit_num svy_interview_mode enu_svyend_note
 
 
 
-local 	loopgrp 	/*resp_info hhroster ciycf cill momdiet*/ ///
-					/*momanc momdeli*/ mompnc momnbc momcovid ///
+local 	loopgrp 	resp_info hhroster ciycf cill momdiet ///
+					momanc momdeli mompnc momnbc momcovid ///
 					hhcharacter wempower mentalh wash hhincome ///
 					fies cmuac progexp svynote
 	
@@ -273,6 +304,11 @@ foreach grp in `loopgrp' {
 		
 		egen `var'_m_t 		= total(`var'_m)
 		gen `var'_m_shared 	= round(`var'_m_t / tot_obs, 0.001)
+		
+		gen `var'_nomiss	= !mi(`var')
+		egen `var'_nomiss_t	= total(`var'_nomiss)
+		gen `var'_s_m		= (`var'_nomiss_t == 0)
+		
 		
 		// gen `var'_nomiss = (`var'_m_t != _N)
 		
@@ -307,6 +343,13 @@ foreach grp in `loopgrp' {
 		replace title = "TABLE 3: MISSING VARIABLE SUMMAR BY ENUMERATOR" in 1
 		export excel title using "$out/02_hfc_hh_missing.xlsx", sheet("`grp'") sheetmodify cell(O1) 
 		
+		*Adding title table 1
+		clear
+		set obs 1
+		gen title = ""
+		replace title = "TABLE 1: AT LEAST ONE OBS MISSING BY VARIABLE" in 1
+		export excel title using "$out/02_hfc_hh_missing_varlist.xlsx", sheet("`grp'") sheetreplace cell(A1) 
+		
 	restore 
 
 
@@ -334,11 +377,49 @@ foreach grp in `loopgrp' {
 	lab var tot_obs			"Total survey"
 
 	// export table
-	export excel using 	"$out/02_hfc_hh_missing.xlsx", ///
-						sheet("`grp'") cell(A2) firstrow(varlabels) keepcellfmt sheetmodify
+	
+	if _N > 0 {
+	    
+		export excel using 	"$out/02_hfc_hh_missing.xlsx", ///
+							sheet("`grp'") cell(A2) firstrow(varlabels) keepcellfmt sheetmodify
+		
+	}
+
 	restore 
 
+	// at least one obs missing 
+	preserve
+	keep if _n == 1
 
+	keep sir *_s_m
+
+	rename *_s_m 		s_m_*
+
+	reshape long s_m_, i(sir) j(var) string 
+	
+	keep if s_m_ == 1
+
+	replace sir = _n 
+
+	// lab var 
+	lab var var				"Variable Names"
+	lab var sir 			"No."
+	lab var s_m_			"at least one obs has missing value"
+
+
+	// export table
+	
+	if _N > 0 {
+	    
+		export excel using 	"$out/02_hfc_hh_missing_varlist.xlsx", ///
+							sheet("`grp'") cell(A2) firstrow(varlabels) keepcellfmt sheetmodify
+						
+	}
+
+	restore 
+	
+	
+	
 	// variables per enumerator 
 	preserve
 	//bysort svy_team superv_name enu_name: keep if _n == 1
@@ -370,8 +451,13 @@ foreach grp in `loopgrp' {
 
 
 		// export table
-		export excel using "$out/02_hfc_hh_missing.xlsx", ///
+		if _N > 0 {
+		    
+			export excel using "$out/02_hfc_hh_missing.xlsx", ///
 							sheet("`grp'") cell(G2) firstrow(varlabels) keepcellfmt sheetmodify
+			
+		}
+		
 		
 	}
 
@@ -408,8 +494,13 @@ foreach grp in `loopgrp' {
 		lab var enu_tot_obs		"Total survey"
 
 		// export table
-		export excel using "$out/02_hfc_hh_missing.xlsx", ///
-							sheet("`grp'") cell(O2) firstrow(varlabels) keepcellfmt sheetmodify
+		if _N > 0 {
+		    
+			export excel using "$out/02_hfc_hh_missing.xlsx", ///
+								sheet("`grp'") cell(O2) firstrow(varlabels) keepcellfmt sheetmodify
+			
+		}
+		
 		
 	}
 

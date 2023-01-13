@@ -140,7 +140,7 @@ lab var tot_obs_ 	"Total survey by enumerator"
 lab var num_ 		"Total outlier obs by enumerator"
 lab var shared_ 	"Shared of outlier obs by enumerator"
 
-export excel using "$out/03_hfc_hh_outlier.xlsx", sheet("01_SUMMARY") firstrow(varlabels) cell(A2) keepcellfmt sheetmodify
+export excel using "$out/03_hfc_hh_outlier.xlsx", sheet("01_SUMMARY") firstrow(varlabels) cell(A7) keepcellfmt sheetmodify
 
 restore 
 

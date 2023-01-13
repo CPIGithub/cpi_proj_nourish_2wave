@@ -89,29 +89,29 @@ replace var =	"Proportion of interviews per targeted sample size" if var == "svy
 replace var = 	"Number of total consent survey" if var == "svy_consent"
 replace var = 	"Proportion of consent survey per targeted sample size" if var == "svy_consent_prop"
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("01_overall") firstrow(varlabels) sheetreplace
+export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("01_overall") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 preserve 
 bysort org_team: keep if _n == 1 
 keep org_name tot_attempt_per_org tot_svy_per_org
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("02_org") firstrow(varlabels) sheetreplace
+export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("02_org") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 preserve 
 bysort geo_town geo_vt geo_vill: keep if _n == 1 
-keep `maingeo' tot_attempt_per_vill svy_attempt_prop tot_svy_per_vill svy_consent_prop
+keep `maingeo' vill_samplesize tot_attempt_per_vill svy_attempt_prop tot_svy_per_vill svy_consent_prop
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("03_geo") firstrow(varlabels) sheetreplace
+export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("03_geo") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 
 preserve 
 bysort svy_team: keep if _n == 1 
-keep svy_team tot_attemtp_per_team tot_svy_per_team
+keep org_name svy_team tot_attemtp_per_team tot_svy_per_team
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("04_team") firstrow(varlabels) sheetreplace
+export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("04_team") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 
@@ -119,7 +119,7 @@ preserve
 bysort svy_team interv_name: keep if _n == 1
 keep svy_team superv_name enu_name tot_attempt_per_enu tot_svy_per_enu
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("05_enu") firstrow(varlabels) sheetreplace
+export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("05_enu") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 // END HERE 
