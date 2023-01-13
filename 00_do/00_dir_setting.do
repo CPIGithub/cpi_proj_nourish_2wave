@@ -46,15 +46,33 @@ else if "`user'" == "XX" {
 	
 }
 
-global	wflow	"$dir/02_workflow"
-global	sample	"$dir/01_sampling"
+global	wflow			"$dir/02_workflow"
+global	sample			"$dir/01_sampling"
+global 	do				"$github/00_do"
 
-global 	do		"$github/00_do"
-global	hfc		"$do/HFC"
-global  raw	 	"$wflow/01_raw"
-global 	dta		"$wflow/02_dta"
-global 	out		"$wflow/03_output"
-global 	result 	"$wflow/04_result"
+
+* dofile directory 
+// HH survey
+global 	hhdo			"$do/01_HH_Survey"
+global	hhimport		"$hhdo/01_Import"
+global	hhhfc			"$hhdo/02_HFC"
+global	hhcleaning		"$hhdo/03_Cleaning"
+global	hhconstruct		"$hhdo/04_Construct"
+global	hhanalysis		"$hhdo/05_Analysis"
+
+// Village survey
+global 	villdo			"$do/02_Village_Survey"
+global	villimport		"$villdo/01_Import"
+global	villhfc			"$villdo/02_HFC"
+global	villcleaning	"$villdo/03_Cleaning"
+global	villconstruct	"$villdo/04_Construct"
+global	villanalysis	"$villdo/05_Analysis"
+
+* data directory  
+global  raw	 			"$wflow/01_raw"
+global 	dta				"$wflow/02_dta"
+global 	out				"$wflow/03_output"
+global 	result 			"$wflow/04_result"
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

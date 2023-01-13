@@ -1,7 +1,7 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	import raw data into dta format 				
+Purpose				:	import HH raw data into dta format 				
 Author				:	Nicholus Tint Zaw
 Date				: 	11/24/2022
 Modified by			:
@@ -13,7 +13,7 @@ Modified by			:
 ** Directory Settings **
 ********************************************************************************
 
-do "00_dir_setting.do"
+do "$do/00_dir_setting.do"
 
 ********************************************************************************
 * import Sample Size Data *
@@ -33,68 +33,9 @@ tempfile dfsamplesize
 save `dfsamplesize', replace 
 clear 
 
-
-
-********************************************************************************
-* import villages survey *
-********************************************************************************
-/*
-import delimited using "$raw/pnourish_village_svy.csv", clear
-
-* rename variable for proper data processing
-rename _* *
-//rename enu_end_note  enu_svyend_note 
-
-* date/time formatting
-lookfor _start _end starttime endtime submission
-
-foreach var in `r(varlist)' {
-    
-	di "`var'"
-	replace `var' = subinstr(`var', "T", " ", 1)
-	split `var', p("+" ".")
-	
-	if "`var'" != "submission_time" {
-	    drop `var'2
-	} 
-	
-	gen double `var'_c = clock(`var'1, "20YMDhms" )
-	format `var'_c %tc 
-	order `var'_c, after(`var')
-	
-	capture drop `var'1
-	capture drop `var'2
-	capture drop `var'3
-}
-
-gen svy_date = dofc(starttime_c)
-format svy_date %td
-order svy_date, before(starttime_c)
-
-* labeling  
-gen org_name = "KEHOC" if org_team == 1
-replace org_name = "YSDA" if org_team == 2
-
-tostring superv_name, replace 
-replace superv_name = "Thiri Aung" 			if superv_name == "1"
-replace superv_name = "Saw Than Naing" 		if superv_name == "2"
-replace superv_name = "Man Win Htwe" 		if superv_name == "3"
-replace superv_name = "Nan Khin Hnin Thaw" 	if superv_name == "4"
-replace superv_name = "Ma Nilar Tun" 		if superv_name == "5"
-replace superv_name = "Saw Ku Mu Kay Htoo" 	if superv_name == "6"
-
-// keep only final data colletion data 
-keep if svy_date >= td(19dec2022) & !mi(svy_date)
-
-save "$dta/pnourish_village_svy.dta", replace 
-*/
-
-
 ********************************************************************************
 * import household survey *
 ********************************************************************************
-
-//import delimited using "$raw/pnourish_hh_svy.csv", clear
 
 import excel using "$raw/pnourish_hh_svy.xlsx", describe
 
@@ -196,7 +137,7 @@ use "$dta/PN_HH_Survey_FINAL.dta", clear
 preserve
 	use "$dta/grp_hh.dta", clear
 
-	drop 	_index _index _parent_table_name _submission__id _submission__uuid ///
+	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
 			_submission__notes _submission__status _submission__submitted_by ///
 			_submission__tags
@@ -226,7 +167,7 @@ drop _merge
 preserve
 	use "$dta/hh_child_mom_rep.dta", clear
 
-	drop 	_index _index _parent_table_name _submission__id _submission__uuid ///
+	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
 			_submission__notes _submission__status _submission__submitted_by ///
 			_submission__tags
@@ -257,7 +198,7 @@ drop _merge
 preserve
 	use "$dta/grp_q2_5_to_q2_7.dta", clear
 
-	drop 	_index _index _parent_table_name _submission__id _submission__uuid ///
+	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
 			_submission__notes _submission__status _submission__submitted_by ///
 			_submission__tags
@@ -288,7 +229,7 @@ drop _merge
 preserve
 	use "$dta/child_vc_rep.dta", clear
 
-	drop 	_index _index _parent_table_name _submission__id _submission__uuid ///
+	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
 			_submission__notes _submission__status _submission__submitted_by ///
 			_submission__tags
@@ -318,7 +259,7 @@ drop _merge
 preserve
 	use "$dta/anc_rep.dta", clear
 
-	drop 	_index _index _parent_table_name _submission__id _submission__uuid ///
+	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
 			_submission__notes _submission__status _submission__submitted_by ///
 			_submission__tags
@@ -348,7 +289,7 @@ drop _merge
 preserve
 	use "$dta/mom_covid_rpt.dta", clear
 
-	drop 	_index _index _parent_table_name _submission__id _submission__uuid ///
+	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
 			_submission__notes _submission__status _submission__submitted_by ///
 			_submission__tags
@@ -378,7 +319,7 @@ drop _merge
 preserve
 	use "$dta/child_muac_rep.dta", clear
 
-	drop 	_index _index _parent_table_name _submission__id _submission__uuid ///
+	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
 			_submission__notes _submission__status _submission__submitted_by ///
 			_submission__tags
