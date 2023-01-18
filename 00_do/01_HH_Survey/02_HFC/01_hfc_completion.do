@@ -26,10 +26,11 @@ local maingeo geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vil
 
 
 // survey - overall
+gen target_N = 788
 gen svy_tot = _N
 egen svy_consent = total(will_participate)
-gen svy_attempt_prop = round(svy_tot/788, 0.001)
-gen svy_consent_prop = round(svy_consent/788, 0.001)
+gen svy_attempt_prop = round(svy_tot/target_N, 0.001) * 100
+gen svy_consent_prop = round(svy_consent/target_N, 0.001) * 100
 
 // survey per org
 bysort org_team: gen tot_attempt_per_org = _N
@@ -39,8 +40,8 @@ bysort org_team: egen tot_svy_per_org = total(will_participate)
 bysort geo_town geo_vt geo_vill: gen tot_attempt_per_vill = _N
 bysort geo_town geo_vt geo_vill: egen tot_svy_per_vill = total(will_participate)
 
-gen svy_attempt_prop_vill = round(tot_attempt_per_vill/vill_samplesize, 0.01)
-gen svy_consent_prop_vill = round(tot_svy_per_vill/vill_samplesize, 0.01)
+gen svy_attempt_prop_vill = round(tot_attempt_per_vill/vill_samplesize, 0.01) * 100
+gen svy_consent_prop_vill = round(tot_svy_per_vill/vill_samplesize, 0.01) * 100
 
 // survey per team
 bysort svy_team: gen tot_attemtp_per_team = _N
@@ -51,11 +52,13 @@ bysort svy_team interv_name: gen tot_attempt_per_enu = _N
 bysort svy_team interv_name: egen tot_svy_per_enu = total(will_participate)
 
 // lab var 
-lab var svy_tot					"Number of total interviews"
-lab var svy_attempt_prop		"Proportion of interviews per targeted sample size"
-lab var svy_consent				"Number of total consent survey"
-lab var svy_consent_prop		"Proportion of consent survey per targeted sample size"
+lab var target_N 				"Targeted Sample (A)"
+lab var svy_tot					"Total interviews (B)"
+lab var svy_attempt_prop		"Proportion of interviews (B/A)"
+lab var svy_consent				"Total consented survey (C)"
+lab var svy_consent_prop		"Proportion of consented survey (C/A)"
 
+lab var org_name				"Organization name"
 lab var tot_attempt_per_org 	"Number of interview per organization"
 lab var tot_svy_per_org 		"Number of consent survey per organization"
 
@@ -73,21 +76,30 @@ lab var tot_svy_per_enu			"Number of consent survey per enumerator"
 
 preserve 
 keep if _n == 1 
-keep svy_tot svy_attempt_prop svy_consent svy_consent_prop
+keep target_N svy_tot svy_attempt_prop svy_consent svy_consent_prop
 
-rename * en_*
+local i = 1
+
+foreach var of varlist _all {
+	
+	rename `var' var_`i'
+	
+	local i = `i' + 1
+}
+
 gen sir = _n 
 
-reshape long en_ , i(sir) j(var) string 
+reshape long var_ , i(sir) j(var) string 
 
 replace sir = _n  
 
-rename en_ value 
+rename var_ value 
 
-replace var = 	"Number of total interviews" if var == "svy_tot"
-replace var =	"Proportion of interviews per targeted sample size" if var == "svy_attempt_prop"
-replace var = 	"Number of total consent survey" if var == "svy_consent"
-replace var = 	"Proportion of consent survey per targeted sample size" if var == "svy_consent_prop"
+replace var = "Targeted Sample (A)" 					if var == "1"
+replace var = "Total interviews (B)" 					if var == "2"
+replace var = "Proportion of interviews (B/A)"			if var == "3"
+replace var = "Total consented survey (C)"				if var == "4"
+replace var = "Proportion of consented survey (C/A)"	if var == "5"
 
 export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("01_overall") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
@@ -101,7 +113,8 @@ restore
 
 preserve 
 bysort geo_town geo_vt geo_vill: keep if _n == 1 
-keep `maingeo' vill_samplesize tot_attempt_per_vill svy_attempt_prop tot_svy_per_vill svy_consent_prop
+keep `maingeo' vill_samplesize tot_attempt_per_vill tot_svy_per_vill svy_attempt_prop_vill svy_consent_prop_vill
+order `maingeo' vill_samplesize tot_attempt_per_vill svy_attempt_prop_vill tot_svy_per_vill svy_consent_prop_vill
 
 export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("03_geo") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
