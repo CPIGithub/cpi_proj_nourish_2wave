@@ -58,45 +58,45 @@ global ciycf				child_bf* child_eibf* /*child_eibf_hrs* child_eibf_days**/ ///
 		
 							
 global cill					child_ill* /*child_ill_oth*/ ///
-							child_diarrh_treat* c_diarrh_notreat_1 c_diarrh_notreat_2 c_diarrh_notreat_3 ///
+							child_diarrh_treat* /*c_diarrh_notreat_1*/ c_diarrh_notreat_2 c_diarrh_notreat_3 ///
 							c_diarrh_notreat_4 c_diarrh_notreat_5 c_diarrh_notreat_6 c_diarrh_notreat_7 ///
-							c_diarrh_notreat_8 c_diarrh_notreat_9 c_diarrh_notreat_10 c_diarrh_notreat_11 ///
+							c_diarrh_notreat_8 c_diarrh_notreat_9 c_diarrh_notreat_10 /*c_diarrh_notreat_11*/ ///
 							c_diarrh_notreat_12 /*child_diarrh_notreat_oth*/ ///
 							child_diarrh_notice* ///
-							child_diarrh_where_1 child_diarrh_where_2 child_diarrh_where_3 ///
+							/*child_diarrh_where_1*/ child_diarrh_where_2 child_diarrh_where_3 ///
 							child_diarrh_where_4 child_diarrh_where_5 child_diarrh_where_6 ///
 							child_diarrh_where_7 child_diarrh_where_8 child_diarrh_where_9 ///
-							child_diarrh_where_10 child_diarrh_where_11 child_diarrh_where_12* /*child_diarrh_where_oth*/ ///
-							child_diarrh_who_1 child_diarrh_who_2 child_diarrh_who_3 child_diarrh_who_4 ///
+							child_diarrh_where_10 /*child_diarrh_where_11*/ child_diarrh_where_12* /*child_diarrh_where_oth*/ ///
+							/*child_diarrh_who_1*/ child_diarrh_who_2 child_diarrh_who_3 child_diarrh_who_4 ///
 							child_diarrh_who_5 child_diarrh_who_6 child_diarrh_who_7 child_diarrh_who_8 ///
-							child_diarrh_who_9 child_diarrh_who_10 child_diarrh_who_11 child_diarrh_who_12 /*child_diarrh_who_oth*/ ///
-							child_diarrh_pay* child_diarrh_cope_1 child_diarrh_cope_2 child_diarrh_cope_3 ///
+							child_diarrh_who_9 child_diarrh_who_10 /*child_diarrh_who_11*/ child_diarrh_who_12 /*child_diarrh_who_oth*/ ///
+							child_diarrh_pay* /*child_diarrh_cope_1*/ child_diarrh_cope_2 child_diarrh_cope_3 ///
 							child_diarrh_cope_4 child_diarrh_cope_5 child_diarrh_cope_6 child_diarrh_cope_7 ///
-							child_diarrh_cope_8 child_diarrh_cope_9 child_diarrh_cope_10 child_diarrh_cope_11 ///
+							child_diarrh_cope_8 child_diarrh_cope_9 child_diarrh_cope_10 /*child_diarrh_cope_11*/ ///
 							child_diarrh_cope_12 /*child_diarrh_cope_oth*/ ///
 							child_cough_rapbth* child_cough_diffbth* child_cough_treat* ///
 							c_cough_notreat_* /*child_cough_notreat_oth*/ ///
-							child_cough_notice* child_cough_where_1 child_cough_where_2 ///
+							child_cough_notice* /*child_cough_where_1*/ child_cough_where_2 ///
 							child_cough_where_3 child_cough_where_4 child_cough_where_5 ///
 							child_cough_where_6 child_cough_where_7 child_cough_where_8 ///
-							child_cough_where_9 child_cough_where_10 child_cough_where_11 ///
+							child_cough_where_9 child_cough_where_10 /*child_cough_where_11*/ ///
 							child_cough_where_12 /*child_cough_where_oth*/ ///
-							child_cough_who_1 child_cough_who_2 child_cough_who_3 child_cough_who_4 ///
+							/*child_cough_who_1*/ child_cough_who_2 child_cough_who_3 child_cough_who_4 ///
 							child_cough_who_5 child_cough_who_6 child_cough_who_7 child_cough_who_8 ///
-							child_cough_who_9 child_cough_who_10 child_cough_who_11 child_cough_who_12 /*child_cough_who_oth*/ ///
-							child_cough_pay* child_cough_cope_1 child_cough_cope_2 child_cough_cope_3 ///
+							child_cough_who_9 child_cough_who_10 /*child_cough_who_11*/ child_cough_who_12 /*child_cough_who_oth*/ ///
+							child_cough_pay* /*child_cough_cope_1*/ child_cough_cope_2 child_cough_cope_3 ///
 							child_cough_cope_4 child_cough_cope_5 child_cough_cope_6 child_cough_cope_7 ///
-							child_cough_cope_8 child_cough_cope_9 child_cough_cope_10 child_cough_cope_11 ///
+							child_cough_cope_8 child_cough_cope_9 child_cough_cope_10 /*child_cough_cope_11*/ ///
 							child_cough_cope_12 /*child_cough_cope_oth*/ ///
 							child_fever_treat* c_fever_notreat_* /*child_fever_notreat_oth*/ ///
-							child_fever_notice* child_fever_where_1 child_fever_where_2 child_fever_where_3 ///
+							child_fever_notice* /*child_fever_where_1*/ child_fever_where_2 child_fever_where_3 ///
 							child_fever_where_4 child_fever_where_5 child_fever_where_6 child_fever_where_7 ///
-							child_fever_where_8 child_fever_where_9 child_fever_where_10 child_fever_where_11 ///
+							child_fever_where_8 child_fever_where_9 child_fever_where_10 /*child_fever_where_11*/ ///
 							child_fever_where_12 /*child_fever_where_oth*/ ///
 							child_fever_who* /*child_fever_who_oth*/ ///
-							child_fever_pay* child_fever_cope_1 child_fever_cope_2 child_fever_cope_3 ///
+							child_fever_pay* /*child_fever_cope_1*/ child_fever_cope_2 child_fever_cope_3 ///
 							child_fever_cope_4 child_fever_cope_5 child_fever_cope_6 child_fever_cope_7 ///
-							child_fever_cope_8 child_fever_cope_9 child_fever_cope_10 child_fever_cope_11 ///
+							child_fever_cope_8 child_fever_cope_9 child_fever_cope_10 /*child_fever_cope_11*/ ///
 							child_fever_cope_12 /*child_fever_cope_oth*/ child_fever_malaria* ///
 							child_vaccin* /*child_vaccin_card*/ ///
 							child_birthwt* /*child_birthwt_unit*/ ///
@@ -110,56 +110,57 @@ global momdiet				mom_rice* mom_potatoes* mom_beans* mom_nuts* mom_yogurt* ///
 							mom_mango* mom_veg* mom_fruit* mom_fat* mom_sweets* mom_condiments* mom_meal_freq* 
 							
 							
-global momanc 				anc_adopt* anc_yn* anc_where_1 anc_where_2 anc_where_3 anc_where_4 ///
-							anc_where_5 anc_where_6 anc_where_7 anc_where_8 anc_where_9 anc_where_10 ///
-							anc_where_11 anc_where_12 /*anc_where_oth*/ ///
-							anc_home_who_1 anc_home_who_2 anc_home_who_3 anc_home_who_4 anc_home_who_5 ///
-							anc_home_who_6 anc_home_who_7 anc_home_who_8 anc_home_who_9 anc_home_who_10 ///
-							anc_home_who_11 anc_home_who_12 /*anc_home_who_oth*/ anc_home_visit* ///
-							anc_hosp_who_1 anc_hosp_who_2 anc_hosp_who_3 anc_hosp_who_4 anc_hosp_who_5 ///
-							anc_hosp_who_6 anc_hosp_who_7 anc_hosp_who_8 anc_hosp_who_9 anc_hosp_who_10 ///
-							anc_hosp_who_11 anc_hosp_who_12 /*anc_hosp_who_oth*/ ///
+global momanc 				anc_adopt* anc_yn* anc_where_* /*anc_where_2 anc_where_3 anc_where_4*/ ///
+							/*anc_where_5 anc_where_6 anc_where_7 anc_where_8 anc_where_9 anc_where_10*/ ///
+							/*anc_where_11 anc_where_12*/ /*anc_where_oth*/ ///
+							anc_home_who_* /*anc_home_who_2 anc_home_who_3 anc_home_who_4 anc_home_who_5*/ ///
+							/*anc_home_who_6 anc_home_who_7 anc_home_who_8 anc_home_who_9 anc_home_who_10*/ ///
+							/*anc_home_who_11 anc_home_who_12*/ /*anc_home_who_oth*/ anc_home_visit* ///
+							anc_hosp_who_* /*anc_hosp_who_2 anc_hosp_who_3 anc_hosp_who_4 anc_hosp_who_5*/ ///
+							/*anc_hosp_who_6 anc_hosp_who_7 anc_hosp_who_8 anc_hosp_who_9 anc_hosp_who_10*/ ///
+							/*anc_hosp_who_11 anc_hosp_who_12*/ /*anc_hosp_who_oth*/ ///
 							anc_hosp_dist_dry* anc_hosp_dist_wet* anc_hosp_visit* ///
 							anc_pc_who* /*anc_pc_oth*/ anc_pc_dist_dry* anc_pc_dist_wet* anc_pc_visit* ///
-							anc_rhc_who_1 anc_rhc_who_2 anc_rhc_who_3 anc_rhc_who_4 anc_rhc_who_5 ///
-							anc_rhc_who_6 anc_rhc_who_7 anc_rhc_who_8 anc_rhc_who_9 anc_rhc_who_10 ///
-							anc_rhc_who_11 anc_rhc_who_12 /*anc_rhc_who_oth*/ anc_rhc_dist_dry* anc_rhc_dist_wet* anc_rhc_visit* ///
-							anc_ehoc_who_1 anc_ehoc_who_2 anc_ehoc_who_3 anc_ehoc_who_4 anc_ehoc_who_5 ///
-							anc_ehoc_who_6 anc_ehoc_who_7 anc_ehoc_who_8 anc_ehoc_who_9 anc_ehoc_who_10 ///
-							anc_ehoc_who_11 anc_ehoc_who_12 /*anc_ehoc_who_oth*/ anc_ehoc_dist_dry* anc_ehoc_dist_wet* anc_ehoc_visit* ///
+							anc_rhc_who_* /*anc_rhc_who_2 anc_rhc_who_3 anc_rhc_who_4 anc_rhc_who_5*/ ///
+							/*anc_rhc_who_6 anc_rhc_who_7 anc_rhc_who_8 anc_rhc_who_9 anc_rhc_who_10*/ ///
+							/*anc_rhc_who_11 anc_rhc_who_12*/ /*anc_rhc_who_oth*/ anc_rhc_dist_dry* anc_rhc_dist_wet* anc_rhc_visit* ///
+							anc_ehoc_who_* /*anc_ehoc_who_2 anc_ehoc_who_3 anc_ehoc_who_4 anc_ehoc_who_5*/ ///
+							/*anc_ehoc_who_6 anc_ehoc_who_7 anc_ehoc_who_8 anc_ehoc_who_9 anc_ehoc_who_10*/ ///
+							/*anc_ehoc_who_11 anc_ehoc_who_12*/ /*anc_ehoc_who_oth*/ anc_ehoc_dist_dry* anc_ehoc_dist_wet* anc_ehoc_visit* ///
 							anc_ehom_who* /*anc_ehom_oth*/ anc_ehom_dist_dry* anc_ehom_dist_wet* anc_ehom_visit* ///
-							anc_vill_who_1 anc_vill_who_2 anc_vill_who_3 anc_vill_who_4 anc_vill_who_5 ///
-							anc_vill_who_6 anc_vill_who_7 anc_vill_who_8 anc_vill_who_9 anc_vill_who_10 ///
-							anc_vill_who_11 anc_vill_who_12 /*anc_vill_who_oth*/ anc_vill_dist_dry* anc_vill_dist_wet* anc_vill_visit* ///
-							anc_othp_who_1 anc_othp_who_2 anc_othp_who_3 anc_othp_who_4 anc_othp_who_5 ///
-							anc_othp_who_6 anc_othp_who_7 anc_othp_who_8 anc_othp_who_9 anc_othp_who_10 ///
-							anc_othp_who_11 anc_othp_who_12 /*anc_othp_who_oth*/ anc_othp_dist_dry* anc_othp_dist_wet* anc_othp_visit* ///
+							anc_vill_who_* /*anc_vill_who_2 anc_vill_who_3 anc_vill_who_4 anc_vill_who_5*/ ///
+							/*anc_vill_who_6 anc_vill_who_7 anc_vill_who_8 anc_vill_who_9 anc_vill_who_10*/ ///
+							/*anc_vill_who_11 anc_vill_who_12 anc_vill_who_oth*/ anc_vill_dist_dry* anc_vill_dist_wet* anc_vill_visit* ///
+							anc_othp_who_* /*anc_othp_who_2 anc_othp_who_3 anc_othp_who_4 anc_othp_who_5*/ ///
+							/*anc_othp_who_6 anc_othp_who_7 anc_othp_who_8 anc_othp_who_9 anc_othp_who_10*/ ///
+							/*anc_othp_who_11 anc_othp_who_12*/ /*anc_othp_who_oth*/ anc_othp_dist_dry* anc_othp_dist_wet* anc_othp_visit* ///
 							anc_bf_counselling* anc_nut_counselling* ///
-							anc_cost* anc_cope_1 anc_cope_2 anc_cope_3 anc_cope_4 anc_cope_5 ///
-							anc_cope_6 anc_cope_7 anc_cope_8 anc_cope_9 anc_cope_10 anc_cope_11 anc_cope_12 /*anc_cope_oth*/ ///
-							anc_noreason_1 anc_noreason_2 anc_noreason_3 anc_noreason_4 anc_noreason_5 ///
-							anc_noreason_6 anc_noreason_7 anc_noreason_8 anc_noreason_9 anc_noreason_10 ///
-							anc_noreason_11 anc_noreason_12 /*anc_noreason_oth*/ anc_restrict_1 anc_restrict_2 anc_restrict_3 ///
-							anc_restrict_4 anc_restrict_5 anc_restrict_6 anc_restrict_7 anc_restrict_8 ///
-							anc_restrict_9 anc_restrict_10 anc_restrict_11 anc_restrict_12 ///
+							anc_cost* anc_cope_* /*anc_cope_2 anc_cope_3 anc_cope_4 anc_cope_5*/ ///
+							/*anc_cope_6 anc_cope_7 anc_cope_8 anc_cope_9 anc_cope_10 anc_cope_11 anc_cope_12*/ /*anc_cope_oth*/ ///
+							anc_noreason_* /*anc_noreason_2 anc_noreason_3 anc_noreason_4 anc_noreason_5*/ ///
+							/*anc_noreason_6 anc_noreason_7 anc_noreason_8 anc_noreason_9 anc_noreason_10*/ ///
+							/*anc_noreason_11 anc_noreason_12*/ /*anc_noreason_oth*/ ///
+							anc_restrict_1 anc_restrict_2 anc_restrict_3 anc_restrict_4 ///
+							/*anc_restrict_5 anc_restrict_6 anc_restrict_7 anc_restrict_8*/ ///
+							/*anc_restrict_9 anc_restrict_10 anc_restrict_11 anc_restrict_12*/ ///
 							anc_restrict_item_1 anc_restrict_item_2 anc_restrict_item_3 anc_restrict_item_4 ///
-							anc_restrict_item_5 anc_restrict_item_6 anc_restrict_item_7 anc_restrict_item_8 ///
-							anc_restrict_item_9 anc_restrict_item_10 anc_restrict_item_11 anc_restrict_item_12 ///
+							/*anc_restrict_item_5 anc_restrict_item_6 anc_restrict_item_7 anc_restrict_item_8*/ ///
+							/*anc_restrict_item_9 anc_restrict_item_10 anc_restrict_item_11 anc_restrict_item_12*/ ///
 							/*anc_restrict_item anc_restrict_item_oth anc_restrict_why anc_restrict_why_oth*/ ///
 							anc_restrict_why_1 anc_restrict_why_2 anc_restrict_why_3 anc_restrict_why_4 ///
-							anc_restrict_why_5 anc_restrict_why_6 anc_restrict_why_7 anc_restrict_why_8 ///
-							anc_restrict_why_9 anc_restrict_why_10 anc_restrict_why_11 anc_restrict_why_12 ///
-							anc_bone* anc_rion_1 anc_rion_2 anc_rion_3 anc_rion_4 anc_rion_5 anc_rion_6 ///
-							anc_rion_7 anc_rion_8 anc_rion_9 anc_rion_10 anc_rion_11 anc_rion_12 ///
-							anc_iron_freq_1 anc_iron_freq_2 anc_iron_freq_3 anc_iron_freq_4 anc_iron_freq_5 ///
-							anc_iron_freq_6 anc_iron_freq_7 anc_iron_freq_8 anc_iron_freq_9 anc_iron_freq_10 ///
-							anc_iron_freq_11 anc_iron_freq_12 ///
-							anc_iron_count_* anc_rion_length_1 anc_rion_length_2 anc_rion_length_3 ///
-							anc_rion_length_4 anc_rion_length_5 anc_rion_length_6 anc_rion_length_7 ///
-							anc_rion_length_8 anc_rion_length_9 anc_rion_length_10 anc_rion_length_11 anc_rion_length_12 ///
-							anc_iron_cost_* anc_iron_source_1 anc_iron_source_2 anc_iron_source_3 anc_iron_source_4 ///
-							anc_iron_source_5 anc_iron_source_6 anc_iron_source_7 anc_iron_source_8 anc_iron_source_9 ///
-							anc_iron_source_10 anc_iron_source_11 anc_iron_source_12
+							/*anc_restrict_why_5 anc_restrict_why_6 anc_restrict_why_7 anc_restrict_why_8*/ ///
+							/*anc_restrict_why_9 anc_restrict_why_10 anc_restrict_why_11 anc_restrict_why_12*/ ///
+							anc_bone* anc_rion_1 anc_rion_2 anc_rion_3 anc_rion_4 ///
+							/*anc_rion_5 anc_rion_6 anc_rion_7 anc_rion_8 anc_rion_9 anc_rion_10 anc_rion_11 anc_rion_12*/ ///
+							anc_iron_freq_1 anc_iron_freq_2 anc_iron_freq_3 anc_iron_freq_4 ///
+							/*anc_iron_freq_5 anc_iron_freq_6 anc_iron_freq_7 anc_iron_freq_8 anc_iron_freq_9 anc_iron_freq_10*/ ///
+							/*anc_iron_freq_11 anc_iron_freq_12*/ ///
+							anc_iron_count_* anc_rion_length_1 anc_rion_length_2 anc_rion_length_3 anc_rion_length_4 ///
+							/*anc_rion_length_5 anc_rion_length_6 anc_rion_length_7 anc_rion_length_8 anc_rion_length_9*/ ///
+							/*anc_rion_length_10 anc_rion_length_11 anc_rion_length_12*/ ///
+							anc_iron_cost_* anc_iron_source_1 anc_iron_source_2 anc_iron_source_3 anc_iron_source_4 
+							/*anc_iron_source_5 anc_iron_source_6 anc_iron_source_7 anc_iron_source_8 anc_iron_source_9*/ ///
+							/*anc_iron_source_10 anc_iron_source_11 anc_iron_source_12*/
 							/*anc_iron_freq anc_iron_count anc_rion_length anc_rion_length_oth anc_iron_cost anc_iron_source anc_iron_source_oth*/ 
 							
 							
@@ -167,73 +168,73 @@ global momdeli 				deliv_place* /*deliv_place_oth*/ deliv_assist* /*deliv_assist
 							child_hepatitisb* deliv_cost* deliv_cope* /*deliv_cope_oth*/ 
 
 global mompnc				pnc_yn* pnc_checktime* pnc_checkunit* ///
-							pnc_where_1 pnc_where_2 pnc_where_3 pnc_where_4 pnc_where_5 ///
-							pnc_where_6 pnc_where_7 pnc_where_8 pnc_where_9 pnc_where_10 ///
-							pnc_where_11 pnc_where_12 /*pnc_where_oth*/ ///
+							pnc_where_* /*pnc_where_2 pnc_where_3 pnc_where_4 pnc_where_5*/ ///
+							/*pnc_where_6 pnc_where_7 pnc_where_8 pnc_where_9 pnc_where_10*/ ///
+							/*pnc_where_11 pnc_where_12*/ /*pnc_where_oth*/ ///
 							pnc_home_who* /*pnc_home_oth*/ pnc_home_visit* ///
-							pnc_hosp_who_1 pnc_hosp_who_2 pnc_hosp_who_3 pnc_hosp_who_4 ///
-							pnc_hosp_who_5 pnc_hosp_who_6 pnc_hosp_who_7 pnc_hosp_who_8 ///
-							pnc_hosp_who_9 pnc_hosp_who_10 pnc_hosp_who_11 pnc_hosp_who_12 /*pnc_hosp_who_oth*/ ///
+							pnc_hosp_who_* /*pnc_hosp_who_2 pnc_hosp_who_3 pnc_hosp_who_4*/ ///
+							/*pnc_hosp_who_5 pnc_hosp_who_6 pnc_hosp_who_7 pnc_hosp_who_8*/ ///
+							/*pnc_hosp_who_9 pnc_hosp_who_10 pnc_hosp_who_11 pnc_hosp_who_12*/ /*pnc_hosp_who_oth*/ ///
 							pnc_hosp_visit* ///
 							pnc_pc_who* /*pnc_pc_oth*/ pnc_pc_visit* ///
-							pnc_rhc_who_1 pnc_rhc_who_2 pnc_rhc_who_3 pnc_rhc_who_4 pnc_rhc_who_5 ///
-							pnc_rhc_who_6 pnc_rhc_who_7 pnc_rhc_who_8 pnc_rhc_who_9 pnc_rhc_who_10 ///
-							pnc_rhc_who_11 pnc_rhc_who_12 /*pnc_rhc_who_oth*/ pnc_rhc_visit* ///
-							pnc_ehoc_who_1 pnc_ehoc_who_2 pnc_ehoc_who_3 pnc_ehoc_who_4 ///
-							pnc_ehoc_who_5 pnc_ehoc_who_6 pnc_ehoc_who_7 pnc_ehoc_who_8 ///
-							pnc_ehoc_who_9 pnc_ehoc_who_10 pnc_ehoc_who_11 pnc_ehoc_who_12 /*pnc_ehoc_who_oth*/ ///
+							pnc_rhc_who_* /*pnc_rhc_who_2 pnc_rhc_who_3 pnc_rhc_who_4 pnc_rhc_who_5*/ ///
+							/*pnc_rhc_who_6 pnc_rhc_who_7 pnc_rhc_who_8 pnc_rhc_who_9 pnc_rhc_who_10*/ ///
+							/*pnc_rhc_who_11 pnc_rhc_who_12*/ /*pnc_rhc_who_oth*/ pnc_rhc_visit* ///
+							pnc_ehoc_who_* /*pnc_ehoc_who_2 pnc_ehoc_who_3 pnc_ehoc_who_4*/ ///
+							/*pnc_ehoc_who_5 pnc_ehoc_who_6 pnc_ehoc_who_7 pnc_ehoc_who_8*/ ///
+							/*pnc_ehoc_who_9 pnc_ehoc_who_10 pnc_ehoc_who_11 pnc_ehoc_who_12*/ /*pnc_ehoc_who_oth*/ ///
 							pnc_ehoc_visit* ///
 							pnc_ehom_who* pnc_ehom_oth* pnc_ehom_visit* ///
-							pnc_vill_who_1 pnc_vill_who_2 pnc_vill_who_3 pnc_vill_who_4 ///
-							pnc_vill_who_5 pnc_vill_who_6 pnc_vill_who_7 pnc_vill_who_8 ///
-							pnc_vill_who_9 pnc_vill_who_10 pnc_vill_who_11 pnc_vill_who_12 /*pnc_vill_who_oth*/ ///
+							pnc_vill_who_* /*pnc_vill_who_2 pnc_vill_who_3 pnc_vill_who_4*/ ///
+							/*pnc_vill_who_5 pnc_vill_who_6 pnc_vill_who_7 pnc_vill_who_8*/ ///
+							/*pnc_vill_who_9 pnc_vill_who_10 pnc_vill_who_11 pnc_vill_who_12*/ /*pnc_vill_who_oth*/ ///
 							pnc_vill_visit* ///
-							pnc_othp_who_1 pnc_othp_who_2 pnc_othp_who_3 pnc_othp_who_4 ///
-							pnc_othp_who_5 pnc_othp_who_6 pnc_othp_who_7 pnc_othp_who_8 ///
-							pnc_othp_who_9 pnc_othp_who_10 pnc_othp_who_11 pnc_othp_who_12 /*pnc_othp_who_oth*/ ///
+							pnc_othp_who_* /*pnc_othp_who_2 pnc_othp_who_3 pnc_othp_who_4*/ ///
+							/*pnc_othp_who_5 pnc_othp_who_6 pnc_othp_who_7 pnc_othp_who_8*/ ///
+							/*pnc_othp_who_9 pnc_othp_who_10 pnc_othp_who_11 pnc_othp_who_12*/ /*pnc_othp_who_oth*/ ///
 							pnc_othp_visit* ///
-							pnc_bone_1 pnc_bone_2 pnc_bone_3 pnc_bone_4 pnc_bone_5 ///
-							pnc_bone_6 pnc_bone_7 pnc_bone_8 pnc_bone_9 pnc_bone_10 ///
-							pnc_bone_11 pnc_bone_12 ///
+							pnc_bone_1 pnc_bone_2 pnc_bone_3 pnc_bone_4 /*pnc_bone_5*/ ///
+							/*pnc_bone_6 pnc_bone_7 pnc_bone_8 pnc_bone_9 pnc_bone_10*/ ///
+							/*pnc_bone_11 pnc_bone_12*/ ///
 							pnc_bone_months_1 pnc_bone_months_2 pnc_bone_months_3 ///
-							pnc_bone_months_4 pnc_bone_months_5 pnc_bone_months_6 ///
-							pnc_bone_months_7 pnc_bone_months_8 pnc_bone_months_9 ///
-							pnc_bone_months_10 pnc_bone_months_11 pnc_bone_months_12 ///
+							/*pnc_bone_months_4 pnc_bone_months_5 pnc_bone_months_6*/ ///
+							/*pnc_bone_months_7 pnc_bone_months_8 pnc_bone_months_9*/ ///
+							/*pnc_bone_months_10 pnc_bone_months_11 pnc_bone_months_12*/ ///
 							pnc_bone_weeks_1 pnc_bone_weeks_2 pnc_bone_weeks_3 ///
-							pnc_bone_weeks_4 pnc_bone_weeks_5 pnc_bone_weeks_6 ///
-							pnc_bone_weeks_7 pnc_bone_weeks_8 pnc_bone_weeks_9 ///
-							pnc_bone_weeks_10 pnc_bone_weeks_11 pnc_bone_weeks_12 ///
-							pnc_cost* pnc_cope_1 pnc_cope_2 pnc_cope_3 pnc_cope_4 ///
-							pnc_cope_5 pnc_cope_6 pnc_cope_7 pnc_cope_8 pnc_cope_9 ///
-							pnc_cope_10 pnc_cope_11 pnc_cope_12 /*pnc_cope_oth*/ 
+							/*pnc_bone_weeks_4 pnc_bone_weeks_5 pnc_bone_weeks_6*/ ///
+							/*pnc_bone_weeks_7 pnc_bone_weeks_8 pnc_bone_weeks_9*/ ///
+							/*pnc_bone_weeks_10 pnc_bone_weeks_11 pnc_bone_weeks_12*/ ///
+							pnc_cost* pnc_cope_1 pnc_cope_2 pnc_cope_3 pnc_cope_4 
+							/*pnc_cope_5 pnc_cope_6 pnc_cope_7 pnc_cope_8 pnc_cope_9*/ 
+							/*pnc_cope_10 pnc_cope_11 pnc_cope_12 pnc_cope_oth*/ 
 
 
 
-global momnbc				nbc_yn* nbc_2days_yn* nbc_where_1 nbc_where_2 nbc_where_3 ///
-							nbc_where_4 nbc_where_5 nbc_where_6 nbc_where_7 nbc_where_8 ///
-							nbc_where_9 nbc_where_10 nbc_where_11 nbc_where_12 /*nbc_where_oth*/ ///
+global momnbc				nbc_yn* nbc_2days_yn* nbc_where_* /*nbc_where_2 nbc_where_3*/ ///
+							/*nbc_where_4 nbc_where_5 nbc_where_6 nbc_where_7 nbc_where_8*/ ///
+							/*nbc_where_9 nbc_where_10 nbc_where_11 nbc_where_12*/ /*nbc_where_oth*/ ///
 							nbc_home_who_* /*nbc_home_oth*/ nbc_home_visit* ///
-							nbc_hosp_who_1 nbc_hosp_who_2 nbc_hosp_who_3 nbc_hosp_who_4 nbc_hosp_who_5 ///
-							nbc_hosp_who_6 nbc_hosp_who_7 nbc_hosp_who_8 nbc_hosp_who_9 nbc_hosp_who_10 ///
-							nbc_hosp_who_11 nbc_hosp_who_12 /*nbc_hosp_who_oth*/ nbc_hosp_visit* ///
+							nbc_hosp_who_* /*nbc_hosp_who_2 nbc_hosp_who_3 nbc_hosp_who_4 nbc_hosp_who_5*/ ///
+							/*nbc_hosp_who_6 nbc_hosp_who_7 nbc_hosp_who_8 nbc_hosp_who_9 nbc_hosp_who_10*/ ///
+							/*nbc_hosp_who_11 nbc_hosp_who_12*/ /*nbc_hosp_who_oth*/ nbc_hosp_visit* ///
 							nbc_pc_who* nbc_pc_oth* nbc_pc_visit* ///
-							nbc_rhc_who_1 nbc_rhc_who_2 nbc_rhc_who_3 nbc_rhc_who_4 nbc_rhc_who_5 ///
-							nbc_rhc_who_6 nbc_rhc_who_7 nbc_rhc_who_8 nbc_rhc_who_9 nbc_rhc_who_10 ///
-							nbc_rhc_who_11 nbc_rhc_who_12 /*nbc_rhc_who_oth*/ nbc_rhc_visit* ///
-							nbc_ehoc_who_1 nbc_ehoc_who_2 nbc_ehoc_who_3 nbc_ehoc_who_4 nbc_ehoc_who_5 ///
-							nbc_ehoc_who_6 nbc_ehoc_who_7 nbc_ehoc_who_8 nbc_ehoc_who_9 nbc_ehoc_who_10 ///
-							nbc_ehoc_who_11 nbc_ehoc_who_12 /*nbc_ehoc_who_oth*/ nbc_ehoc_visit* ///
+							nbc_rhc_who_* /*nbc_rhc_who_2 nbc_rhc_who_3 nbc_rhc_who_4 nbc_rhc_who_5*/ ///
+							/*nbc_rhc_who_6 nbc_rhc_who_7 nbc_rhc_who_8 nbc_rhc_who_9 nbc_rhc_who_10*/ ///
+							/*nbc_rhc_who_11 nbc_rhc_who_12*/ /*nbc_rhc_who_oth*/ nbc_rhc_visit* ///
+							nbc_ehoc_who_* /*nbc_ehoc_who_2 nbc_ehoc_who_3 nbc_ehoc_who_4 nbc_ehoc_who_5*/ ///
+							/*nbc_ehoc_who_6 nbc_ehoc_who_7 nbc_ehoc_who_8 nbc_ehoc_who_9 nbc_ehoc_who_10*/ ///
+							/*nbc_ehoc_who_11 nbc_ehoc_who_12*/ /*nbc_ehoc_who_oth*/ nbc_ehoc_visit* ///
 							nbc_ehom_who_* /*nbc_ehom_oth*/ nbc_ehom_visit* ///
-							nbc_vill_who_1 nbc_vill_who_2 nbc_vill_who_3 nbc_vill_who_4 nbc_vill_who_5 ///
-							nbc_vill_who_6 nbc_vill_who_7 nbc_vill_who_8 nbc_vill_who_9 nbc_vill_who_10 ///
-							nbc_vill_who_11 nbc_vill_who_12 /*nbc_vill_who_oth*/ nbc_vill_visit* ///
-							nbc_othp_who_1 nbc_othp_who_2 nbc_othp_who_3 nbc_othp_who_4 ///
-							nbc_othp_who_5 nbc_othp_who_6 nbc_othp_who_7 nbc_othp_who_8 ///
-							nbc_othp_who_9 nbc_othp_who_10 nbc_othp_who_11 nbc_othp_who_12 /*nbc_othp_who_oth*/ ///
+							nbc_vill_who_* /*nbc_vill_who_2 nbc_vill_who_3 nbc_vill_who_4 nbc_vill_who_5*/ ///
+							/*nbc_vill_who_6 nbc_vill_who_7 nbc_vill_who_8 nbc_vill_who_9 nbc_vill_who_10*/ ///
+							/*nbc_vill_who_11 nbc_vill_who_12*/ /*nbc_vill_who_oth*/ nbc_vill_visit* ///
+							nbc_othp_who_* /*nbc_othp_who_2 nbc_othp_who_3 nbc_othp_who_4*/ ///
+							/*nbc_othp_who_5 nbc_othp_who_6 nbc_othp_who_7 nbc_othp_who_8*/ ///
+							/*nbc_othp_who_9 nbc_othp_who_10 nbc_othp_who_11 nbc_othp_who_12*/ /*nbc_othp_who_oth*/ ///
 							nbc_othp_visit* ///
-							nbc_cost* nbc_cope_1 nbc_cope_2 nbc_cope_3 nbc_cope_4 nbc_cope_5 ///
-							nbc_cope_6 nbc_cope_7 nbc_cope_8 nbc_cope_9 nbc_cope_10 nbc_cope_11 ///
-							nbc_cope_12 /*nbc_cope_oth*/  
+							nbc_cost* nbc_cope_* /*nbc_cope_2 nbc_cope_3 nbc_cope_4 nbc_cope_5*/ 
+							/*nbc_cope_6 nbc_cope_7 nbc_cope_8 nbc_cope_9 nbc_cope_10 nbc_cope_11*/ 
+							/*nbc_cope_12 nbc_cope_oth*/  
 
 
 global momcovid 			mom_covid mom_covid_doses mom_covid_know* mom_covid_year* 
@@ -370,7 +371,7 @@ foreach grp in `loopgrp' {
 	replace sir = _n 
 
 	// lab var 
-	lab var var			"Variable Names"
+	lab var var				"Variable Names"
 	lab var sir 			"No."
 	lab var missing_num		"Number of missing"
 	lab var missing_shared 	"Shared missing number"

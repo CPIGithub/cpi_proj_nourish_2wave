@@ -54,9 +54,9 @@ global interestedvar 	respd_age respd_1stpreg_age respd_chid_num hh_tot_num ///
 						nbc_*_visit_* ///
 						mom_covid_doses ///
 						house_room water_time* d3_inc_lmth prgexp_freq_* ///
-						child_muac_1 child_muac_2 child_muac_3 child_muac_4 child_muac_5 ///
+						/*child_muac_1*/ child_muac_2 child_muac_3 child_muac_4 child_muac_5 ///
 						child_muac_6 child_muac_7 child_muac_8 child_muac_9 child_muac_10 ///
-						child_muac_11 child_muac_12
+						/*child_muac_11*/ child_muac_12
 
     
 foreach v of varlist $interestedvar {

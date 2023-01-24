@@ -166,6 +166,9 @@ drop _merge
 ** add child mom info 
 preserve
 	use "$dta/hh_child_mom_rep.dta", clear
+	
+	// drop obs not eligable for this module 
+	drop if mi(hh_mem_mom)
 
 	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
@@ -198,6 +201,9 @@ drop _merge
 preserve
 	use "$dta/grp_q2_5_to_q2_7.dta", clear
 
+	// drop obs not eligable for this module 
+	drop if mi(child_bf)
+	
 	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
 			_submission__notes _submission__status _submission__submitted_by ///
@@ -228,6 +234,9 @@ drop _merge
 ** add child health info
 preserve
 	use "$dta/child_vc_rep.dta", clear
+	
+	// drop obs not eligable for this module 
+	drop if mi(child_ill)
 
 	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
@@ -258,6 +267,9 @@ drop _merge
 ** add mom health info
 preserve
 	use "$dta/anc_rep.dta", clear
+	
+	// drop obs not eligable for this module 
+	drop if mi(mom_rice) & mi(anc_adopt)
 
 	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
@@ -318,6 +330,9 @@ drop _merge
 ** add child muac info
 preserve
 	use "$dta/child_muac_rep.dta", clear
+	
+	// drop obs not eligable for this module 
+	drop if mi(child_muac_yn) 
 
 	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
