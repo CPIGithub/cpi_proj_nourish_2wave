@@ -34,6 +34,25 @@ replace title = "TABLE 2:  % OUTLIER BY ENUMERATOR" in 1
 export excel title using "$out/03_hfc_hh_outlier.xlsx", sheet("01_SUMMARY") sheetmodify cell(A6) 
 		
 		
+********************************************************************************
+
+* import XLS programming file 
+
+import excel using "$dir/01_sampling/02_Questionnaires/FINAL/Pnourish_2W_HHSvy_MMR.xlsx", sheet("survey") firstrow clear 
+
+keep name labelenglish labelburmese
+
+rename name var_name 
+
+duplicates drop var_name, force 
+
+tempfile xlsfile
+save `xlsfile', replace 
+
+clear 
+
+********************************************************************************
+		
 use "$dta/pnourish_hh_svy_wide.dta", clear 
 
 gen tot_obs = _N
@@ -145,7 +164,7 @@ export excel using "$out/03_hfc_hh_outlier.xlsx", sheet("01_SUMMARY") firstrow(v
 restore 
 
 * detail figure 
-preserve 
+//preserve 
 gen sir = _n
 
 keep *_ol *_mean var_* sir uuid enu_name svy_team org_name
@@ -165,6 +184,26 @@ keep if outlier_yes == 1
 
 order org_name svy_team enu_name uuid var_name values mean outlier_yes
 
+drop if var_name == "tot"
+
+gen check = strpos(var_name, "prgexp_freq")
+
+replace var_name = subinstr(var_name, "_1", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_2", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_3", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_4", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_5", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_6", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_7", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_8", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_9", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_10", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_11", "", 1) if check != 1
+replace var_name = subinstr(var_name, "_12", "", 1) if check != 1
+
+replace var_name = "respd_1stpreg_age" if var_name == "respdstpreg_age"
+drop check 
+
 lab var org_name 		"Organization name"
 lab var svy_team 		"Survey Team"
 lab var enu_name 		"Enumerator"
@@ -174,6 +213,14 @@ lab var values 			"Response values"
 lab var mean 			"Mean value"
 lab var outlier_yes		"Outlier (yes)"
 
+merge m:1 var_name using `xlsfile'
+
+drop if _merge == 2
+
+drop _merge 
+
+order labelenglish labelburmese, after(var_name)
+
 // export table
 if _N > 0 {
 	
@@ -181,7 +228,7 @@ if _N > 0 {
 }
 
  
-restore 
+//restore 
 
 * END here 
 

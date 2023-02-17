@@ -1,7 +1,7 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	2nd round data collection: completion check 			
+Purpose				:	2nd round data collection: completion check village survey			
 Author				:	Nicholus Tint Zaw
 Date				: 	11/24/2022
 Modified by			:
@@ -19,22 +19,22 @@ do "$do/00_dir_setting.do"
 * household survey *
 ********************************************************************************
 
-** HH Survey Dataset **
-use "$dta/pnourish_hh_svy_wide.dta", clear 
+** Village Survey Dataset **
+use "$dta/pnourish_village_svy_wide.dta", clear 
 
 local maingeo org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
 
 
 // survey - overall
-gen target_N = 788
+gen target_N = 74
 gen svy_tot = _N
 egen svy_consent = total(will_participate)
 gen svy_attempt_prop = round(svy_tot/target_N, 0.001) * 100
 gen svy_consent_prop = round(svy_consent/target_N, 0.001) * 100
 
 // stratum 
-gen st_target_N = 316 if stratum == 1 
-replace st_target_N = 472 if stratum == 2
+gen st_target_N = 34 if stratum == 1 
+replace st_target_N = 40 if stratum == 2
 bysort stratum: egen st_svy_consent = total(will_participate)
 gen st_svy_consent_prop = round(st_svy_consent/st_target_N, 0.001) * 100
 
@@ -46,8 +46,8 @@ bysort org_team: egen tot_svy_per_org = total(will_participate)
 bysort geo_town geo_vt geo_vill: gen tot_attempt_per_vill = _N
 bysort geo_town geo_vt geo_vill: egen tot_svy_per_vill = total(will_participate)
 
-gen svy_attempt_prop_vill = round(tot_attempt_per_vill/vill_samplesize, 0.01) * 100
-gen svy_consent_prop_vill = round(tot_svy_per_vill/vill_samplesize, 0.01) * 100
+//gen svy_attempt_prop_vill = round(tot_attempt_per_vill/vill_samplesize, 0.01) * 100
+//gen svy_consent_prop_vill = round(tot_svy_per_vill/vill_samplesize, 0.01) * 100
 
 // survey per team
 bysort svy_team: gen tot_attemtp_per_team = _N
@@ -68,18 +68,17 @@ lab var org_name				"Organization name"
 lab var tot_attempt_per_org 	"Number of interview per organization"
 lab var tot_svy_per_org 		"Number of consent survey per organization"
 
-lab var vill_samplesize			"Required Sample Size per village"
+//lab var vill_samplesize			"Required Sample Size per village"
 lab var tot_attempt_per_vill	"Number of interview per village"
-lab var svy_attempt_prop_vill	"Proportion of interviews per targeted sample size"
+//lab var svy_attempt_prop_vill	"Proportion of interviews per targeted sample size"
 lab var tot_svy_per_vill 		"Number of consent survey per village"
-lab var svy_consent_prop_vill	"Proportion of consent survey per targeted sample size"
+//lab var svy_consent_prop_vill	"Proportion of consent survey per targeted sample size"
 lab var tot_attemtp_per_team 	"Number of interview per team"
 lab var tot_svy_per_team 		"Number of consent survey per team"
 lab var tot_attempt_per_enu 	"Number of interview per enumerator"
 lab var tot_svy_per_enu			"Number of consent survey per enumerator"
 
 // export table
-
 preserve 
 keep if _n == 1 
 keep target_N svy_tot svy_attempt_prop svy_consent svy_consent_prop
@@ -107,7 +106,7 @@ replace var = "Proportion of interviews (B/A)"			if var == "4"
 replace var = "Total consented survey (C)"				if var == "3"
 replace var = "Proportion of consented survey (C/A)"	if var == "5"
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("01_overall") firstrow(varlabels) keepcellfmt sheetreplace
+export excel using "$out/01_hfc_vill_completion_rate.xlsx", sheet("01_overall") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 
@@ -143,24 +142,23 @@ replace var = "Stratum-2: Targeted Sample (A)" 						if sir == 4
 replace var = "Stratum-2: Total consented survey (C)"				if sir == 5
 replace var = "Stratum-3: Proportion of consented survey (C/A)"		if sir == 6
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("01_overall") firstrow(varlabels) cell(A10) keepcellfmt sheetmodify
+export excel using "$out/01_hfc_vill_completion_rate.xlsx", sheet("01_overall") firstrow(varlabels) cell(A10) keepcellfmt sheetmodify
 
 restore 
-
 
 preserve 
 bysort org_team: keep if _n == 1 
 keep org_name tot_attempt_per_org tot_svy_per_org
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("02_org") firstrow(varlabels) keepcellfmt sheetreplace
+export excel using "$out/01_hfc_vill_completion_rate.xlsx", sheet("02_org") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 preserve 
 bysort geo_town geo_vt geo_vill: keep if _n == 1 
-keep `maingeo' vill_samplesize tot_attempt_per_vill tot_svy_per_vill svy_attempt_prop_vill svy_consent_prop_vill
-order `maingeo' vill_samplesize tot_attempt_per_vill svy_attempt_prop_vill tot_svy_per_vill svy_consent_prop_vill
+keep `maingeo' vill_samplesize tot_attempt_per_vill tot_svy_per_vill /*svy_attempt_prop_vill svy_consent_prop_vill*/
+order `maingeo' vill_samplesize tot_attempt_per_vill /*svy_attempt_prop_vill*/ tot_svy_per_vill /*svy_consent_prop_vill*/
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("03_geo") firstrow(varlabels) keepcellfmt sheetreplace
+export excel using "$out/01_hfc_vill_completion_rate.xlsx", sheet("03_geo") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 
@@ -168,7 +166,7 @@ preserve
 bysort svy_team: keep if _n == 1 
 keep org_name svy_team tot_attemtp_per_team tot_svy_per_team
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("04_team") firstrow(varlabels) keepcellfmt sheetreplace
+export excel using "$out/01_hfc_vill_completion_rate.xlsx", sheet("04_team") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 
@@ -176,7 +174,7 @@ preserve
 bysort svy_team interv_name: keep if _n == 1
 keep svy_team superv_name enu_name tot_attempt_per_enu tot_svy_per_enu
 
-export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("05_enu") firstrow(varlabels) keepcellfmt sheetreplace
+export excel using "$out/01_hfc_vill_completion_rate.xlsx", sheet("05_enu") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
 // END HERE 

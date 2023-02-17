@@ -19,6 +19,21 @@ do "$do/00_dir_setting.do"
 * import Sample Size Data *
 ********************************************************************************
 
+import delimited using "$result/pn_2_samplelist_old.csv", clear 
+ 
+rename fieldnamevillagetracteho  	geo_eho_vt_name
+rename villagenameeho 				geo_eho_vill_name
+rename townshippcode 				geo_town
+rename vt_sir_num 					geo_vt
+rename vill_sir_num 				geo_vill 
+
+local mainvar 	township_name geo_eho_vt_name geo_eho_vill_name stratum num_cluster ///
+				vill_samplesize sample_check 
+
+tempfile dfsamplesize
+save `dfsamplesize', replace 
+clear 
+
 import delimited using "$result/pn_2_samplelist.csv", clear 
  
 rename fieldnamevillagetracteho  	geo_eho_vt_name
@@ -27,10 +42,21 @@ rename townshippcode 				geo_town
 rename vt_sir_num 					geo_vt
 rename vill_sir_num 				geo_vill 
 
-local mainvar township_name geo_eho_vt_name geo_eho_vill_name stratum num_cluster vill_samplesize sample_check
+local mainvar 	township_name geo_eho_vt_name geo_eho_vill_name stratum num_cluster ///
+				vill_samplesize sample_check 
+				
+				
+foreach var in `mainvar' {
+    
+	rename `var' `var'_n
+	
+}
 
-tempfile dfsamplesize
-save `dfsamplesize', replace 
+local mainvar_n 	township_name_n geo_eho_vt_name_n geo_eho_vill_name_n stratum_n ///
+					num_cluster_n vill_samplesize_n sample_check_n 
+
+tempfile dfsamplesize_new
+save `dfsamplesize_new', replace 
 clear 
 
 ********************************************************************************
@@ -94,11 +120,24 @@ forvalue x = 1/`r(N_worksheet)' {
 		replace superv_name = "Saw Ku Mu Kay Htoo" 	if superv_name == "6"
 
 		* add village name and sample size info
-		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize', keepusing(`mainvar')
-
+		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize', keepusing(`mainvar' /*cluster_cat cluster_cat_str*/)
+		
 		drop if _merge == 2
 		drop _merge 
 
+		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize_new', keepusing(`mainvar_n' cluster_cat cluster_cat_str)
+		
+		drop if _merge == 2
+
+		foreach var in `mainvar' {
+		    
+			replace `var'= `var'_n if mi(`var') & !mi(`var'_n) & _merge == 3
+			
+		}
+		
+		drop _merge 
+				
+				
 		// keep only final data colletion data 
 		keep if svy_date >= td(19dec2022) & !mi(svy_date)
 		
@@ -115,6 +154,7 @@ forvalue x = 1/`r(N_worksheet)' {
 		
 	}
 	else {
+		
 		
 		merge m:1 _parent_index using `_parent_index'
 		
@@ -133,9 +173,13 @@ forvalue x = 1/`r(N_worksheet)' {
 
 use "$dta/PN_HH_Survey_FINAL.dta", clear
 
+do "$hhimport/PN_HH_Survey_FINAL_labeling.do"
+
 ** add hh roster 
 preserve
 	use "$dta/grp_hh.dta", clear
+	
+	do "$hhimport/grp_hh_labeling.do"
 
 	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
@@ -166,6 +210,9 @@ drop _merge
 ** add child mom info 
 preserve
 	use "$dta/hh_child_mom_rep.dta", clear
+	
+	* lab var 
+	lab var hh_mem_mom "Who is the mother of this child?"
 	
 	// drop obs not eligable for this module 
 	drop if mi(hh_mem_mom)
@@ -200,6 +247,8 @@ drop _merge
 ** add child iycf info
 preserve
 	use "$dta/grp_q2_5_to_q2_7.dta", clear
+	
+	do "$hhimport/child_iycf_labeling.do"
 
 	// drop obs not eligable for this module 
 	drop if mi(child_bf)
@@ -225,7 +274,7 @@ restore
 
 merge 1:1 _parent_index using `iycf'
 
-keep if _merge == 3
+// keep if _merge == 3
 
 drop _merge 
 
@@ -234,6 +283,8 @@ drop _merge
 ** add child health info
 preserve
 	use "$dta/child_vc_rep.dta", clear
+	
+	do "$hhimport/child_health_labeling.do"
 	
 	// drop obs not eligable for this module 
 	drop if mi(child_ill)
@@ -268,6 +319,9 @@ drop _merge
 preserve
 	use "$dta/anc_rep.dta", clear
 	
+	* lab var
+	do "$hhimport/mom_health_labeling.do"	
+	
 	// drop obs not eligable for this module 
 	drop if mi(mom_rice) & mi(anc_adopt)
 
@@ -292,7 +346,7 @@ restore
 
 merge 1:1 _parent_index using `anc_rep'
 
-keep if _merge == 3
+// keep if _merge == 3
 
 drop _merge 
 
@@ -300,6 +354,12 @@ drop _merge
 ** add mom covid info
 preserve
 	use "$dta/mom_covid_rpt.dta", clear
+	
+	* lab var 
+	lab var mom_covid_note "Covid-19 vaccine - dosage - ${cal_mom_covid} time"
+	lab var mom_covid_know "Do you remember the ${cal_mom_covid} time vaccination date? "
+	lab var mom_covid_year "If yes, when did you  (${respd_name}) get Covid-19 vaccination?"
+
 
 	drop 	_index _parent_table_name _submission__id _submission__uuid ///
 			_submission__submission_time _submission__validation_status ///
@@ -322,7 +382,7 @@ restore
 
 merge 1:1 _parent_index using `mom_covid_rpt'
 
-keep if _merge == 3 | _merge == 1
+// keep if _merge == 3 | _merge == 1
 
 drop _merge 
 
@@ -330,6 +390,11 @@ drop _merge
 ** add child muac info
 preserve
 	use "$dta/child_muac_rep.dta", clear
+	
+	* lab var 
+	lab var child_muac_yn "Did you able to measure the child's MUAC for ${child_pos4}?"
+	lab var child_muac "${child_pos4} MUAC"
+
 	
 	// drop obs not eligable for this module 
 	drop if mi(child_muac_yn) 

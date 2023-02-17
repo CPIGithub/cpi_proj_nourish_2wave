@@ -49,11 +49,11 @@ egen svy_dur_mean = mean(svy_dur)
 
 sum svy_dur
 
-gen svy_dur_long = (svy_dur > (svy_dur_mean + (`r(sd)' * 2)))
-replace svy_dur_long = .m if mi(svy_dur) | mi(svy_dur_mean)
+gen svy_dur_long = (svy_dur > 60 /*(svy_dur_mean + (`r(sd)' * 2))*/)
+replace svy_dur_long = .m if mi(svy_dur) //| mi(svy_dur_mean)
 
-gen svy_dur_short = (svy_dur < (svy_dur_mean - (`r(sd)' * 2)))
-replace svy_dur_short = .m if mi(svy_dur) | mi(svy_dur_mean)
+gen svy_dur_short = (svy_dur < 10 /*(svy_dur_mean - (`r(sd)' * 2))*/)
+replace svy_dur_short = .m if mi(svy_dur) //| mi(svy_dur_mean)
 
 ** Module duration **
 local timesvar	cal_consent	cal_hhroster	cal_iycf	cal_housing	cal_wemp	cal_phq	/*cal_iycfk*/	///

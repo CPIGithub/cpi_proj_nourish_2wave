@@ -31,7 +31,7 @@ do "$hhhfc/02_hfc_duplicate.do"
 * dofile - 3:  Missingness Check *
 ********************************************************************************
 
-do "$hhhfc/03_hfc_missing.do"
+// do "$hhhfc/03_hfc_missing.do"
 
 ********************************************************************************
 * dofile - 4:  Outliers Check*

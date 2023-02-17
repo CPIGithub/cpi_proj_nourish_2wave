@@ -101,6 +101,9 @@ tab sample_check, m
 
 gsort organization -cluster_cat
 
+
+replace fieldnamevillagetracteho = "Lay Wal" if villagecode == "KRN-001-VIL-225"
+
 export excel using "$result/01_sample_village_list.xlsx", ///
 					sheet("stratum_2_emergency", replace) firstrow(varlabels) 
 
@@ -171,6 +174,9 @@ lab val sample_check sample_check
 tab sample_check, m 
 
 gsort organization -cluster_cat
+
+replace fieldnamevillagetracteho = "Wal Ta Ran" if villagecode == "KRN-002-VIL-305"
+
 
 export excel using "$result/01_sample_village_list.xlsx", sheet("stratum_1", replace) firstrow(varlabels) 
 
