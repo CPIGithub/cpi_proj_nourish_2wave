@@ -21,10 +21,13 @@ do "$do/00_dir_setting.do"
 
 use "$dta/pnourish_hh_svy_wide.dta", clear 
 
+keep if will_participate == 1
+
 // duplicate by geo-person
 duplicates tag geo_town geo_vt geo_vill respd_name respd_age respd_status, gen(dup_resp)
 tab dup_resp, m 
 
+order svy_date org_name township_name geo_eho_vt_name geo_eho_vill_name stratum 
 
 preserve 
 keep if dup_resp != 0

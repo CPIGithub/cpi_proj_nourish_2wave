@@ -24,10 +24,10 @@ use "$dta/pnourish_village_svy_wide.dta", clear
 // duplicate by geo-person
 duplicates tag	geo_town geo_vt geo_vill vill_data_yes ///
 				rpl_geo_town rpl_geo_vt rpl_geo_vill rpl_vill_data_yes ///
-				will_participate, gen(dup_vill)
+				will_participate vill_data_yes, gen(dup_vill)
 tab dup_vill, m 
 
-order org_name township_name geo_eho_vt_name geo_eho_vill_name stratum 
+order svy_date org_name township_name geo_eho_vt_name geo_eho_vill_name stratum vill_data_yes 
 
 preserve 
 keep if dup_vill != 0

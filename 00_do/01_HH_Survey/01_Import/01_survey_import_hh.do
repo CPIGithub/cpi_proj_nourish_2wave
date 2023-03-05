@@ -18,7 +18,7 @@ do "$do/00_dir_setting.do"
 ********************************************************************************
 * import Sample Size Data *
 ********************************************************************************
-
+// old pre-loaded file
 import delimited using "$result/pn_2_samplelist_old.csv", clear 
  
 rename fieldnamevillagetracteho  	geo_eho_vt_name
@@ -27,6 +27,12 @@ rename townshippcode 				geo_town
 rename vt_sir_num 					geo_vt
 rename vill_sir_num 				geo_vill 
 
+replace geo_eho_vt_name = geo_eho_vill_name if geo_eho_vill_name == "Wal Ta Ran" 
+replace geo_eho_vt_name = geo_eho_vill_name if geo_eho_vill_name == "Lay Wal"
+
+gen geo_vt_old 		= geo_vt 
+gen geo_vill_old 	= geo_vill
+
 local mainvar 	township_name geo_eho_vt_name geo_eho_vill_name stratum num_cluster ///
 				vill_samplesize sample_check 
 
@@ -34,7 +40,8 @@ tempfile dfsamplesize
 save `dfsamplesize', replace 
 clear 
 
-import delimited using "$result/pn_2_samplelist.csv", clear 
+// new pre-loaded file
+use "$dta/pn_2_samplelist.dta", clear  
  
 rename fieldnamevillagetracteho  	geo_eho_vt_name
 rename villagenameeho 				geo_eho_vill_name
@@ -42,6 +49,8 @@ rename townshippcode 				geo_town
 rename vt_sir_num 					geo_vt
 rename vill_sir_num 				geo_vill 
 
+// replace geo_vt = 1071 if geo_eho_vill_name == "Ka Yit Kyauk Tan" | geo_eho_vill_name == "Mun Hlaing"
+/*
 local mainvar 	township_name geo_eho_vt_name geo_eho_vill_name stratum num_cluster ///
 				vill_samplesize sample_check 
 				
@@ -50,14 +59,22 @@ foreach var in `mainvar' {
     
 	rename `var' `var'_n
 	
-}
+} */
 
-local mainvar_n 	township_name_n geo_eho_vt_name_n geo_eho_vill_name_n stratum_n ///
-					num_cluster_n vill_samplesize_n sample_check_n 
+local mainvar_n 	township_name geo_eho_vt_name geo_eho_vill_name stratum ///
+					num_cluster vill_samplesize sample_check 
 
 tempfile dfsamplesize_new
 save `dfsamplesize_new', replace 
+
+merge m:1 township_name geo_town geo_eho_vt_name geo_eho_vill_name using `dfsamplesize'
+
+replace geo_vt 		= geo_vt_old 	if _merge == 3 & organization == "YSDA"
+replace geo_vill 	= geo_vill_old 	if _merge == 3 & organization == "YSDA"
+
 clear 
+
+
 
 ********************************************************************************
 * import household survey *
@@ -110,6 +127,7 @@ forvalue x = 1/`r(N_worksheet)' {
 		* labeling  
 		gen org_name = "KEHOC" if org_team == 1
 		replace org_name = "YSDA" if org_team == 2
+		replace org_name = "KDHW" if org_team == 3
 
 		tostring superv_name, replace 
 		replace superv_name = "Thiri Aung" 			if superv_name == "1"
@@ -118,25 +136,11 @@ forvalue x = 1/`r(N_worksheet)' {
 		replace superv_name = "Nan Khin Hnin Thaw" 	if superv_name == "4"
 		replace superv_name = "Ma Nilar Tun" 		if superv_name == "5"
 		replace superv_name = "Saw Ku Mu Kay Htoo" 	if superv_name == "6"
-
-		* add village name and sample size info
-		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize', keepusing(`mainvar' /*cluster_cat cluster_cat_str*/)
-		
-		drop if _merge == 2
-		drop _merge 
-
-		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize_new', keepusing(`mainvar_n' cluster_cat cluster_cat_str)
-		
-		drop if _merge == 2
-
-		foreach var in `mainvar' {
-		    
-			replace `var'= `var'_n if mi(`var') & !mi(`var'_n) & _merge == 3
-			
-		}
-		
-		drop _merge 
-				
+		replace superv_name = "Saw Eh Poh" 			if superv_name == "7"
+		replace superv_name = "Naw Say Wai Htoo" 	if superv_name == "8"
+		replace superv_name = "Saw Hla Win Tun" 	if superv_name == "9"
+		replace superv_name = "Saw Baw Mu Doh Soe" 	if superv_name == "10"
+		replace superv_name = "Saw D' Poe" 			if superv_name == "11"				
 				
 		// keep only final data colletion data 
 		keep if svy_date >= td(19dec2022) & !mi(svy_date)
@@ -171,9 +175,104 @@ forvalue x = 1/`r(N_worksheet)' {
 
 // Prepare one Wide format dataset 
 
-use "$dta/PN_HH_Survey_FINAL.dta", clear
+	use "$dta/PN_HH_Survey_FINAL.dta", clear
+	
+	// check var 
+	local master _N
+	di `master'
+	
+	replace geo_vt 		= 1070 if cal_vt == "Ka Yit Kyauk Tan" & cal_vill == "Mun Hlaing"
+	replace geo_vill 	= 2251 if cal_vt == "Ka Yit Kyauk Tan" & cal_vill == "Mun Hlaing"
 
+	// YSDA data 
+	preserve 
+	
+		keep if org_name == "YSDA"
+	
+		* add village name and sample size info
+		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize', keepusing(`mainvar' *_old /*cluster_cat cluster_cat_str*/)
+		
+		/*
+			unmatched YSDA - one obs 
+			geo_town	geo_vt	vt_cluster_cat	geo_vill	cal_town	cal_vt	cal_vill
+			MMR003006	1071	1_1071	2251		Ka Yit Kyauk Tan	Mun Hlaing		
+		*/
+		
+		keep if _merge == 3
+		drop _merge 
+		
+		tempfile ysda
+		save `ysda', replace 
+		
+	restore 
+	
+	// Non YSDA data 
+	
+		keep if org_name != "YSDA" | (org_name == "YSDA" & geo_vt == 1070 & geo_vill == 2251)
+		
+		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize_new', keepusing(`mainvar' cluster_cat cluster_cat_str)
+
+		/*
+		unmatched from one YSDA 
+		geo_vt	vt_cluster_cat	geo_vill
+		1070		2251
+
+		*/
+		
+		keep if _merge == 3 
+		drop _merge 
+
+		append using `ysda'
+		
+		tab org_name, m 
+		
+		// check var 
+		local combined _N
+		di `combined'
+		
+		assert `master' == `combined'
+
+		tab1 	township_name geo_eho_vt_name geo_eho_vill_name stratum num_cluster ///
+				vill_samplesize sample_check, m 
+
+		
 do "$hhimport/PN_HH_Survey_FINAL_labeling.do"
+
+
+** Duplicate Check and Solved ** 
+
+	* drop the forms used for trianing KECHO and KDHW
+	drop if uuid == "2c77dc30-4f08-4184-a75c-dd9b904cfe07"
+	drop if uuid == "43f54051-940f-417e-b9c5-7e0b45ae8cbd"
+	drop if uuid == "b334432e-b9ad-4b94-b75a-320045118371"
+	drop if uuid == "41a7e30a-2e90-43e7-8188-ae9b4fee2d4c"
+	drop if uuid == "2c77dc30-4f08-4184-a75c-dd9b904cfe07"
+	drop if uuid == "4962b817-424c-4d9b-851b-a91c3467e784"
+	drop if uuid == "277e95b9-b0c4-4db0-8dd2-fafcae3453e1"
+	drop if uuid == "8abef67b-ed74-460e-9da5-d4840ed9e42d"
+	drop if uuid == "40ccdad4-e766-4d13-aebf-bfddfa87776b"
+	drop if uuid == "6053426d-bf6e-4cef-8c12-e1b9fe463664"
+	drop if uuid == "ddf3acef-2914-41d8-bc13-59e499119963"
+	drop if uuid == "de03fa20-b630-4af4-a946-d7119d8d27cb"
+
+
+	// duplicate by geo-person
+	duplicates tag geo_town geo_vt geo_vill respd_name respd_age respd_status, gen(dup_resp)
+	tab dup_resp, m 
+
+	order org_name township_name geo_eho_vt_name geo_eho_vill_name stratum 
+
+	// duplicate by personal info (exclude geo)
+	duplicates tag respd_name respd_age respd_status respd_preg respd_child respd_1stpreg_age respd_chid_num, gen(dup_person)
+
+	tab dup_person, m 
+	
+	drop dup_resp dup_person
+		
+
+		
+	* save as long dataset hh level only 
+	save "$dta/PN_HH_Survey_HH_Level.dta", replace 
 
 ** add hh roster 
 preserve
@@ -202,8 +301,7 @@ restore
 
 merge 1:1 _parent_index using `grp_hh'
 
-keep if _merge == 3
-
+drop if _merge == 2
 drop _merge 
 
 
@@ -238,7 +336,7 @@ restore
 
 merge 1:1 _parent_index using `hh_child_mom_rep'
 
-keep if _merge == 3
+drop if _merge == 2
 
 drop _merge 
 
@@ -274,7 +372,7 @@ restore
 
 merge 1:1 _parent_index using `iycf'
 
-// keep if _merge == 3
+drop if _merge == 2
 
 drop _merge 
 
@@ -310,7 +408,7 @@ restore
 
 merge 1:1 _parent_index using `child_vc_rep'
 
-keep if _merge == 3
+drop if _merge == 2
 
 drop _merge 
 
@@ -346,7 +444,7 @@ restore
 
 merge 1:1 _parent_index using `anc_rep'
 
-// keep if _merge == 3
+drop if _merge == 2
 
 drop _merge 
 
@@ -382,7 +480,7 @@ restore
 
 merge 1:1 _parent_index using `mom_covid_rpt'
 
-// keep if _merge == 3 | _merge == 1
+drop if _merge == 2
 
 drop _merge 
 
@@ -420,7 +518,7 @@ restore
 
 merge 1:1 _parent_index using `child_muac_rep'
 
-keep if _merge == 3
+drop if _merge == 2
 
 drop _merge 
 

@@ -167,7 +167,11 @@ restore
 //preserve 
 gen sir = _n
 
-keep *_ol *_mean var_* sir uuid enu_name svy_team org_name
+gen respd_age = var_respd_age
+
+keep 	*_ol *_mean var_* sir uuid enu_name svy_team org_name org_name /// 
+		township_name geo_eho_vt_name geo_eho_vill_name stratum ///
+		respd_name respd_sex respd_age svy_date
 
 rename *_ol ol_*
 rename *_mean mean_*
@@ -182,7 +186,10 @@ rename mean_ 	mean
 
 keep if outlier_yes == 1
 
-order org_name svy_team enu_name uuid var_name values mean outlier_yes
+order	svy_date org_name svy_team enu_name uuid ///
+		township_name geo_eho_vt_name geo_eho_vill_name stratum ///
+		respd_name respd_sex respd_age ///
+		var_name values mean outlier_yes
 
 drop if var_name == "tot"
 

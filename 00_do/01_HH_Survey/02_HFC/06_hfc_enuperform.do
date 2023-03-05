@@ -162,9 +162,15 @@ restore
 
 // detailed cases
 preserve
-keep starttime endtime svy_dur svy_dur_mean svy_dur_long svy_dur_short enu_name svy_team org_name uuid
+keep	township_name geo_eho_vt_name geo_eho_vill_name stratum ///
+		enu_name svy_team org_name uuid svy_date ///
+		respd_name respd_sex respd_age ///
+		starttime endtime svy_dur svy_dur_mean svy_dur_long svy_dur_short 
 
-order org_name svy_team enu_name starttime endtime svy_dur svy_dur_mean svy_dur_long svy_dur_short uuid
+order 	svy_date township_name geo_eho_vt_name geo_eho_vill_name stratum ///
+		org_name svy_team enu_name ///
+		respd_name respd_sex respd_age ///
+		starttime endtime svy_dur svy_dur_mean svy_dur_long svy_dur_short uuid
 
 
 lab var org_name 		"Organization name"
