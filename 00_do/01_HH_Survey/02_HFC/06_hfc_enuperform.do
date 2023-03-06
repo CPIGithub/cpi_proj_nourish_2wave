@@ -40,6 +40,15 @@ gen tot_obs = _N
 bysort org_name svy_team enu_name: gen enu_tot_obs = _N 
 
 
+** Hours **
+gen double starttime_hm = mod( starttime , 24 * 60 * 60000)
+format starttime_hm %tcHH:MM
+
+gen svy_early = (starttime_hm < tc(08:00))
+gen svy_late = (starttime_hm > tc(18:00))
+
+lab var svy_early 	"Survey - too early (before 8 AM)"
+lab var svy_late	"Survey - too late (after 6 PM)"
 
 ** Survey Duration **
 gen svy_dur = round((endtime - starttime) / (60000), 0.01) // milliseconds divide by 60000
@@ -91,32 +100,46 @@ foreach v in `timesvar' {
 
 // export table
 
-keep if svy_dur_long == 1 | svy_dur_short == 1
+keep if svy_dur_long == 1 | svy_dur_short == 1 | ///
+		svy_early == 1 | svy_late == 1
 
 
 gen tot_flag 			= _N
 gen tot_flag_shared 	= round(tot_flag/tot_obs, 0.001)
 
-gen tot_long 			= _N if svy_dur_long == 1
-gen tot_short 			= _N if svy_dur_short == 1
+egen tot_long 			= total(svy_dur_long)
+egen tot_short 			= total(svy_dur_short)
 gen tot_long_shared 	= round(tot_long/tot_obs, 0.001)
 gen tot_short_shared 	= round(tot_short/tot_obs, 0.001)
 
-
+egen tot_early 			= total(svy_early)
+egen tot_late 			= total(svy_late)
+gen tot_early_shared 	= round(tot_early/tot_obs, 0.001)
+gen tot_late_shared 	= round(tot_late/tot_obs, 0.001)
 
 preserve
 
 keep if _n == 1
-keep tot_obs tot_flag tot_flag_shared tot_long tot_long_shared tot_short tot_short_shared
-order tot_obs tot_flag tot_flag_shared tot_long tot_long_shared tot_short tot_short_shared
+keep 	tot_obs tot_flag tot_flag_shared tot_long tot_long_shared tot_short tot_short_shared ///
+		tot_early tot_early_shared tot_late tot_late_shared
+order 	tot_obs tot_flag tot_flag_shared tot_long tot_long_shared tot_short tot_short_shared ///
+		tot_early tot_early_shared tot_late tot_late_shared
 
 lab var tot_obs 			"Total obs"
 lab var tot_flag 			"Total survey duration flag obs"
 lab var tot_flag_shared		"Survey duration flag shared"
 lab var tot_long			"Total long survey obs"
 lab var tot_short			"Total short survey obs" 
-lab var tot_long_shared		"Long survey shared"
-lab var tot_short_shared	"Short survey shared"
+lab var tot_long_shared		"Long survey share"
+lab var tot_short_shared	"Short survey share"
+lab var tot_long			"Total long survey obs"
+lab var tot_short			"Total short survey obs" 
+lab var tot_long_shared		"Long survey share"
+lab var tot_short_shared	"Short survey share"
+lab var tot_early 			"Total early start survey (before 8 AM)"
+lab var tot_early_shared 	"Early start survey share"
+lab var tot_late 			"Total late start survey (after 6 PM)"
+lab var tot_late_shared		"Late start survey share"
 
 
 export excel using "$out/06_hcf_enu_performance.xlsx", sheet("01_SUMMARY") firstrow(varlabels) cell(A2) keepcellfmt sheetmodify
@@ -165,12 +188,15 @@ preserve
 keep	township_name geo_eho_vt_name geo_eho_vill_name stratum ///
 		enu_name svy_team org_name uuid svy_date ///
 		respd_name respd_sex respd_age ///
-		starttime endtime svy_dur svy_dur_mean svy_dur_long svy_dur_short 
+		starttime endtime svy_dur svy_dur_mean svy_dur_long svy_dur_short ///
+		svy_early svy_late
 
 order 	svy_date township_name geo_eho_vt_name geo_eho_vill_name stratum ///
 		org_name svy_team enu_name ///
 		respd_name respd_sex respd_age ///
-		starttime endtime svy_dur svy_dur_mean svy_dur_long svy_dur_short uuid
+		starttime endtime svy_dur svy_dur_mean svy_dur_long svy_dur_short ///
+		svy_early svy_late ///
+		uuid
 
 
 lab var org_name 		"Organization name"
