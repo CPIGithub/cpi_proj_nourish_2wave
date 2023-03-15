@@ -219,7 +219,7 @@ preserve
 bysort geo_town geo_vt geo_vill: keep if _n == 1 
 keep `maingeo' vill_samplesize tot_attempt_per_vill tot_svy_per_vill svy_attempt_prop_vill svy_consent_prop_vill
 order `maingeo' vill_samplesize tot_attempt_per_vill svy_attempt_prop_vill tot_svy_per_vill svy_consent_prop_vill
-
+sort org_name township_name geo_eho_vt_name geo_eho_vill_name
 export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("03_geo") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
 
@@ -238,6 +238,25 @@ keep svy_team superv_name enu_name tot_attempt_per_enu tot_svy_per_enu
 
 export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("05_enu") firstrow(varlabels) keepcellfmt sheetreplace
 restore 
+
+** replaced villages **
+gen replaced_cluster = (num_cluster == 0 | mi(num_cluster))
+tab replaced_cluster, m 
+
+
+preserve 
+bysort org_name township_name geo_eho_vt_name geo_eho_vill_name: keep if _n == 1
+
+keep if replaced_cluster == 1
+
+sort org_name stratum township_name geo_eho_vt_name geo_eho_vill_name
+
+keep org_name township_name geo_eho_vt_name geo_eho_vill_name stratum 
+
+export excel using "$out/01_hfc_hh_completion_rate.xlsx", sheet("06_replaced_villages") firstrow(varlabels) keepcellfmt sheetreplace
+restore 
+
+
 
 // END HERE 
 

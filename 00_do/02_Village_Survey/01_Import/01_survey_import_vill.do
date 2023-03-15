@@ -190,12 +190,34 @@ forvalue x = 1/`r(N_worksheet)' {
 	* drop the forms used for form testing
 	drop if uuid == "6854686c-6ed8-4a7d-ac62-b9299ae73bdc"
 	drop if uuid == "ab8fffa6-a552-4c5d-9803-9c3d5ef4163f"
+	drop if uuid == "7a4b64f5-7f17-4ffd-b72c-bb765bf4f8d2"
+	drop if uuid == "0ba81d89-16a3-4b15-9205-486044231251"
+	drop if uuid == "e1077b53-a7e3-472b-83ff-0b484d65def4"
+	drop if uuid == "34e522c7-67e5-485a-9490-383d6a8e41a0"
+	drop if uuid == "45e703b1-6af7-4b1a-b6d6-e397e3c3b27e"
+	drop if uuid == "f32a2718-93b8-4cd6-ad1b-a568b33bf015"
+	drop if uuid == "e330fcf8-6476-4471-a973-8e2c8f11f1f7"
+	drop if uuid == "1e5ec9bc-0987-4768-b7d5-85051855309f"
+	drop if uuid == "7b14fa18-e88c-4236-85b6-e26081126985"
+	drop if uuid == "7af36f85-27f4-46f5-a5c9-6ba2d0954d78"
+	drop if uuid == "b862e5ec-9626-4796-99f4-823b0ae820d6"
+	drop if uuid == "efcbe608-e31a-40bb-8c11-44427e5cf65e"
+	drop if uuid == "970413f0-e318-4482-8e11-2f40f6f0ab90"
+	drop if uuid == "c2665789-39b0-4492-a4f8-6308e8478784"
+	drop if uuid == "b779bb0c-7388-40dd-9ebb-7274a4555921"
 
 	* correct geo info
 	replace geo_vt 		= 1027 				if uuid == "817ae4bd-9a88-4e20-aa0d-ea1dca3db794"
 	replace geo_vill 	= 2120 				if uuid == "817ae4bd-9a88-4e20-aa0d-ea1dca3db794"
 	replace cal_vt 		= "Bo Khar Lay Kho" if uuid == "817ae4bd-9a88-4e20-aa0d-ea1dca3db794"
 	replace cal_vill 	= "Maw Tu Doe" 		if uuid == "817ae4bd-9a88-4e20-aa0d-ea1dca3db794"
+	
+	replace geo_vt 		= 1074 							if uuid == "4f20fcc9-bac0-45a3-aca2-81c94dc623bd"
+	replace geo_vill 	= 2267 							if uuid == "4f20fcc9-bac0-45a3-aca2-81c94dc623bd"
+	replace cal_vt 		= "Kha Nein Hpaw" 				if uuid == "4f20fcc9-bac0-45a3-aca2-81c94dc623bd"
+	replace cal_vill 	= "Kawt Kyaik (Kha Nein Hpaw)" 	if uuid == "4f20fcc9-bac0-45a3-aca2-81c94dc623bd"
+
+
 	
 	// check var 
 	local master _N
@@ -369,7 +391,7 @@ if `r(N)' > 0  {
 
 	merge 1:1 _parent_index using `demo_migrate_rep'
 
-	// keep if _merge == 3
+	drop if _merge == 2
 
 	drop _merge 
 
@@ -417,7 +439,7 @@ if `r(N)' > 0  {
 
 	merge 1:1 _parent_index using `demo_idp_rep'
 
-	// keep if _merge == 3
+	drop if _merge == 2
 
 	drop _merge 
 
@@ -456,7 +478,7 @@ if `r(N)' > 0  {
 
 	merge 1:1 _parent_index using `demo_dspl_rpt'
 
-	// keep if _merge == 3
+	drop if _merge == 2
 
 	drop _merge 
 
@@ -506,7 +528,7 @@ if `r(N)' > 0  {
 
 	merge 1:1 _parent_index using `lh_rpt'
 
-	// keep if _merge == 3
+	drop if _merge == 2
 
 	drop _merge 
 
@@ -568,7 +590,7 @@ if `r(N)' > 0  {
 
 	merge 1:1 _parent_index using `pn_dev_rpt'
 
-	// keep if _merge == 3
+	drop if _merge == 2
 
 	drop _merge 
 

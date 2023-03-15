@@ -73,7 +73,80 @@ do "$do/00_dir_setting.do"
 	replace anc_where = .m if anc_yn != 1
 	tab anc_where, m 
 	
+	lab def ancwhere 	1"Home" 2"Government hospital" 3"Private Clinic" 4"SRHC-RHC" ///
+						5"EHO Clinic" 6"EHO clinic mobile team (within village)" ///
+						7"Routine ANC place within village" 999"Don't know/Don't remember" ///
+						888"Other" 
+	lab val anc_where ancwhere 
+	tab anc_where, m 
+	
+	
+	// anc_*_who
+	local phase anc pnc nbc 
+	local places home hosp pc rhc ehoc ehom vill othp
+	local numbers 1 2 3 4 5 6 7 8 9 10 11 888
+	
+   
+	foreach n in `numbers' {
+		
+		egen anc_who_`n' = rowtotal(anc_home_who`n' anc_hosp_who`n' anc_pc_who`n' ///
+									anc_rhc_who`n' anc_ehoc_who`n' anc_ehom_who`n' ///
+									anc_vill_who`n' anc_othp_who`n')
+									
+		replace anc_who_`n' = 1 if anc_who_`n' > 1
+		replace anc_who_`n' = .m if anc_yn != 1
+		tab anc_who_`n' , m 
+	}
 
+	
+	lab var anc_who_1 	"Specialist"
+	lab var anc_who_2 	"Doctor"
+	lab var anc_who_3 	"Nurse"
+	lab var anc_who_4 	"Health assistant"
+	lab var anc_who_5 	"Private doctor"
+	lab var anc_who_6 	"LHV"
+	lab var anc_who_7 	"Midwife" 
+	lab var anc_who_8 	"AMW"
+	lab var anc_who_9 	"Ethnic health worker"
+	lab var anc_who_10 	"Community Health Worker "
+	lab var anc_who_11 	"TBA"
+	lab var anc_who_888 "Other"
+ 
+	gen anc_who_trained 	= (	anc_who_1 == 1 | anc_who_2 == 1 | anc_who_3 == 1 | ///
+								anc_who_4 == 1 | anc_who_5 == 1 | anc_who_6 == 1 | ///
+								anc_who_7 == 1 | anc_who_8 == 1 | anc_who_9 == 1)
+	replace anc_who_trained = .m if anc_yn != 1
+	lab var anc_who_trained "ANC with trained health personnel"
+	tab anc_who_trained, m 
+	
+	&&&
+
+	// anc_*_visit
+	local places home hosp pc rhc ehoc ehom vill othp
+	local numbers 1 2 3 4 5 6 7 8 9 10 11 888
+	
+	
+	foreach x in `numbers' {
+	    
+		gen anc_who_visit_`x' 		= .m 
+		
+	}
+	
+	foreach p in `places' {
+	    
+		foreach n in `numbers' {
+		    
+			replace anc_who_visit_`n' 	= anc_`p'_visit if anc_`p'_who`n'
+			tab anc_who_visit_`n', m 
+		}
+		
+	}
+		
+	
+   
+&&&
+	
+	
 	****************************************************************************
 	** Mom Deliverty **
 	****************************************************************************
@@ -81,9 +154,35 @@ do "$do/00_dir_setting.do"
 	replace deliv_place = .m if anc_adopt != 0
 	tab deliv_place, m 
 	
+	lab def delivplace 	1"Home" 2"Government hospital" 3"Private Clinic" 4"SRHC-RHC" ///
+						5"EHO Clinic" 6"EHO clinic mobile team (within village)" ///
+						888"Other"
+	lab val deliv_place delivplace 
+	tab deliv_place, m 
+
+	// Institutional Deliveries
+	gen insti_birth 	= (deliv_place < 6)
+	replace insti_birth = .m if mi(deliv_place)
+	lab var insti_birth "Institutional Deliveries"
+	tab insti_birth, m 
+	
+	
 	// deliv_assist
 	replace deliv_assist = .m if anc_adopt != 0
 	tab deliv_assist, m 
+
+	lab def delivwho 	1"Doctor" 2"Nurse" 3"Health assistant" 4"Private doctor" 5"LHV" ///
+						6"Midwife" 7"AMW" 8"Ethnic health worker" 9"Community Health Worker" ///
+						10"TBA" 11"On my own" 12"Relatives" 888"Other" 999"Don't Know"
+	lab val deliv_assist delivwho  
+	tab deliv_assist, m 
+	
+	// Births attended by skilled health personnel
+	gen skilled_battend 		= (deliv_assist < 9 )
+	replace skilled_battend 	= .m if mi(deliv_assist)
+	lab var skilled_battend "Births attended by skilled health personnel"
+	tab skilled_battend, m 
+
 
 	****************************************************************************
 	** Mom PNC **
@@ -95,10 +194,45 @@ do "$do/00_dir_setting.do"
 	// pnc_where 
 	replace pnc_where = .m if pnc_yn != 1
 	tab pnc_where, m 
+
+	// pnc_*_who
+	local numbers 1 2 3 4 5 6 7 8 9 10 11 888
+	
+	foreach n in `numbers' {
+		
+		egen pnc_who_`n' = rowtotal(pnc_home_who`n' pnc_hosp_who`n' pnc_pc_who`n' ///
+									pnc_rhc_who`n' pnc_ehoc_who`n' pnc_ehom_who`n' ///
+									pnc_vill_who`n' pnc_othp_who`n')
+									
+		replace pnc_who_`n' = 1 if pnc_who_`n' > 1
+		replace pnc_who_`n' = .m if pnc_yn != 1
+		tab pnc_who_`n' , m 
+	}
+
+	
+	lab var pnc_who_1 	"Specialist"
+	lab var pnc_who_2 	"Doctor"
+	lab var pnc_who_3 	"Nurse"
+	lab var pnc_who_4 	"Health assistant"
+	lab var pnc_who_5 	"Private doctor"
+	lab var pnc_who_6 	"LHV"
+	lab var pnc_who_7 	"Midwife" 
+	lab var pnc_who_8 	"AMW"
+	lab var pnc_who_9 	"Ethnic health worker"
+	lab var pnc_who_10 	"Community Health Worker "
+	lab var pnc_who_11 	"TBA"
+	lab var pnc_who_888 "Other"
+ 
+	gen pnc_who_trained 	= (	pnc_who_1 == 1 | pnc_who_2 == 1 | pnc_who_3 == 1 | ///
+								pnc_who_4 == 1 | pnc_who_5 == 1 | pnc_who_6 == 1 | ///
+								pnc_who_7 == 1 | pnc_who_8 == 1 | pnc_who_9 == 1)
+	replace pnc_who_trained = .m if pnc_yn != 1
+	lab var pnc_who_trained "PNC with trained health personnel"
+	tab pnc_who_trained, m 
 	
 	
 	****************************************************************************
-	** Mom PNC **
+	** Mom NBC **
 	****************************************************************************
 	// nbc_yn 
 	replace nbc_yn = .m if anc_adopt != 0
@@ -108,7 +242,41 @@ do "$do/00_dir_setting.do"
 	replace nbc_where = .m if nbc_yn != 1
 	tab nbc_where, m 
 	
+	// nbc_*_who
+	local numbers 1 2 3 4 5 6 7 8 9 10 11 888
+	
+	foreach n in `numbers' {
+		
+		egen nbc_who_`n' = rowtotal(nbc_home_who`n' nbc_hosp_who`n' nbc_pc_who`n' ///
+									nbc_rhc_who`n' nbc_ehoc_who`n' nbc_ehom_who`n' ///
+									nbc_vill_who`n' nbc_othp_who`n')
+									
+		replace nbc_who_`n' = 1 if nbc_who_`n' > 1
+		replace nbc_who_`n' = .m if nbc_yn != 1
+		tab nbc_who_`n' , m 
+	}
 
+	
+	lab var nbc_who_1 	"Specialist"
+	lab var nbc_who_2 	"Doctor"
+	lab var nbc_who_3 	"Nurse"
+	lab var nbc_who_4 	"Health assistant"
+	lab var nbc_who_5 	"Private doctor"
+	lab var nbc_who_6 	"LHV"
+	lab var nbc_who_7 	"Midwife" 
+	lab var nbc_who_8 	"AMW"
+	lab var nbc_who_9 	"Ethnic health worker"
+	lab var nbc_who_10 	"Community Health Worker "
+	lab var nbc_who_11 	"TBA"
+	lab var nbc_who_888 "Other"
+ 
+	gen nbc_who_trained 	= (	nbc_who_1 == 1 | nbc_who_2 == 1 | nbc_who_3 == 1 | ///
+								nbc_who_4 == 1 | nbc_who_5 == 1 | nbc_who_6 == 1 | ///
+								nbc_who_7 == 1 | nbc_who_8 == 1 | nbc_who_9 == 1)
+	replace nbc_who_trained = .m if nbc_yn != 1
+	lab var nbc_who_trained "NBC with trained health personnel"
+	tab nbc_who_trained, m 
+	
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_mom_health_final.dta", replace  
 

@@ -89,6 +89,12 @@ do "$do/00_dir_setting.do"
 		
 	}
 	
+	
+	local gamw1 0.3
+	    
+	//global  pct `" 0 "0%" .3 "0.3%" 1 "1%" 2 "2%" 3 "3%" "'
+
+
 	sum child_gam 
 	local Nobs = r(N)
 	
@@ -98,7 +104,9 @@ do "$do/00_dir_setting.do"
 				bar(1, color($cpi3) lwidth(thin) lcolor(black) lalign(outside))			///
 				bar(2, color($cpi1) lwidth(thin) lcolor(black) lalign(outside))			///
 				bar(3, color($cpi2) lwidth(thin) lcolor(black) lalign(outside))			///
-				blabel(bar, format(%9.1f) size(vsmall))														///	
+				/*yline(`gamw1', lcolor($cpi3) lwidth(thin)) */							///
+				/*ylab($pct)*/						///
+				blabel(bar, format(%9.1f) size(vsmall))									///	
 				legend(off) 																	///
 				showyvars 																		///
 				yvaroptions(relabel( 															///
@@ -112,9 +120,12 @@ do "$do/00_dir_setting.do"
 						justification(left) color(black) span pos(11) size(medium)) 							///
 				plotregion(fcolor(white)) 														///
 				graphregion(fcolor(white)) ///
-				note(	"Obs: `Nobs'" "Source: $dtasource", size(vsmall) span)		
+				note(	"1st Wave: `gamw1'%" ///
+						"Obs: `Nobs'" 		///
+						"Source: $dtasource", size(vsmall) span)		
+				
 
-						* Add percentage to labels
+		* Add percentage to labels
 		local nb=`.Graph.plotregion1.barlabels.arrnels'
 		forval i=1/`nb' {
 		  di "`.Graph.plotregion1.barlabels[`i'].text[1]'"

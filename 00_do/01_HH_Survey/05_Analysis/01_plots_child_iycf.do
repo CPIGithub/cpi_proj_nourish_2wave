@@ -253,7 +253,7 @@ do "$do/00_dir_setting.do"
 		
 	graph export "$plots/22_child_min_diet.png", replace
 
-	&&&&
+	/*
 	// MINIMUM MEAL FREQUENCY 6–23 MONTHS (MMF)
 	
 	local bfnbf mmf_bf mmf_nonbf mad_bf mad_nobf
@@ -291,8 +291,65 @@ do "$do/00_dir_setting.do"
 
 	lab var mad_nobf "Minimum Acceptable Diet (non-Breastfeeding)"
 	tab mad_nobf, m 
+	*/
 
+	****************************************************************************
+	** Area Graph **
+	****************************************************************************
+	* ref: WHO indicators guideline 
+	
+	* Set sample weight
+	gen wt = 1
+	
+	* Construct or use strata variable, depending on the survey design, e.g. 
+	egen strata = group(geo_vill)
+	
+	* Set the survey design 
+	svyset geo_vill [pw=wt], strata(strata)
 
+	* Capture matrix of cell proportions
+	svy: tab ageg feeding, row
+	mat feeding = e(Prop)
+
+	* Save as a set of feeding variables in the first 3 cases
+	svmat feeding
+
+	* Drop the matrix
+	cap mat drop feeding
+
+	* Add a variable for the 3 age groups
+	gen ageg2 = _n-1 in 1/3
+	lab var ageg2 "Age group in months"
+	lab val ageg2 ageg 
+
+	* Produce cumulative proportions across the feeding groups with each age group
+	forvalues x = 2/7 {
+		 local y = `x'-1
+		 replace feeding`x' = feeding`x' + feeding`y'
+	}
+
+	* Convert to cumulative percents within each age group
+	forvalues x = 1/7 {
+		replace feeding`x' = 100 * feeding`x' / feeding7
+	}
+
+	* Plot the area graph of feeding by age group
+	twoway 	area ///
+			feeding7 feeding6 feeding5 feeding4 feeding3 feeding2 feeding1 ageg2 in 1/3, ///
+			xlabel(0 "0-1" 1 "2-3" 2 "4-5") ///
+			ylabel(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", angle(0)) ///
+			legend(position(9) cols(1) size(tiny) symxsize(3) ///
+					order( ///
+					1 "Unknown" ///
+					2 "Not breastfed" ///
+					3 "Breastfed and solid," "semi-solid, or soft foods" ///
+					4 "Breastfed and" "other milk or formula" ///
+					5 "Breastfed and" "non-milk liquids" ///
+					6 "Breastfed and" "plain water only" ///
+					7 "Exclusively" "breastfed" ///
+					))
+					
+	graph export "$plots/18_child_breastfeed_SUMMARY.png", replace
 
 
 // END HERE 

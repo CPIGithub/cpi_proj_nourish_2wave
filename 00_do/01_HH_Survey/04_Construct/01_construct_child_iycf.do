@@ -352,7 +352,99 @@ do "$do/00_dir_setting.do"
 	lab var mad_nobf "Minimum Acceptable Diet (non-Breastfeeding)"
 	tab mad_nobf, m 
 
+	****************************************************************************
+	** Area Graph **
+	****************************************************************************
+	* ref: WHO indicators guideline 
+	
+	gen anyfood = 0
+	gen nofood = 1
+	gen noliquid = 1
+	
+	local solidfood	child_rice child_potatoes child_pumpkin child_beans child_leafyveg ///
+					child_mango child_fruit child_organ child_beef child_fish child_insects ///
+					child_eggs child_yogurt child_cheese child_fat child_plam child_sweets ///
+					child_condiments
+	
+	foreach q in `solidfood' {
+	    
+		if ("`q'" != "q7s") { // exclude q7s - any solid, semi-solid or soft food
+		replace anyfood = 1 if `q' == 1
+		replace nofood = 0 if `q' != 0
+	 }
+	}
+	
+	tab1 anyfood nofood, m 
+	
+	local liquidfood 	child_bms child_milk child_mproduct child_juice child_tea ///
+						child_energyd child_broth child_porridge child_liquid
+	foreach q in `liquidfood' {
+	    
+		replace noliquid = 0 if `q' != 0
 
+	}
+	
+	tab noliquid, m 
+	
+	* Initialize feeding variable for the missing category
+	gen feeding = 7
+	
+	* Not breastfed
+	replace feeding = 6 if child_bfyest != 1
+	
+	* Breastmilk and solid, semi-solid, and soft foods
+	replace feeding = 5 if child_bfyest == 1 & anyfood
+
+	* Breastmilk and other animal milk and/or formula
+	replace feeding = 4 if 	child_bfyest == 1 & nofood & ///
+							(child_bms == 1 | child_milk == 1 | child_mproduct == 1)
+	 
+	* Breastmilk and non-milk liquids 
+	replace feeding = 3 if 	child_bfyest == 1 & nofood & ///
+							(child_bms == 0 & child_milk == 0 & child_mproduct == 0 ) & ///
+							(child_juice == 1 | child_tea == 1 | child_energyd == 1 | ///
+							child_broth == 1 | child_porridge == 1 | child_liquid == 1)
+	
+	* Breastmilk and plain water
+	replace feeding = 2 if child_bfyest == 1 & child_water == 1 & nofood & noliquid 
+	
+	* Breastmilk only (exclusively breastfed)
+	replace feeding = 1 if child_bfyest == 1 & child_water == 0 & nofood & noliquid 
+	
+	lab var feeding "Feeding categories"
+	lab def feeding ///
+			1 "Exclusively breastfed" ///
+			2 "Breastfed and plain water only" ///
+			3 "Breastfed and non-milk liquids" ///
+			4 "Breastfed and other milk or formula" ///
+			5 "Breastfed and solid, semi-solid, or soft foods" ///
+			6 "Not breastfed" ///
+			7 "Unknown"
+	lab val feeding feeding
+	tab feeding, m 
+	
+	* Age in 2-month groups
+	/*
+	gen ageg = int(agedays/(2*30.4375)) // average of 30.4375 days per month
+	lab var ageg "age in 2-month groups"
+	lab def ageg 0 "0-1" 1 "2-3" 2 "4-5"
+	lab val ageg ageg
+	*/ 
+	
+	gen ageg 		= .m 
+	replace ageg	= 0 if calc_age_months < 2 
+	replace ageg 	= 1 if calc_age_months >= 2 & calc_age_months < 4 
+	replace ageg	= 2 if calc_age_months >= 4 & calc_age_months < 6
+	lab def ageg 0 "0-1" 1 "2-3" 2 "4-5"
+	lab val ageg ageg
+	tab ageg, m 
+	
+	tab calc_age_months, m 
+	
+	* Tabulate feeding categories by age group 
+	tab ageg feeding, m row
+	
+	
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_child_iycf_final.dta", replace  
 

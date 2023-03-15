@@ -190,7 +190,7 @@ forvalue x = 1/`r(N_worksheet)' {
 		keep if org_name == "YSDA"
 	
 		* add village name and sample size info
-		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize', keepusing(`mainvar' *_old /*cluster_cat cluster_cat_str*/)
+		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize', keepusing(`mainvar' *_old num_cluster /*cluster_cat cluster_cat_str*/)
 		
 		/*
 			unmatched YSDA - one obs 
@@ -210,7 +210,7 @@ forvalue x = 1/`r(N_worksheet)' {
 	
 		keep if org_name != "YSDA" | (org_name == "YSDA" & geo_vt == 1070 & geo_vill == 2251)
 		
-		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize_new', keepusing(`mainvar' cluster_cat cluster_cat_str)
+		merge m:1 geo_town geo_vt geo_vill using `dfsamplesize_new', keepusing(`mainvar' num_cluster cluster_cat cluster_cat_str)
 
 		/*
 		unmatched from one YSDA 
@@ -255,6 +255,23 @@ do "$hhimport/PN_HH_Survey_FINAL_labeling.do"
 	drop if uuid == "ddf3acef-2914-41d8-bc13-59e499119963"
 	drop if uuid == "de03fa20-b630-4af4-a946-d7119d8d27cb"
 
+	* duplicate by pilot and actual data collection 
+	// br if geo_eho_vill_name == "Kha Yit Kyauk Tan"
+	drop if uuid == "09124184-a490-4425-850e-30f101f69300"
+	drop if uuid == "710ec8c7-a0cb-4fde-b1a0-fcdbdc91e768"
+	drop if uuid == "3a859010-6fa4-4506-8b07-bfe74415847a"
+	drop if uuid == "27246f45-d6b1-4c29-9a0a-80df17bc1ade"
+	drop if uuid == "974445b9-76c7-42bd-b4e6-1d719e25d533"
+	drop if uuid == "65b7222f-53a1-45a9-bb5e-b117fa26e4d9"
+	drop if uuid == "a31b2736-4d7e-4492-a07d-1352c6e98da6"
+	drop if uuid == "577c1720-2edd-43ac-a161-01e42771f584"
+	drop if uuid == "9fb81375-b3d6-4e7a-8630-1ac15cb85c63"
+	drop if uuid == "7db08448-67df-43d1-bb61-b51d7b294327"
+	drop if uuid == "253684db-9c8a-4617-9ab2-f168732579e9"
+	drop if uuid == "eaa6df59-29b1-4b39-8e9a-89da2a0b6e9b"
+
+	
+	
 
 	// duplicate by geo-person
 	duplicates tag geo_town geo_vt geo_vill respd_name respd_age respd_status, gen(dup_resp)
@@ -269,10 +286,15 @@ do "$hhimport/PN_HH_Survey_FINAL_labeling.do"
 	
 	drop dup_resp dup_person
 		
-
 		
+	* update the vill_samplesize stratum
+	replace vill_samplesize = 10 if stratum == 1 & vill_samplesize == 0
+	
+	
 	* save as long dataset hh level only 
 	save "$dta/PN_HH_Survey_HH_Level.dta", replace 
+	
+	export excel using "$dta/PN_HH_Survey_HH_Level.xlsx", sheet("respondent_info") firstrow(variables) replace 
 
 ** add hh roster 
 preserve
