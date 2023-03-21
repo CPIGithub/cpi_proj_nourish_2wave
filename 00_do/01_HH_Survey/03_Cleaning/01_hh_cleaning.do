@@ -25,9 +25,9 @@ do "$do/00_dir_setting.do"
 	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
 	local mainresp 	cal_respid respd_who respd_name respd_sex respd_age respd_status
 	
-	// keep if org_name == "YSDA"
+	* keep consent yes 
+	keep if will_participate == 1
 	
-
 	* Save as hh level dataset * 
 	save "$dta/PN_HH_Survey_HH_Level_raw.dta", replace  
 	

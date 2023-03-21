@@ -194,7 +194,7 @@ use `stratum1', clear
 append using `stratum2'
 
 * keep only required variables
-keep township_name townshippcode fieldnamevillagetracteho villagenameeho stratum num_cluster vill_samplesize sample_check organization cluster_cat
+//keep township_name townshippcode fieldnamevillagetracteho villagenameeho stratum num_cluster vill_samplesize sample_check organization cluster_cat
 replace stratum = 2 if stratum == 0
 
 * generate pseudo code

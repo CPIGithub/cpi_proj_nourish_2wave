@@ -206,6 +206,15 @@ forvalue x = 1/`r(N_worksheet)' {
 	drop if uuid == "c2665789-39b0-4492-a4f8-6308e8478784"
 	drop if uuid == "b779bb0c-7388-40dd-9ebb-7274a4555921"
 
+	* training testing KEHOC and KDHW triaing 
+	drop if uuid == "1686f792-69be-4de1-a4a3-ed36561f581f"
+	drop if uuid == "5aa096e8-9256-4bb2-b8d2-ab1915fc1bec"
+	drop if uuid == "acd5d96d-2fc2-4bfd-ac7e-b983d0210adf"
+	drop if uuid == "da460c5b-cca5-4fd3-9826-4c062b163d00"
+	drop if uuid == "7217eba0-2c2e-4727-b607-3060e16a5666"
+	drop if uuid == "e9d51e62-7468-4f3f-8151-b3251bde648d"
+	drop if uuid == "e957b1b2-2fd5-459f-80b8-81ae0b07bdc3"
+	
 	* correct geo info
 	replace geo_vt 		= 1027 				if uuid == "817ae4bd-9a88-4e20-aa0d-ea1dca3db794"
 	replace geo_vill 	= 2120 				if uuid == "817ae4bd-9a88-4e20-aa0d-ea1dca3db794"

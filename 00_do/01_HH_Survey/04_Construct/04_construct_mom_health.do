@@ -67,6 +67,7 @@ do "$do/00_dir_setting.do"
 	
 	// anc_yn 
 	replace anc_yn = .m if anc_adopt != 0
+	replace anc_yn = .d if anc_yn == 999
 	tab anc_yn, m 
 	
 	// anc_where 
@@ -84,6 +85,13 @@ do "$do/00_dir_setting.do"
 	// anc_*_who
 	local phase anc pnc nbc 
 	local places home hosp pc rhc ehoc ehom vill othp
+	
+	foreach p in `places'{
+	    
+		tab anc_`p'_who, m 
+	}
+	
+	
 	local numbers 1 2 3 4 5 6 7 8 9 10 11 888
 	
    
@@ -93,12 +101,11 @@ do "$do/00_dir_setting.do"
 									anc_rhc_who`n' anc_ehoc_who`n' anc_ehom_who`n' ///
 									anc_vill_who`n' anc_othp_who`n')
 									
-		replace anc_who_`n' = 1 if anc_who_`n' > 1
+		//replace anc_who_`n' = 1 if anc_who_`n' > 1
 		replace anc_who_`n' = .m if anc_yn != 1
 		tab anc_who_`n' , m 
 	}
 
-	
 	lab var anc_who_1 	"Specialist"
 	lab var anc_who_2 	"Doctor"
 	lab var anc_who_3 	"Nurse"
@@ -119,10 +126,60 @@ do "$do/00_dir_setting.do"
 	lab var anc_who_trained "ANC with trained health personnel"
 	tab anc_who_trained, m 
 	
-	&&&
+	/*
+	rename anc_pc_who anc_who_pc
+	split anc_who_pc, p(" ")
+	
+	destring anc_who_pc*, replace 
+	
+	local numbers 1 2 3 4 5 6 7 8 9 10 11 888
+
+	foreach x in `numbers' {
+	    
+		gen anc_who_pc_`x' = 0 
+		replace anc_who_pc_`x' = .m if mi(anc_who_pc)
+		
+	}
+	
+	
+	foreach x in `numbers' {
+	   		
+		replace anc_who_pc_`x' = 1 if anc_who_pc1 ==  `x'
+		replace anc_who_pc_`x' = 1 if anc_who_pc2 ==  `x'
+		replace anc_who_pc_`x' = 1 if anc_who_pc3 ==  `x'
+		
+		tab1 anc_pc_who`x' anc_who_pc_`x', m 
+												
+	}
+	
+	*/
+	
 
 	// anc_*_visit
 	local places home hosp pc rhc ehoc ehom vill othp
+	
+	foreach p in `places' {
+	    
+		replace anc_`p'_visit = .m if anc_`p'_visit == 444
+		tab anc_`p'_visit, m 
+		
+	}
+	
+	egen anc_who_tot = rowtotal(	anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 ///
+									anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 ///
+									anc_who_11 anc_who_888)
+	replace anc_who_tot = .m if anc_yn != 1
+	tab anc_who_tot, m 
+	
+	egen anc_all_visit_tot = rowtotal(	anc_home_visit anc_hosp_visit anc_pc_visit ///
+										anc_rhc_visit anc_ehoc_visit anc_ehom_visit ///
+										anc_vill_visit anc_othp_visit)
+	replace anc_all_visit_tot = round(anc_all_visit_tot / anc_who_tot, 1)
+	replace anc_all_visit_tot = .m if anc_yn != 1
+	
+	tab anc_all_visit_tot, m 
+	
+	
 	local numbers 1 2 3 4 5 6 7 8 9 10 11 888
 	
 	
@@ -132,19 +189,36 @@ do "$do/00_dir_setting.do"
 		
 	}
 	
-	foreach p in `places' {
 	    
-		foreach n in `numbers' {
-		    
-			replace anc_who_visit_`n' 	= anc_`p'_visit if anc_`p'_who`n'
-			tab anc_who_visit_`n', m 
-		}
+	foreach n in `numbers' {
 		
+		replace anc_who_visit_`n' 	= anc_all_visit_tot if anc_who_`n' == 1
+		tab anc_who_visit_`n', m 
 	}
 		
+
+	lab var anc_who_visit_1 	"Specialist"
+	lab var anc_who_visit_2 	"Doctor"
+	lab var anc_who_visit_3 	"Nurse"
+	lab var anc_who_visit_4 	"Health assistant"
+	lab var anc_who_visit_5 	"Private doctor"
+	lab var anc_who_visit_6 	"LHV"
+	lab var anc_who_visit_7 	"Midwife" 
+	lab var anc_who_visit_8 	"AMW"
+	lab var anc_who_visit_9 	"Ethnic health worker"
+	lab var anc_who_visit_10 	"Community Health Worker "
+	lab var anc_who_visit_11 	"TBA"
+	lab var anc_who_visit_888 	"Other"
 	
-   
-&&&
+	egen anc_visit_trained =  rowtotal(	anc_who_visit_1 anc_who_visit_2 anc_who_visit_3 ///
+										anc_who_visit_4 anc_who_visit_5 anc_who_visit_6 ///
+										anc_who_visit_7 anc_who_visit_8 anc_who_visit_9)
+	replace anc_visit_trained = .m if mi(anc_who_trained)
+	tab anc_visit_trained, m 
+	
+	gen anc_visit_trained_4times = (anc_visit_trained >= 4 & !mi(anc_visit_trained))
+	replace anc_visit_trained_4times = .m if mi(anc_visit_trained)
+	tab anc_visit_trained_4times, m 
 	
 	
 	****************************************************************************
@@ -236,7 +310,13 @@ do "$do/00_dir_setting.do"
 	****************************************************************************
 	// nbc_yn 
 	replace nbc_yn = .m if anc_adopt != 0
+	replace nbc_yn = .d if nbc_yn == 999
 	tab nbc_yn, m 
+	
+	// nbc_2days_yn
+	replace nbc_2days_yn = .m if anc_adopt != 0
+	replace nbc_2days_yn = .d if nbc_2days_yn == 999
+	tab nbc_2days_yn, m 
 	
 	// nbc_where
 	replace nbc_where = .m if nbc_yn != 1

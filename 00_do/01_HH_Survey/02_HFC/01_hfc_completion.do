@@ -49,7 +49,7 @@ replace  org_st_target_N = (20 * 12) 	if stratum == 2 & org_name == "KEHOC"
 replace  org_st_target_N = (3 * 12) 	if stratum == 2 & org_name == "KDHW"
 
 replace  org_st_target_N = (14 * 10) 	if stratum == 1 & org_name == "YSDA"
-replace  org_st_target_N = (32 * 10) 	if stratum == 1 & org_name == "KEHOC"
+replace  org_st_target_N = (13 * 10) 	if stratum == 1 & org_name == "KEHOC"
 replace  org_st_target_N = (7 * 10) 	if stratum == 1 & org_name == "KDHW"
 
 bysort org_team stratum: egen tot_svy_per_org_st = total(will_participate)
