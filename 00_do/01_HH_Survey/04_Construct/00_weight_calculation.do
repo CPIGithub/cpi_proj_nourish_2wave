@@ -111,6 +111,7 @@ tab cluster_prob, m
 
 * step (4): HH propability (at village level): sample HH (per village) /total HH (per village)
 gen hh_prob = tot_consent_svy/household
+replace hh_prob = 1 if stratum == 1
 
 tab hh_prob
 
@@ -121,9 +122,28 @@ tab weight_final
 
 order population tot_consent_svy stratum_pop stratum_sample_pop cluster_prob weight_final, after (geo_vill)
 
+
+keep if !mi(tot_consent_svy)
+
+* Stratum Number * 
+gen stratum_num = .m 
+replace stratum_num = 1 if org_name == "YSDA" & stratum == 1
+replace stratum_num = 2 if org_name == "YSDA" & stratum == 2
+replace stratum_num = 3 if org_name == "KEHOC" & stratum == 1
+replace stratum_num = 4 if org_name == "KEHOC" & stratum == 2
+replace stratum_num = 5 if org_name == "KDHW" & stratum == 1
+replace stratum_num = 6 if org_name == "KDHW" & stratum == 2
+
+lab def stratum_num 1"YSDA: Stratum 1" 2"YSDA: Stratum 2" 3"KEHOC: Stratum 1" ///
+					4"KEHOC: Stratum 2" 5"KDHW: Stratum 1" 6"KDHW: Stratum 2"
+lab val stratum_num stratum_num
+tab stratum_num, m 
+
+
 * export as excel file 
 export excel using "$result/pn_2_survey_weight.xlsx", sheet("weight") firstrow(variable)  nolabel replace 
 
+save "$dta/pnourish_hh_weight_final.dta", replace  
 
 		
 // END HERE 

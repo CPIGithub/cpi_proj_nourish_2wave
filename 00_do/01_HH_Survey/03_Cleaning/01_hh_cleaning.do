@@ -28,6 +28,45 @@ do "$do/00_dir_setting.do"
 	* keep consent yes 
 	keep if will_participate == 1
 	
+	* respd_who 
+	lab def respd_who 1"Mother (Herself)" 0"Miain Caregiver"
+	lab val respd_who respd_who
+	tab respd_who, m 
+	
+	** HH Roster **
+	preserve 
+
+	use "$dta/grp_hh.dta", clear
+	
+	do "$hhimport/grp_hh_labeling.do"
+
+	drop 	_index _parent_table_name _submission__id _submission__uuid ///
+			_submission__submission_time _submission__validation_status ///
+			_submission__notes _submission__status _submission__submitted_by ///
+			_submission__tags
+			
+	order _parent_index
+
+	destring test calc_age_months, replace
+
+	keep	_parent_index test hh_mem_head hh_mem_marital hh_mem_highedu hh_mem_occup
+	
+	rename test roster_index
+	
+	keep if roster_index == 1
+
+	tempfile grp_hh
+	save `grp_hh', replace 
+
+	restore
+
+	merge 1:1 _parent_index using `grp_hh'
+	
+	keep if _merge == 3
+	
+	drop _merge 
+
+	
 	* Save as hh level dataset * 
 	save "$dta/PN_HH_Survey_HH_Level_raw.dta", replace  
 	

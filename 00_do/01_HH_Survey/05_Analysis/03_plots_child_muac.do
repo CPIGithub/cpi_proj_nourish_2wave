@@ -38,7 +38,7 @@ do "$do/00_dir_setting.do"
 	* ----
 	twoway  (kdensity child_age_month , 	color($cpi2)), ///
 			xline(`agemean', 	lcolor(maroon) 		lpattern(dash)) ///
-			xtitle(Birth-weight (lb)) ///
+			xtitle(Age (months)) ///
 			ytitle(Density) ///
 			title("Distribution of Chil's Age in Month'" , 		///
 					justification(left) color(black) span pos(11) size(medium)) 							///
@@ -50,7 +50,21 @@ do "$do/00_dir_setting.do"
 
 	graph export "$plots/11_child_age_distribution.png", replace
 	
+	
+	graph bar 	(count), over(child_age_month) ///
+				nofill 																			///
+				bargap(20) 	///
+				legend(off) 																	///
+				ytitle("Number of U5 children [0-59 months]", size(small) height(-6))								///
+				title("Distribution of Child's age (months)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"Obs: `Nobs'" 		///
+						"Source: $dtasource", size(vsmall) span)
 
+
+				
 	****************************************************************************
 	** MUAC Indicators **
 	****************************************************************************

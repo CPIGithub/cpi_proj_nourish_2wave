@@ -17,7 +17,7 @@ do "$do/00_dir_setting.do"
 
 
 	****************************************************************************
-	* Child IYCF Data *
+	* Child Health Data *
 	****************************************************************************
 	use "$dta/pnourish_child_health_raw.dta", clear 
 	
@@ -274,6 +274,20 @@ do "$do/00_dir_setting.do"
 	}
 	
 	
+	* Add Weight variable *
+	merge m:1 geo_vill using "$dta/pnourish_hh_weight_final.dta", keepusing(stratum_num weight_final)
+	
+	keep if _merge == 3
+	
+	drop _merge 
+	
+	
+	* Add Wealth Quantile variable **
+	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", keepusing(NationalQuintile NationalScore)
+	
+	keep if _merge == 3
+	
+	drop _merge 
 	
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_child_health_final.dta", replace  

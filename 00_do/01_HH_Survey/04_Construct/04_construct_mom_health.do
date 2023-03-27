@@ -357,6 +357,22 @@ do "$do/00_dir_setting.do"
 	lab var nbc_who_trained "NBC with trained health personnel"
 	tab nbc_who_trained, m 
 	
+	
+	* Add Weight variable *
+	merge m:1 geo_vill using "$dta/pnourish_hh_weight_final.dta", keepusing(stratum_num weight_final)
+	
+	keep if _merge == 3
+	
+	drop _merge 
+	
+	
+	* Add Wealth Quantile variable **
+	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", keepusing(NationalQuintile NationalScore)
+	
+	keep if _merge == 3
+	
+	drop _merge 
+	
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_mom_health_final.dta", replace  
 

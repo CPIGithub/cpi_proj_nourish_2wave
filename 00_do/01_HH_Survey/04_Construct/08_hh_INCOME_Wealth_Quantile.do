@@ -219,6 +219,13 @@ do "$do/00_dir_setting.do"
 	lab val NationalQuintile hequantile
 	tab NationalQuintile, m 
 
+	* Add Weight variable *
+	merge m:1 geo_vill using "$dta/pnourish_hh_weight_final.dta", keepusing(stratum_num weight_final)
+	
+	keep if _merge == 3
+	
+	drop _merge 
+	
 	
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_INCOME_WEALTH_final.dta", replace  

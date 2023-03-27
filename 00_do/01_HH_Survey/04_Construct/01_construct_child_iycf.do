@@ -252,6 +252,12 @@ do "$do/00_dir_setting.do"
 	
 	gen food_g8 = child_fruit
 	
+	foreach var of varlist food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8 {
+	    
+		replace `var' = .m if `var' == 999
+		tab `var', m 
+	}
+	
 	egen dietary_tot = rowtotal(food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8), missing
 	replace dietary_tot = .m if mi(food_g1) & mi(food_g2) & mi(food_g3) & ///
 								mi(food_g4) & mi(food_g5) & mi(food_g6) & ///
@@ -444,6 +450,21 @@ do "$do/00_dir_setting.do"
 	* Tabulate feeding categories by age group 
 	tab ageg feeding, m row
 	
+	
+	* Add Weight variable *
+	merge m:1 geo_vill using "$dta/pnourish_hh_weight_final.dta", keepusing(stratum_num weight_final)
+	
+	keep if _merge == 3
+	
+	drop _merge 
+	
+	
+	* Add Wealth Quantile variable **
+	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", keepusing(NationalQuintile NationalScore)
+	
+	keep if _merge == 3
+	
+	drop _merge 
 	
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_child_iycf_final.dta", replace  
