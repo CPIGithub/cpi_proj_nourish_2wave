@@ -152,18 +152,32 @@ do "$do/00_dir_setting.do"
 		
 	}
 	
-	
+	// 5 critical times 
 	/*
-	soap_tiolet
-	soap_clean_baby
-	soap_child_faeces
+	ref: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9903007/#:~:text=Five%20moments%20are%20considered%20critical,food%2C%20and%20before%20eating%20food.
 	
-	soap_before_eat
-	soap_before_cook
-	soap_feed_child
-
-	soap_handle_child
+	Five moments are considered critical times to wash hands; 
+		after defecation, 
+		after handling child/adult feces or cleaning child's bottom, 
+		after cleaning the environment, 
+		before preparing food, and 
+		before eating food.
 	*/
+	
+	
+	tab1 soap_tiolet soap_clean_baby soap_child_faeces ///
+							soap_before_eat soap_before_cook soap_feed_child ///
+							soap_handle_child
+	
+	gen hw_critical_soap 	= (	soap_tiolet == 4 & soap_child_faeces == 4 & ///
+								soap_before_eat == 4 & soap_before_cook == 4 & ///
+								soap_feed_child == 4)
+	replace hw_critical_soap = .m if 	mi(soap_tiolet) | mi(soap_child_faeces) | ///
+										mi(soap_before_eat) | mi(soap_before_cook) | ///
+										mi(soap_feed_child)
+	tab hw_critical_soap, m 
+	lab var hw_critical_soap "Handwashing with soap always at 5 critical times"
+
 
 	** Water Treatment **
 	local seasons sum rain winter 
@@ -209,7 +223,8 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Wealth Quantile variable **
-	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", keepusing(NationalQuintile NationalScore)
+	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
+							keepusing(NationalQuintile NationalScore hhitems_phone prgexpo_pn)
 	
 	keep if _merge == 3
 	

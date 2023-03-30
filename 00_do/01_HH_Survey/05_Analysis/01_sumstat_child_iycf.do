@@ -118,11 +118,17 @@ do "$do/00_dir_setting.do"
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
 	* breastfeeding *
-	svy: mean eibf ebf2d ebf pre_bf mixmf bof cbf
+	svy: mean eibf 
+	svy: mean ebf2d 
+	svy: mean ebf 
+	svy: mean pre_bf 
+	svy: mean mixmf 
+	svy: mean bof 
+	svy: mean cbf
 
 	// eibf 
-	svy: tab stratum_num child_low_bwt, row 
-	svy: tab NationalQuintile child_low_bwt, row	
+	svy: tab stratum_num eibf, row 
+	svy: tab NationalQuintile eibf, row	
 	
 	// ebf2d 
 	svy: tab stratum_num child_low_bwt, row 
@@ -150,7 +156,8 @@ do "$do/00_dir_setting.do"
 
 	
 	* complementary feeding * 
-	svy: mean isssf food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8
+	svy: mean isssf 
+	svy: mean food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8
 	
 	// isssf
 	svy: tab stratum_num child_low_bwt, row 
@@ -190,7 +197,7 @@ do "$do/00_dir_setting.do"
 
 
 	* minimum dietary *
-	svy: mean dietary_tot madd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmmff mad mad_bf mad_nobf 
+	svy: mean dietary_tot mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf 
 	
 	// dietary_tot 
 	svy: mean dietary_tot, over(stratum_num)

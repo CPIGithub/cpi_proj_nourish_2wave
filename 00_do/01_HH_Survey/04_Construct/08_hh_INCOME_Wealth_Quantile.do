@@ -218,9 +218,19 @@ do "$do/00_dir_setting.do"
 	lab def hequantile 1"Poorest" 2"Poor" 3"Medium" 4"Wealthy" 5"Wealthiest"
 	lab val NationalQuintile hequantile
 	tab NationalQuintile, m 
+	
+	
+	** PHONE ** 
+	tab hhitems_phone, m 
+	
+	** PROJECT NOURISH COVERAGE **
+	replace prgexpo_pn = 0 if prgexpo_pn == 999
+	tab prgexpo_pn, m 
+	
 
 	* Add Weight variable *
-	merge m:1 geo_vill using "$dta/pnourish_hh_weight_final.dta", keepusing(stratum_num weight_final)
+	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
+						keepusing(NationalQuintile NationalScore hhitems_phone prgexpo_pn)
 	
 	keep if _merge == 3
 	
