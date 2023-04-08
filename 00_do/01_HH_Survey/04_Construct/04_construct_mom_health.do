@@ -235,7 +235,7 @@ do "$do/00_dir_setting.do"
 	tab deliv_place, m 
 
 	// Institutional Deliveries
-	gen insti_birth 	= (deliv_place < 6)
+	gen insti_birth 	= (deliv_place > 1 & deliv_place < 6)
 	replace insti_birth = .m if mi(deliv_place)
 	lab var insti_birth "Institutional Deliveries"
 	tab insti_birth, m 
@@ -368,7 +368,7 @@ do "$do/00_dir_setting.do"
 	
 	* Add Wealth Quantile variable **
 	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
-							keepusing(NationalQuintile NationalScore hhitems_phone prgexpo_pn)
+							keepusing(NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
 	keep if _merge == 3
 	

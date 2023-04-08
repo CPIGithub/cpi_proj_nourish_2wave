@@ -58,6 +58,15 @@ do "$do/00_dir_setting.do"
 	}
 	
 	
+	/*
+	* exposure to education part
+	gen edu_exposure 		= (prgexpo_join5 == 1 | prgexpo_join6 == 1 | prgexp_iec0 == 0)
+	replace edu_exposure 	= .m if mi(prgexpo_join5) & mi(prgexpo_join6) & mi(prgexp_iec0)
+	lab var edu_exposure "Exposure with PN SBCC related activities"
+	tab edu_exposure, m 
+	*/
+	
+
 	* Add Weight variable *
 	merge m:1 geo_vill using "$dta/pnourish_hh_weight_final.dta", keepusing(stratum_num weight_final)
 	
@@ -68,7 +77,7 @@ do "$do/00_dir_setting.do"
 	
 	* Add Wealth Quantile variable **
 	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
-							keepusing(NationalQuintile NationalScore hhitems_phone prgexpo_pn)
+							keepusing(NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
 	keep if _merge == 3
 	

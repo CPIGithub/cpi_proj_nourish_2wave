@@ -18,7 +18,7 @@ do "$do/00_dir_setting.do"
 	****************************************************************************
 	* Respondent Characteristics *
 	****************************************************************************
-/*
+
 	use "$dta/pnourish_INCOME_WEALTH_final.dta", clear   
 
 	* svy weight apply 
@@ -41,7 +41,10 @@ do "$do/00_dir_setting.do"
 	svy: tab hh_mem_head, ci 
 	svy: tab hh_mem_highedu, ci 
 	svy: tab hh_mem_occup, ci 
-	
+		
+	svy: tab hhitems_phone, ci 
+	svy: tab prgexpo_pn, ci 
+	svy: tab edu_exposure, ci 
 	
 	** HH Characteristics **
 	
@@ -82,6 +85,29 @@ do "$do/00_dir_setting.do"
 	svy: mean d3_inc_lmth, over(NationalQuintile)
 	svy: reg d3_inc_lmth i.NationalQuintile
 
+	// phone 
+	svy: tab stratum_num hhitems_phone, row 
+	svy: tab NationalQuintile hhitems_phone, row 
+
+	// program exposure 
+	svy: tab stratum_num prgexpo_pn, row 
+	svy: tab NationalQuintile prgexpo_pn, row 
+
+	// sbcc exposure 
+	svy: tab stratum_num edu_exposure, row 
+	svy: tab NationalQuintile edu_exposure, row 
+
+	
+	// income 			
+	svy: reg d3_inc_lmth i.stratum_num
+	mat list e(b)
+	test 1b.stratum_num = 2.stratum_num = 3.stratum_num = 4.stratum_num = 5.stratum_num
+			
+	svy: reg d3_inc_lmth i.NationalQuintile
+	mat list e(b)
+	test 1b.NationalQuintile = 2.NationalQuintile = 3.NationalQuintile = 4.NationalQuintile = 5.NationalQuintile
+		
+
 
 	****************************************************************************
 	* Child MUAC Module *
@@ -107,6 +133,14 @@ do "$do/00_dir_setting.do"
 	
 	svy: mean u5_muac, over(NationalQuintile)
 	svy: reg u5_muac i.NationalQuintile
+	
+	
+	svy: tab hhitems_phone child_gam, row 
+	svy: tab prgexpo_pn child_gam, row 
+	svy: tab edu_exposure child_gam, row 
+	svy: tab prgexpo_join8 child_gam, row 
+	
+
 
 	****************************************************************************
 	* Child IYCF Data *
@@ -153,6 +187,20 @@ do "$do/00_dir_setting.do"
 	// cbf
 	svy: tab stratum_num cbf, row 
 	svy: tab NationalQuintile cbf, row 
+
+	
+	svy: tab hhitems_phone eibf, row 
+	svy: tab prgexpo_pn eibf, row 
+	svy: tab edu_exposure eibf, row 
+	
+	svy: tab hhitems_phone ebf, row 
+	svy: tab prgexpo_pn ebf, row 
+	svy: tab edu_exposure ebf, row 
+	
+	svy: tab hhitems_phone cbf, row 
+	svy: tab prgexpo_pn cbf, row 
+	svy: tab edu_exposure cbf, row 
+	
 
 	
 	* complementary feeding * 
@@ -264,6 +312,30 @@ do "$do/00_dir_setting.do"
 	svy: tab NationalQuintile mad_nobf, row
 
 	
+	// dietary_tot 
+	svy: mean dietary_tot, over(hhitems_phone)
+	test _b[c.dietary_tot@0bn.hhitems_phone] = _b[c.dietary_tot@1bn.hhitems_phone]
+
+	svy: mean dietary_tot, over(prgexpo_pn)
+	test _b[c.dietary_tot@0bn.prgexpo_pn] = _b[c.dietary_tot@1bn.prgexpo_pn]
+
+	svy: mean dietary_tot, over(edu_exposure)
+	test _b[c.dietary_tot@0bn.edu_exposure] = _b[c.dietary_tot@1bn.edu_exposure]
+
+	
+	svy: tab hhitems_phone mdd, row 
+	svy: tab prgexpo_pn mdd, row 
+	svy: tab edu_exposure mdd, row 
+	
+	svy: tab hhitems_phone mmf, row 
+	svy: tab prgexpo_pn mmf, row 
+	svy: tab edu_exposure mmf, row 
+
+	svy: tab hhitems_phone mad, row 
+	svy: tab prgexpo_pn mad, row 
+	svy: tab edu_exposure mad, row 
+
+	
 	****************************************************************************
 	* Child Health Data *
 	****************************************************************************
@@ -311,7 +383,26 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num child_low_bwt, row 
 	svy: tab NationalQuintile child_low_bwt, row 
 	
+	
+	svy: tab hhitems_phone child_vita, row 
+	svy: tab prgexpo_pn child_vita, row 
+	svy: tab edu_exposure child_vita, row 
+	
+	svy: tab hhitems_phone child_deworm, row 
+	svy: tab prgexpo_pn child_deworm, row 
+	svy: tab edu_exposure child_deworm, row 
+	
+	svy: tab hhitems_phone child_vaccin, row 
+	svy: tab prgexpo_pn child_vaccin, row 
+	svy: tab edu_exposure child_vaccin, row 
 
+	svy: tab hhitems_phone child_vaccin_card, row 
+	svy: tab prgexpo_pn child_vaccin_card, row 
+	svy: tab edu_exposure child_vaccin_card, row 
+	
+	
+	
+	
 	* illness *
 	
 	svy: mean child_ill0 
@@ -339,6 +430,11 @@ do "$do/00_dir_setting.do"
 	// child_ill888
 	svy: tab stratum_num child_ill888, row 
 	svy: tab NationalQuintile child_ill888, row 
+	
+	
+	
+
+
 	
 	***** DIARRHEA *****
 	// child_diarrh_treat
@@ -372,6 +468,7 @@ do "$do/00_dir_setting.do"
 	
 	// child_diarrh_cope
 	svy: mean child_diarrh_cope1 child_diarrh_cope2 child_diarrh_cope3 child_diarrh_cope4 child_diarrh_cope5 child_diarrh_cope6 child_diarrh_cope7 child_diarrh_cope8 child_diarrh_cope9 child_diarrh_cope10 child_diarrh_cope11 child_diarrh_cope12 child_diarrh_cope13 child_diarrh_cope14 child_diarrh_cope888 child_diarrh_cope666
+	
 	
 	
 	***** COUGH *****
@@ -440,6 +537,20 @@ do "$do/00_dir_setting.do"
 	svy: mean child_fever_cope1 child_fever_cope2 child_fever_cope3 child_fever_cope4 child_fever_cope5 child_fever_cope6 child_fever_cope7 child_fever_cope8 child_fever_cope9 child_fever_cope10 child_fever_cope11 child_fever_cope12 child_fever_cope13 child_fever_cope14 child_fever_cope888 child_fever_cope666
 	
 	
+	svy: tab hhitems_phone child_diarrh_trained, row 
+	svy: tab prgexpo_pn child_diarrh_trained, row 
+	svy: tab edu_exposure child_diarrh_trained, row 
+
+	svy: tab hhitems_phone child_cough_trained, row 
+	svy: tab prgexpo_pn child_cough_trained, row 
+	svy: tab edu_exposure child_cough_trained, row 
+
+	svy: tab hhitems_phone child_fever_trained, row 
+	svy: tab prgexpo_pn child_fever_trained, row 
+	svy: tab edu_exposure child_fever_trained, row 
+
+
+	
 	****************************************************************************
 	** Mom Dietary Diversity **
 	****************************************************************************
@@ -507,7 +618,27 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num mddw_yes, row 
 	svy: tab NationalQuintile mddw_yes, row
 	
-	*/
+	svy: tab hhitems_phone mddw_yes, row 
+	svy: tab prgexpo_pn mddw_yes, row 	
+	
+	svy: reg mddw_score hhitems_phone
+	svy: reg mddw_score prgexpo_pn
+
+	// dietary_tot 
+	svy: mean mddw_score, over(hhitems_phone)
+	test _b[c.mddw_score@0bn.hhitems_phone] = _b[c.mddw_score@1bn.hhitems_phone]
+
+	svy: mean mddw_score, over(prgexpo_pn)
+	test _b[c.mddw_score@0bn.prgexpo_pn] = _b[c.mddw_score@1bn.prgexpo_pn]
+
+	svy: mean mddw_score, over(edu_exposure)
+	test _b[c.mddw_score@0bn.edu_exposure] = _b[c.mddw_score@1bn.edu_exposure]
+
+	
+	svy: tab hhitems_phone mddw_yes, row 
+	svy: tab prgexpo_pn mddw_yes, row 
+	svy: tab edu_exposure mddw_yes, row 
+
 	
 	****************************************************************************
 	* Mom Health Module *
@@ -528,7 +659,6 @@ do "$do/00_dir_setting.do"
 	svy: tab NationalQuintile anc_yn, row
 	
 	// anc_where 
-	tab anc_where, m 
 	svy: tab anc_where,ci
 	svy: tab stratum_num anc_where, row 
 	svy: tab NationalQuintile anc_where, row 
@@ -613,6 +743,25 @@ do "$do/00_dir_setting.do"
 	svy: tab NationalQuintile anc_visit_trained_4times, row
 	
 	
+	
+	svy: tab hhitems_phone anc_yn, row 
+	svy: tab prgexpo_pn anc_yn, row 	
+	svy: tab edu_exposure anc_yn, row 
+
+	svy: tab hhitems_phone anc_who_trained, row 
+	svy: tab prgexpo_pn anc_who_trained, row 	
+	svy: tab edu_exposure anc_who_trained, row 
+	
+	svy: tab hhitems_phone anc_visit_trained_4times, row 
+	svy: tab prgexpo_pn anc_visit_trained_4times, row 	
+	svy: tab edu_exposure anc_visit_trained_4times, row 
+
+	svy: reg anc_visit_trained hhitems_phone
+	svy: reg anc_visit_trained prgexpo_pn
+	svy: tab edu_exposure prgexpo_pn, row 
+
+	
+
 	****************************************************************************
 	** Mom Deliverty **
 	****************************************************************************
@@ -636,7 +785,17 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num skilled_battend, row 
 	svy: tab NationalQuintile skilled_battend, row
 
+	
+	svy: tab hhitems_phone skilled_battend, row 
+	svy: tab prgexpo_pn skilled_battend, row 	
+	svy: tab edu_exposure skilled_battend, row 
 
+	svy: tab hhitems_phone insti_birth, row 
+	svy: tab prgexpo_pn insti_birth, row 	
+	svy: tab edu_exposure insti_birth, row 
+
+	
+	
 	****************************************************************************
 	** Mom PNC **
 	****************************************************************************
@@ -684,6 +843,13 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num pnc_who_trained, row 
 	svy: tab NationalQuintile pnc_who_trained, row
 	
+	svy: tab hhitems_phone pnc_yn, row 
+	svy: tab prgexpo_pn pnc_yn, row 	
+	svy: tab edu_exposure pnc_yn, row 
+	
+	svy: tab hhitems_phone pnc_who_trained, row 
+	svy: tab prgexpo_pn pnc_who_trained, row 	
+	svy: tab edu_exposure pnc_who_trained, row 
 	
 	****************************************************************************
 	** Mom NBC **
@@ -738,6 +904,18 @@ do "$do/00_dir_setting.do"
 	svy: tab NationalQuintile nbc_who_trained, row
 
 	
+	svy: tab hhitems_phone nbc_yn, row 
+	svy: tab prgexpo_pn nbc_yn, row 	
+	svy: tab edu_exposure nbc_yn, row 
+	
+	svy: tab hhitems_phone nbc_2days_yn, row 
+	svy: tab prgexpo_pn nbc_2days_yn, row 	
+	svy: tab edu_exposure nbc_2days_yn, row 
+	
+	svy: tab hhitems_phone nbc_who_trained, row 
+	svy: tab prgexpo_pn nbc_who_trained, row 	
+	svy: tab edu_exposure nbc_who_trained, row 
+	
 	
 	****************************************************************************
 	** WASH **
@@ -774,14 +952,34 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num water_winter_ladder, row 
 	svy: tab NationalQuintile water_winter_ladder, row
 
-	 
+
+	svy: tab hhitems_phone water_sum_ladder, row 
+	svy: tab hhitems_phone water_rain_ladder, row 
+	svy: tab hhitems_phone water_winter_ladder, row 
+	
+	svy: tab prgexpo_pn water_sum_ladder, row 	
+	svy: tab prgexpo_pn water_rain_ladder, row 	
+	svy: tab prgexpo_pn water_winter_ladder, row 	
+
+	svy: tab edu_exposure water_sum_ladder, row 
+	svy: tab edu_exposure water_rain_ladder, row 
+	svy: tab edu_exposure water_winter_ladder, row 
+	
+	
+	
 	** Sanitation Ladder ** 
 	// latrine_type
-
+	svy: tab latrine_type, ci 
+	
 	// sanitation_ladder 
 	svy: tab sanitation_ladder, ci 
 	svy: tab stratum_num sanitation_ladder, row 
 	svy: tab NationalQuintile sanitation_ladder, row
+	
+	
+	svy: tab hhitems_phone sanitation_ladder, row 
+	svy: tab prgexpo_pn sanitation_ladder, row 	
+	svy: tab edu_exposure sanitation_ladder, row 
 	
 	
 	** Hygiene Ladder ** 
@@ -790,6 +988,9 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num hw_ladder, row 
 	svy: tab NationalQuintile hw_ladder, row
 	
+	svy: tab hhitems_phone hw_ladder, row 
+	svy: tab prgexpo_pn hw_ladder, row 	
+	svy: tab edu_exposure hw_ladder, row 
 	
 	** Handwashing at Critical Time ** 
 	// soap_yn
@@ -808,7 +1009,15 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num hw_critical_soap, row 
 	svy: tab NationalQuintile hw_critical_soap, row					
 
+	svy: tab hhitems_phone hw_critical_soap, row 
+	svy: tab prgexpo_pn hw_critical_soap, row 	
+	svy: tab edu_exposure hw_critical_soap, row 
+
+	
 	** Water Treatment **
+	// water_sum_treat water_rain_treat water_winter_treat
+	svy: mean water_sum_treat water_rain_treat water_winter_treat
+	
 	// watertx_sum_good 
 	svy: tab watertx_sum_good, ci 
 	svy: tab stratum_num watertx_sum_good, row 
@@ -858,10 +1067,23 @@ do "$do/00_dir_setting.do"
 		svy: tab NationalQuintile `var', row 
 	}
 	
+	  
+	replace prgexpo_pn = 0 if prgexpo_pn == 999
+	
+	svy: tab hhitems_phone water_sum_ladder, row 
+	svy: tab prgexpo_pn water_sum_ladder, row 	
+
+	svy: tab hhitems_phone sanitation_ladder, row 
+	svy: tab prgexpo_pn sanitation_ladder, row 	
+
+	svy: tab hhitems_phone hw_ladder, row 
+	svy: tab prgexpo_pn hw_ladder, row 	
+
+	
 	****************************************************************************
 	** FIES **
 	****************************************************************************
-/*
+
 	use "$dta/pnourish_FIES_final.dta", clear   
 
 	* svy weight apply 
@@ -877,12 +1099,22 @@ do "$do/00_dir_setting.do"
 	svy: mean fies_rawscore, over(NationalQuintile)
 	svy: reg fies_rawscore i.NationalQuintile
 	
-	*/
+	
+	svy: mean fies_rawscore, over(hhitems_phone)
+	test _b[c.fies_rawscore@0bn.hhitems_phone] = _b[c.fies_rawscore@1bn.hhitems_phone]
+
+	svy: mean fies_rawscore, over(prgexpo_pn)
+	test _b[c.fies_rawscore@0bn.prgexpo_pn] = _b[c.fies_rawscore@1bn.prgexpo_pn]
+
+	svy: mean fies_rawscore, over(edu_exposure)
+	test _b[c.fies_rawscore@0bn.edu_exposure] = _b[c.fies_rawscore@1bn.edu_exposure]
+
+	
 	
 	****************************************************************************
 	** PHQ9 **
 	****************************************************************************
-/*	
+	
 	use "$dta/pnourish_PHQ9_final.dta", clear  
 
 	* svy weight apply 
@@ -892,11 +1124,14 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num phq9_cat, row 
 	svy: tab NationalQuintile phq9_cat, row
 
-	*/
+	svy: tab hhitems_phone phq9_cat, row 
+	svy: tab prgexpo_pn phq9_cat, row 	
+	svy: tab edu_exposure phq9_cat, row 
+	
 	****************************************************************************
 	** Women Empowerment **
 	****************************************************************************
-/*	
+	
 	use "$dta/pnourish_WOMEN_EMPOWER_final.dta", clear  
 
 	* svy weight apply 
@@ -967,7 +1202,49 @@ do "$do/00_dir_setting.do"
 	// women group 
 	svy: mean 	wempo_group1 wempo_group2 wempo_group3 wempo_group4 wempo_group5 wempo_group888
 	
-	*/
+	
+	// wempo_childcare 
+	svy: tab hhitems_phone wempo_childcare, row 
+	svy: tab prgexpo_pn wempo_childcare, row 	
+	svy: tab edu_exposure wempo_childcare, row 
+
+	// wempo_mom_health 
+	svy: tab hhitems_phone wempo_mom_health, row 
+	svy: tab prgexpo_pn wempo_mom_health, row 	
+	svy: tab edu_exposure wempo_mom_health, row 
+	
+	// wempo_child_health 
+	svy: tab hhitems_phone wempo_child_health, row 
+	svy: tab prgexpo_pn wempo_child_health, row 	
+	svy: tab edu_exposure wempo_child_health, row 
+		
+	// wempo_women_wages 
+	svy: tab hhitems_phone wempo_women_wages, row 
+	svy: tab prgexpo_pn wempo_women_wages, row 	
+	svy: tab edu_exposure wempo_women_wages, row 
+	
+	// wempo_major_purchase 
+	svy: tab hhitems_phone wempo_major_purchase, row 
+	svy: tab prgexpo_pn wempo_major_purchase, row 	
+	svy: tab edu_exposure wempo_major_purchase, row 
+	
+	// wempo_visiting 
+	svy: tab hhitems_phone wempo_visiting, row 
+	svy: tab prgexpo_pn wempo_visiting, row 	
+	svy: tab edu_exposure wempo_visiting, row 
+							
+	// wempo_women_health 
+	svy: tab hhitems_phone wempo_women_health, row 
+	svy: tab prgexpo_pn wempo_women_health, row 	
+	svy: tab edu_exposure wempo_women_health, row 
+	
+	// wempo_child_wellbeing
+	svy: tab hhitems_phone wempo_child_wellbeing, row 
+	svy: tab prgexpo_pn wempo_child_wellbeing, row 	
+	svy: tab edu_exposure wempo_child_wellbeing, row 
+	
+	
+	
 	
 	****************************************************************************
 	** Program Exposure **
@@ -1043,9 +1320,9 @@ do "$do/00_dir_setting.do"
 				prgexp_freq_5 prgexp_freq_6 prgexp_freq_7 prgexp_freq_8 ///
 				prgexp_freq_9 {
 					
-		quietly svy: reg `var' i.NationalQuintile
+		quietly 
 		quietly mat list e(b)
-		test 1b.stratum_num = 2.stratum_num = 3.stratum_num = 4.stratum_num = 5.stratum_num
+		test 1b.NationalQuintile = 2.NationalQuintile = 3.NationalQuintile = 4.NationalQuintile = 5.NationalQuintile
 		
 		}
 	

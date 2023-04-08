@@ -390,6 +390,10 @@ if `r(N)' > 0  {
 
 		rename * *_
 		rename cal_migrate_ cal_migrate
+		
+
+		* save as labeled var dataset 
+		save "$dta/demo_migrate_rep_label.dta", replace 
 
 		reshape wide *_ , i(_parent_index) j(cal_migrate)
 
@@ -439,6 +443,9 @@ if `r(N)' > 0  {
 		rename * *_
 		rename cal_idp_ cal_idp
 
+		* save as labeled var dataset 
+		save "$dta/demo_idp_rep_label.dta", replace 
+
 		reshape wide *_ , i(_parent_index) j(cal_idp)
 
 		tempfile demo_idp_rep
@@ -477,6 +484,9 @@ if `r(N)' > 0  {
 
 		rename * *_
 		rename cal_dspl_ cal_dspl
+
+		* save as labeled var dataset 
+		save "$dta/demo_dspl_rpt_label.dta", replace 
 
 		reshape wide *_ , i(_parent_index) j(cal_dspl)
 
@@ -527,6 +537,25 @@ if `r(N)' > 0  {
 
 		rename * *_
 		rename cal_livelihood_ cal_livelihood
+
+		// export excel _parent_index lh_name using "$out/Village_Export.xlsx", sheet("livelihood") firstrow(variables) sheetreplace 
+		
+		// livelihood coding 
+		gen lh_name_eng_ = ""
+		
+		do "$villimport/livelihood_translation.do"
+		
+		encode lh_name_eng_, gen(lh_name_engcat_)
+		order lh_name_engcat_, after(lh_name_)
+		drop lh_name_eng_ lh_name_
+		
+		rename lh_name_engcat_ lh_name_
+		
+		lab var lh_name_ "Name of Main Livelihood"
+		
+		
+		* save as labeled var dataset 
+		save "$dta/lh_rpt_label.dta", replace 
 
 		reshape wide *_ , i(_parent_index) j(cal_livelihood)
 
@@ -589,6 +618,9 @@ if `r(N)' > 0  {
 
 		rename * *_
 		rename cal_dev_ cal_dev
+
+		* save as labeled var dataset 
+		save "$dta/pn_dev_rpt_label.dta", replace 
 
 		reshape wide *_ , i(_parent_index) j(cal_dev)
 

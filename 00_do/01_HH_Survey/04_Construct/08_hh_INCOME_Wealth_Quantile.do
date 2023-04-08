@@ -226,11 +226,16 @@ do "$do/00_dir_setting.do"
 	** PROJECT NOURISH COVERAGE **
 	replace prgexpo_pn = 0 if prgexpo_pn == 999
 	tab prgexpo_pn, m 
-	
 
+	** exposure to education part **
+	gen edu_exposure 		= (prgexpo_join5 == 1 | prgexpo_join6 == 1 | prgexp_iec0 == 0)
+	lab var edu_exposure "Exposure with PN SBCC related activities"
+	tab edu_exposure, m 
+
+	
 	* Add Weight variable *
 	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
-						keepusing(NationalQuintile NationalScore hhitems_phone prgexpo_pn)
+						keepusing(stratum_num weight_final)
 	
 	keep if _merge == 3
 	
@@ -241,6 +246,27 @@ do "$do/00_dir_setting.do"
 	save "$dta/pnourish_INCOME_WEALTH_final.dta", replace  
 
 
+	** Check for un-matched villages from Village Survey ** 
+	br if 	geo_vill == 2009 | ///
+			geo_vill == 2012 | ///
+			geo_vill ==	2018 | ///
+			geo_vill ==	2021 | ///
+			geo_vill ==	2084 | ///
+			geo_vill ==	2089 | ///
+			geo_vill ==	2251 | ///
+			geo_vill ==	2265
+
+	   // 41 Obs
+	   
+	tab geo_vill if 	geo_vill == 2009 | ///
+						geo_vill == 2012 | ///
+						geo_vill ==	2018 | ///
+						geo_vill ==	2021 | ///
+						geo_vill ==	2084 | ///
+						geo_vill ==	2089 | ///
+						geo_vill ==	2251 | ///
+						geo_vill ==	2265   
+	
 // END HERE 
 
 

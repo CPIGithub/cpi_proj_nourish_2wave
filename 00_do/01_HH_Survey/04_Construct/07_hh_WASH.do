@@ -93,13 +93,15 @@ do "$do/00_dir_setting.do"
 	** Sanitation Ladder ** 
 	
 	tab latrine_type
+	
+	lab def sladder 1"Safely Managed" 2"Basic" 3"Limited" 4"Unimproved" 5"Open Defecation"
 		
 	gen sanitation_ladder = .m 
 	replace sanitation_ladder = 5 if latrine_type == 6
 	replace sanitation_ladder = 4 if latrine_type == 5 | latrine_type == 4 | latrine_type == 888
 	replace sanitation_ladder = 3 if (latrine_type == 1 | latrine_type == 2 | latrine_type == 3) & latrine_share == 1
 	replace sanitation_ladder = 2 if (latrine_type == 1 | latrine_type == 2 | latrine_type == 3) & latrine_share == 0
-	lab val sanitation_ladder wladder
+	lab val sanitation_ladder sladder
 	tab sanitation_ladder 
 	
 	
@@ -223,8 +225,9 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Wealth Quantile variable **
+	drop prgexpo_pn
 	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
-							keepusing(NationalQuintile NationalScore hhitems_phone prgexpo_pn)
+							keepusing(NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
 	keep if _merge == 3
 	
