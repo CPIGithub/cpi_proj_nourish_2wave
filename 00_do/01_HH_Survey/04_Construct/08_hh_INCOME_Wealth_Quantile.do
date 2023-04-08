@@ -247,10 +247,27 @@ do "$do/00_dir_setting.do"
 
 
 	** Check for un-matched villages from Village Survey ** 
-	merge m:1 geo_vill using "$dta/PN_Village_Survey_FINAL_Cleaned.dta"
+	merge m:1 geo_vill using "$dta/PN_Village_Survey_FINAL_Cleaned.dta", keepusing(geo_vill)
 	
-	&&
+	/*
 	
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                            45
+        from master                        41  (_merge==1)
+        from using                          4  (_merge==2)
+
+    Matched                               760  (_merge==3)
+    -----------------------------------------
+
+	
+	*/
+	
+	distinct geo_vill if _merge == 2
+	distinct geo_vill if _merge == 1
+	
+		
 	br if 	geo_vill == 2009 | ///
 			geo_vill == 2012 | ///
 			geo_vill ==	2018 | ///
