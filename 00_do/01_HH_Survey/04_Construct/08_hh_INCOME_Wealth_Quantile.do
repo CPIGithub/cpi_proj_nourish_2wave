@@ -247,6 +247,10 @@ do "$do/00_dir_setting.do"
 
 
 	** Check for un-matched villages from Village Survey ** 
+	merge m:1 geo_vill using "$dta/PN_Village_Survey_FINAL_Cleaned.dta"
+	
+	&&
+	
 	br if 	geo_vill == 2009 | ///
 			geo_vill == 2012 | ///
 			geo_vill ==	2018 | ///
