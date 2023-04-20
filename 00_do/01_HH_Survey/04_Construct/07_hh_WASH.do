@@ -232,7 +232,20 @@ do "$do/00_dir_setting.do"
 	keep if _merge == 3
 	
 	drop _merge 
+
+	* Add Village Survey Info 
+	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
+						mkt_near_dist_dry mkt_near_dist_rain ///
+						dev_proj_tot ///
+						pn_yes pn_sbcc_yn pn_muac_yn pn_wsbcc_yn pn_wash_yn pn_emgy_yn pn_hgdn_yn pn_msg_yn
 	
+	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+								keepusing($villinfo)
+	
+	drop if _merge == 2
+	
+	drop _merge 
+
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_WASH_final.dta", replace  
 

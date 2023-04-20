@@ -442,6 +442,10 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num child_diarrh_treat, row 
 	svy: tab NationalQuintile child_diarrh_treat, row 
 	
+	svy: reg child_diarrh_treat hfc_near_dist_dry 
+	svy: reg child_diarrh_treat hfc_near_dist_rain 
+	
+	
 	// child_diarrh_where
 	svy: tab child_diarrh_where,ci
 	svy: tab stratum_num child_diarrh_where, row 
@@ -456,7 +460,10 @@ do "$do/00_dir_setting.do"
 	svy: mean child_diarrh_trained
 	svy: tab stratum_num child_diarrh_trained, row 
 	svy: tab NationalQuintile child_diarrh_trained, row 
-	
+
+	svy: reg child_diarrh_trained hfc_near_dist_dry 
+	svy: reg child_diarrh_trained hfc_near_dist_rain 
+
 	// child_diarrh_notreat
 	svy: mean child_diarrh_notreat1 child_diarrh_notreat2 child_diarrh_notreat3 child_diarrh_notreat4 child_diarrh_notreat5 child_diarrh_notreat6 child_diarrh_notreat7 child_diarrh_notreat8 child_diarrh_notreat9 child_diarrh_notreat10 child_diarrh_notreat11 child_diarrh_notreat12 child_diarrh_notreat13 child_diarrh_notreat14 child_diarrh_notreat15 child_diarrh_notreat888 child_diarrh_notreat777 child_diarrh_notreat999
 	
@@ -477,6 +484,9 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num child_cough_treat, row 
 	svy: tab NationalQuintile child_cough_treat, row 
 	
+	svy: reg child_cough_treat hfc_near_dist_dry 
+	svy: reg child_cough_treat hfc_near_dist_rain 
+	
 	// child_cough_where
 	svy: tab child_cough_where,ci
 	svy: tab stratum_num child_cough_where, row 
@@ -491,6 +501,9 @@ do "$do/00_dir_setting.do"
 	svy: mean child_cough_trained
 	svy: tab stratum_num child_cough_trained, row 
 	svy: tab NationalQuintile child_cough_trained, row 
+
+	svy: reg child_cough_trained hfc_near_dist_dry 
+	svy: reg child_cough_trained hfc_near_dist_rain 
 	
 	// child_cough_notreat
 	svy: mean child_cough_notreat1 child_cough_notreat2 child_cough_notreat3 child_cough_notreat4 child_cough_notreat5 child_cough_notreat6 child_cough_notreat7 child_cough_notreat8 child_cough_notreat9 child_cough_notreat10 child_cough_notreat11 child_cough_notreat12 child_cough_notreat13 child_cough_notreat14 child_cough_notreat15 child_cough_notreat888 child_cough_notreat777 child_cough_notreat999
@@ -508,6 +521,9 @@ do "$do/00_dir_setting.do"
 	svy: mean  child_fever_treat
 	svy: tab stratum_num child_fever_treat, row 
 	svy: tab NationalQuintile child_fever_treat, row
+
+	svy: reg child_fever_treat hfc_near_dist_dry 
+	svy: reg child_fever_treat hfc_near_dist_rain 
 	
 	// child_fever_where, m 
 	svy: tab child_fever_where, ci 
@@ -523,6 +539,9 @@ do "$do/00_dir_setting.do"
 	svy: mean child_fever_trained
 	svy: tab stratum_num child_fever_trained, row 
 	svy: tab NationalQuintile child_fever_trained, row
+
+	svy: reg child_fever_trained hfc_near_dist_dry 
+	svy: reg child_fever_trained hfc_near_dist_rain 
 	
 	// child_fever_notreat
 	svy: mean child_fever_notreat1 child_fever_notreat2 child_fever_notreat3 child_fever_notreat4 child_fever_notreat5 child_fever_notreat6 child_fever_notreat7 child_fever_notreat8 child_fever_notreat9 child_fever_notreat10 child_fever_notreat11 child_fever_notreat12 child_fever_notreat13 child_fever_notreat14 child_fever_notreat15 child_fever_notreat888 child_fever_notreat777 child_fever_notreat999
@@ -657,6 +676,10 @@ do "$do/00_dir_setting.do"
 	svy: mean  anc_yn
 	svy: tab stratum_num anc_yn, row 
 	svy: tab NationalQuintile anc_yn, row
+
+	svy: reg anc_yn hfc_near_dist_dry 
+	svy: reg anc_yn hfc_near_dist_rain 
+
 	
 	// anc_where 
 	svy: tab anc_where,ci
@@ -697,6 +720,8 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num anc_who_trained, row 
 	svy: tab NationalQuintile anc_who_trained, row
 	
+	svy: reg anc_who_trained hfc_near_dist_dry 
+	svy: reg anc_who_trained hfc_near_dist_rain 
 
 
 	// anc_*_visit
@@ -736,13 +761,16 @@ do "$do/00_dir_setting.do"
 	svy: mean anc_visit_trained, over(NationalQuintile)
 	svy: reg anc_visit_trained i.NationalQuintile
 
-	
+	svy: reg anc_visit_trained hfc_near_dist_dry 
+	svy: reg anc_visit_trained hfc_near_dist_rain 
+
 	// anc_visit_trained_4times
 	svy: mean  anc_visit_trained_4times
 	svy: tab stratum_num anc_visit_trained_4times, row 
 	svy: tab NationalQuintile anc_visit_trained_4times, row
 	
-	
+	svy: reg anc_visit_trained_4times hfc_near_dist_dry 
+	svy: reg anc_visit_trained_4times hfc_near_dist_rain 	
 	
 	svy: tab hhitems_phone anc_yn, row 
 	svy: tab prgexpo_pn anc_yn, row 	
@@ -761,7 +789,8 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure prgexpo_pn, row 
 
 	
-
+	
+	
 	****************************************************************************
 	** Mom Deliverty **
 	****************************************************************************
@@ -774,6 +803,9 @@ do "$do/00_dir_setting.do"
 	svy: mean  insti_birth
 	svy: tab stratum_num insti_birth, row 
 	svy: tab NationalQuintile insti_birth, row
+
+	svy: reg insti_birth hfc_near_dist_dry 
+	svy: reg insti_birth hfc_near_dist_rain 	
 	
 	// deliv_assist
 	svy: tab deliv_assist,ci
@@ -785,6 +817,8 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num skilled_battend, row 
 	svy: tab NationalQuintile skilled_battend, row
 
+	svy: reg skilled_battend hfc_near_dist_dry 
+	svy: reg skilled_battend hfc_near_dist_rain 	
 	
 	svy: tab hhitems_phone skilled_battend, row 
 	svy: tab prgexpo_pn skilled_battend, row 	
@@ -803,6 +837,9 @@ do "$do/00_dir_setting.do"
 	svy: mean  pnc_yn
 	svy: tab stratum_num pnc_yn, row 
 	svy: tab NationalQuintile pnc_yn, row
+
+	svy: reg pnc_yn hfc_near_dist_dry 
+	svy: reg pnc_yn hfc_near_dist_rain 	
 	
 	// pnc_where 
 	svy: tab pnc_where,ci
@@ -842,6 +879,9 @@ do "$do/00_dir_setting.do"
 	svy: mean  pnc_who_trained
 	svy: tab stratum_num pnc_who_trained, row 
 	svy: tab NationalQuintile pnc_who_trained, row
+
+	svy: reg pnc_who_trained hfc_near_dist_dry 
+	svy: reg pnc_who_trained hfc_near_dist_rain 	
 	
 	svy: tab hhitems_phone pnc_yn, row 
 	svy: tab prgexpo_pn pnc_yn, row 	
@@ -858,11 +898,17 @@ do "$do/00_dir_setting.do"
 	svy: mean  nbc_yn
 	svy: tab stratum_num nbc_yn, row 
 	svy: tab NationalQuintile nbc_yn, row
+
+	svy: reg nbc_yn hfc_near_dist_dry 
+	svy: reg nbc_yn hfc_near_dist_rain 	
 	
 	// nbc_2days_yn
 	svy: mean  nbc_2days_yn
 	svy: tab stratum_num nbc_2days_yn, row 
 	svy: tab NationalQuintile nbc_2days_yn, row
+
+	svy: reg nbc_2days_yn hfc_near_dist_dry 
+	svy: reg nbc_2days_yn hfc_near_dist_rain 	
 	
 	// nbc_where
 	svy: tab nbc_where,ci
@@ -903,6 +949,8 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num nbc_who_trained, row 
 	svy: tab NationalQuintile nbc_who_trained, row
 
+	svy: reg nbc_who_trained hfc_near_dist_dry 
+	svy: reg nbc_who_trained hfc_near_dist_rain 	
 	
 	svy: tab hhitems_phone nbc_yn, row 
 	svy: tab prgexpo_pn nbc_yn, row 	
@@ -1352,7 +1400,17 @@ do "$do/00_dir_setting.do"
 				prgexp_iec5 prgexp_iec6 prgexp_iec7 , ///
 				over(NationalQuintile)		
 	
+	** Program Access **
+	// pn_access pn_muac_access pn_msg_access pn_wash_access pn_sbcc_access pn_hgdn_access pn_emgy_access
 	
+	foreach var of varlist pn_access pn_muac_access pn_msg_access pn_wash_access pn_sbcc_access pn_hgdn_access pn_emgy_access {
+	    
+		di "`var'"
+		svy: mean  `var'
+		svy: tab stratum_num `var', row 
+		svy: tab NationalQuintile `var', row
+	
+	}
 
 	
 // END HERE 
