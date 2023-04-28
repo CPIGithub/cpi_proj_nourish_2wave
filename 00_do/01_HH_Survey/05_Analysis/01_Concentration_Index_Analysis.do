@@ -19,7 +19,7 @@ do "$do/00_dir_setting.do"
 	****************************************************************************
 	* Child IYCF Data *
 	****************************************************************************
-	log using "$result/CI_test", replace  
+	//log using "$result/CI_test", replace  
 	
 	use "$dta/pnourish_child_iycf_final.dta", clear 
 	
@@ -69,9 +69,14 @@ do "$do/00_dir_setting.do"
 	** equity index score can be long term - chornic poverty  
 	
 	
-	conindex dietary_tot, rankvar(NationalScore) truezero svy 
+	conindex dietary_tot, rankvar(NationalScore) truezero svy  // add cluster option for SE cluster
 	conindex dietary_tot, rankvar(income_lastmonth) truezero svy 
 
+	conindex mad, rank(NationalQuintile) svy wagstaff bounded limits(0 1)
+	conindex mad, rank(income_lastmonth) svy wagstaff bounded limits(0 1)
+
+&&
+	
 	conindex mad, rankvar(NationalScore) truezero svy // more sensitive to health equity index 
 	conindex mad, rankvar(income_lastmonth) truezero svy 
 
@@ -79,7 +84,7 @@ do "$do/00_dir_setting.do"
 	graph export "$plots/00_Lorenz_child_minimum_acceptable_diet.png", replace
 
 
-	log close 
+	//log close 
 
 	
 // END HERE 
