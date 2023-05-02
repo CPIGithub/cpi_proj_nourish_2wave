@@ -25,28 +25,22 @@ do "$do/00_dir_setting.do"
 	
 	rename women_id_pregpast roster_index
 	
+	* keep mom diet only 
+	keep	geo_vill ///
+			_parent_index roster_index ///
+			women_pos1-cal_mnbc_end
+			
+	drop cal* // cla*
+
 
 	** HH Roster **
 	preserve 
 
-	use "$dta/grp_hh.dta", clear
+	use "$dta/grp_hh_clean.dta", clear
 	
-	do "$hhimport/grp_hh_labeling.do"
-
-	drop 	_index _parent_table_name _submission__id _submission__uuid ///
-			_submission__submission_time _submission__validation_status ///
-			_submission__notes _submission__status _submission__submitted_by ///
-			_submission__tags
-			
-	order _parent_index
-
-	destring test calc_age_months, replace
-
-	keep	_parent_index test hh_mem_name hh_mem_sex hh_mem_age hh_mem_age_month ///
+	keep	_parent_index roster_index hh_mem_name hh_mem_sex hh_mem_age hh_mem_age_month ///
 			hh_mem_dob_know hh_mem_dob hh_mem_certification calc_age_months
 	
-	rename test roster_index
-
 	tempfile grp_hh
 	save `grp_hh', replace 
 
@@ -386,6 +380,12 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2
 	
 	drop _merge 
+	
+	* Check for Missing variable label and variable label 
+	// iecodebook template using "$out/pnourish_mom_health_final.xlsx" // export template
+	
+	iecodebook apply using "$raw/pnourish_mom_health_cleaning.xlsx" 
+
 
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_mom_health_final.dta", replace  

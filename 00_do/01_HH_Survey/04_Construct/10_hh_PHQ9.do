@@ -22,6 +22,16 @@ do "$do/00_dir_setting.do"
 	** HH Survey Dataset **
 	use "$dta/PN_HH_Survey_HH_Level_raw.dta", clear 
 	
+	* keep only HH income and characteristc modules 
+	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
+	local mainresp 	respd_id respd_who respd_name respd_sex respd_age respd_status
+
+	
+	keep 	`maingeo' `mainresp' ///
+			uuid _parent_index ///
+			cal_phq_start-cal_phq_end
+			
+	drop cal* // cla*
 	
 	** PHQ-9 
 	local phq9 phq9_1 phq9_2 phq9_3 phq9_4 phq9_5 phq9_6 phq9_7 phq9_8 phq9_9
@@ -58,7 +68,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Wealth Quantile variable **
-	drop prgexpo_pn
+	// drop prgexpo_pn
 	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
 							keepusing(income_lastmonth NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
@@ -78,6 +88,13 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2
 	
 	drop _merge 
+	
+	* Check for Missing variable label and variable label 
+	// iecodebook template using "$out/pnourish_PHQ9_final.xlsx" // export template
+	
+	iecodebook apply using "$raw/pnourish_PHQ9_cleaning.xlsx" 
+	
+
 
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_PHQ9_final.dta", replace  

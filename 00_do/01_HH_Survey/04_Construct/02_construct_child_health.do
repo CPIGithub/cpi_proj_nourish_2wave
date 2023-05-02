@@ -25,28 +25,22 @@ do "$do/00_dir_setting.do"
 	
 	rename child_id_health roster_index
 	
+	* keep child health module only 
+	keep	geo_vill ///
+			_parent_index roster_index ///
+			child_pos3-child_deworm
+			
+	drop cal* // cla*
+	
 
 	** HH Roster **
 	preserve 
 
-	use "$dta/grp_hh.dta", clear
+	use "$dta/grp_hh_clean.dta", clear
 	
-	do "$hhimport/grp_hh_labeling.do"
-
-	drop 	_index _parent_table_name _submission__id _submission__uuid ///
-			_submission__submission_time _submission__validation_status ///
-			_submission__notes _submission__status _submission__submitted_by ///
-			_submission__tags
-			
-	order _parent_index
-
-	destring test calc_age_months, replace
-
-	keep	_parent_index test hh_mem_name hh_mem_sex hh_mem_age hh_mem_age_month ///
+	keep	_parent_index roster_index hh_mem_name hh_mem_sex hh_mem_age hh_mem_age_month ///
 			hh_mem_dob_know hh_mem_dob hh_mem_certification calc_age_months
 	
-	rename test roster_index
-
 	tempfile grp_hh
 	save `grp_hh', replace 
 
@@ -57,42 +51,6 @@ do "$do/00_dir_setting.do"
 	keep if _merge == 3
 	drop _merge 
 
-	
-	** Children Mother ** 
-	preserve 
-	use "$dta/hh_child_mom_rep.dta", clear
-	
-	* lab var 
-	lab var hh_mem_mom "Who is the mother of this child?"
-	
-	// drop obs not eligable for this module 
-	drop if mi(hh_mem_mom)
-
-	drop 	_index _parent_table_name _submission__id _submission__uuid ///
-			_submission__submission_time _submission__validation_status ///
-			_submission__notes _submission__status _submission__submitted_by ///
-			_submission__tags
-			
-	order _parent_index
-
-	destring cal_hh_cname_id, replace
-	
-	keep _parent_index cal_hh_cname_id hh_mem_mom
-
-	rename cal_hh_cname_id roster_index
-
-	tempfile hh_child_mom_rep
-	save `hh_child_mom_rep', replace 
-
-	restore
-
-	merge 1:1 _parent_index roster_index using `hh_child_mom_rep'
-	
-	keep if _merge == 3
-
-	drop _merge 
-	
-	
 	****************************************************************************
 	** Child Age Calculation **
 	****************************************************************************
@@ -303,7 +261,11 @@ do "$do/00_dir_setting.do"
 	
 	drop _merge 
 
+	* Check for Missing variable label and variable label 
+	// iecodebook template using "$out/pnourish_child_health_final.xlsx" // export template
 	
+	iecodebook apply using "$raw/pnourish_child_health_cleaning.xlsx" 
+
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_child_health_final.dta", replace  
 

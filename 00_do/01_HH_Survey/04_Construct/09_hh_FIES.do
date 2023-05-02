@@ -22,6 +22,16 @@ do "$do/00_dir_setting.do"
 	** HH Survey Dataset **
 	use "$dta/PN_HH_Survey_HH_Level_raw.dta", clear 
 	
+	* keep only HH income and characteristc modules 
+	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
+	local mainresp 	respd_id respd_who respd_name respd_sex respd_age respd_status
+
+	
+	keep 	`maingeo' `mainresp' ///
+			uuid _parent_index ///
+			cal_fies_start-cal_fies_end
+			
+	drop cal* // cla*
 	
 	** Food Insecurity Experience Scale (FIES) (30 days' recall)
 	local fies gfi1_notegh gfi2_unhnut gfi3_fewfd gfi4_skp_ml gfi5_less gfi6_rout_fd gfi7_hunger gfi8_wout_eat
@@ -48,7 +58,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Wealth Quantile variable **
-	drop prgexpo_pn
+	// drop prgexpo_pn
 	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
 							keepusing(income_lastmonth NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
@@ -68,6 +78,12 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2
 	
 	drop _merge 
+	
+	* Check for Missing variable label and variable label 
+	// iecodebook template using "$out/pnourish_FIES_final.xlsx" // export template
+	
+	iecodebook apply using "$raw/pnourish_FIES_cleaning.xlsx" 
+	
 
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_FIES_final.dta", replace  

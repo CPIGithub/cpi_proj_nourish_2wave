@@ -23,6 +23,20 @@ do "$do/00_dir_setting.do"
 	use "$dta/PN_HH_Survey_HH_Level_raw.dta", clear 
 	
 	
+	* keep only HH income and characteristc modules 
+	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
+	local mainresp 	respd_id respd_who respd_name respd_sex respd_age respd_status
+
+	
+	keep 	`maingeo' `mainresp' ///
+			uuid _parent_index ///
+			cal_housing_start-cal_housing_end ///
+			cal_hhinc_start-cal_hhinc_end ///
+			water_sum ///
+			prgexpo_pn prgexpo_join5 prgexpo_join6 prgexp_iec0 prgexpo_join8
+			
+	drop cal* // cla_*
+	
 	** HOUSEHOLD INCOME
 	// d0_per_std
 	replace d0_per_std =  .d if d0_per_std ==  98 |  d0_per_std == 77
@@ -255,10 +269,18 @@ do "$do/00_dir_setting.do"
 	drop _merge 
 
 	
+	
+	* Check for Missing variable label and variable label 
+	// iecodebook template using "$out/pnourish_INCOME_WEALTH_final.xlsx" // export template
+	
+	iecodebook apply using "$raw/pnourish_INCOME_WEALTH_cleaning.xlsx" 
+
+	
+	
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_INCOME_WEALTH_final.dta", replace  
 
-
+/*
 	** Check for un-matched villages from Village Survey ** 
 	merge m:1 geo_vill using "$dta/PN_Village_Survey_FINAL_Cleaned.dta", keepusing(geo_vill)
 	
@@ -300,6 +322,7 @@ do "$do/00_dir_setting.do"
 						geo_vill ==	2089 | ///
 						geo_vill ==	2251 | ///
 						geo_vill ==	2265   
+						*/
 	
 // END HERE 
 

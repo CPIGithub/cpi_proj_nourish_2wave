@@ -21,6 +21,17 @@ do "$do/00_dir_setting.do"
 	****************************************************************************
 	use "$dta/PN_HH_Survey_HH_Level_raw.dta", clear 
 	
+	* keep only HH income and characteristc modules 
+	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
+	local mainresp 	respd_id respd_who respd_name respd_sex respd_age respd_status
+
+	
+	keep 	`maingeo' `mainresp' ///
+			uuid _parent_index ///
+			cal_pexp_start-cal_pexp_end
+			
+	drop cal* // cla*
+	
 	// prgexpo_pn 
 	replace prgexpo_pn = 0 if prgexpo_pn == 999
 	tab prgexpo_pn, m 
@@ -143,6 +154,13 @@ do "$do/00_dir_setting.do"
 	replace pn_emgy_access = .m if mi(pn_emgy_yn) & (mi(prgexpo_join1) | mi(prgexpo_join2) | mi(prgexpo_join3))
 	lab var pn_emgy_access "Emergency response activities present at village and HH participated in it"
 	tab pn_emgy_access
+	
+	
+	* Check for Missing variable label and variable label 
+	// iecodebook template using "$out/pnourish_program_exposure_final.xlsx" // export template
+	
+	iecodebook apply using "$raw/pnourish_program_exposure_cleaning.xlsx" 
+
 
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_program_exposure_final.dta", replace  

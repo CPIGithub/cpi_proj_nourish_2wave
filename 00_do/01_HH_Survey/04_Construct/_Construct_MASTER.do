@@ -27,7 +27,7 @@ do "$do/00_dir_setting.do"
 	* (2): HH Income & Equity Wealth - Quantile *
 	****************************************************************************
 
-	do "$hhconstruct/08_hh_INCOME_Wealth_Quantile.do"
+	do "$hhconstruct/00_hh_INCOME_Wealth_Quantile.do"
 
 
 	****************************************************************************

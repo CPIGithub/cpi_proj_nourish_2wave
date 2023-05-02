@@ -22,17 +22,30 @@ do "$do/00_dir_setting.do"
 	** HH Survey Dataset **
 	use "$dta/PN_HH_Survey_HH_Level_raw.dta", clear 
 	
+	* keep only HH income and characteristc modules 
+	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
+	local mainresp 	respd_id respd_who respd_name respd_sex respd_age respd_status
+
+	
+	keep 	`maingeo' `mainresp' ///
+			uuid _parent_index ///
+			cal_sum_feadult ///
+			cal_wemp_start-cal_wemp_end
+			
+	rename cal_sum_feadult female_adult
+			
+	drop cal* // cla*
 	
 	** Women empowerment 
 	// ref: https://www.dhsprogram.com/Data/Guide-to-DHS-Statistics/index.cfm
 	
-	destring cal_sum_feadult, replace 
+	destring female_adult, replace 
 	
 	foreach v of varlist 	wempo_childcare wempo_mom_health wempo_child_health ///
 							wempo_women_wages wempo_major_purchase wempo_visiting ///
 							wempo_women_health wempo_child_wellbeing  {
 		
-		replace `v' = .m if cal_sum_feadult == 0 
+		replace `v' = .m if female_adult == 0 
 		tab `v', m 
 	}
 	
@@ -56,9 +69,9 @@ do "$do/00_dir_setting.do"
 	
 	
 	// wempo_group 
-		foreach v of varlist wempo_group1 wempo_group2 wempo_group3 wempo_group4 wempo_group5 wempo_group888 wempo_group777 wempo_group999 {
+	foreach v of varlist wempo_group1 wempo_group2 wempo_group3 wempo_group4 wempo_group5 wempo_group888 wempo_group777 wempo_group999 {
 		
-		replace `v' = .m if cal_sum_feadult == 0 
+		replace `v' = .m if female_adult == 0 
 		tab `v', m 
 	}
 	
@@ -72,7 +85,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Wealth Quantile variable **
-	drop prgexpo_pn
+	//drop prgexpo_pn
 	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
 							keepusing(income_lastmonth NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
@@ -92,6 +105,12 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2
 	
 	drop _merge 
+	
+	* Check for Missing variable label and variable label 
+	// iecodebook template using "$out/pnourish_WOMEN_EMPOWER_final.xlsx" // export template
+	
+	iecodebook apply using "$raw/pnourish_WOMEN_EMPOWER_cleaning.xlsx" 
+	
 
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_WOMEN_EMPOWER_final.dta", replace  
