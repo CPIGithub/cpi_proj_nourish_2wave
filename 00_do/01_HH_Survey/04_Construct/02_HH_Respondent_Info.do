@@ -34,6 +34,37 @@ do "$do/00_dir_setting.do"
 			
 	drop cal* *flag* // cla_*
 	
+	* Add Weight variable *
+	merge m:1 geo_vill using "$dta/pnourish_hh_weight_final.dta", keepusing(stratum_num weight_final)
+	
+	keep if _merge == 3
+	
+	drop _merge 
+	
+	
+	* Add Wealth Quantile variable **
+	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
+							keepusing(income_lastmonth NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
+	
+	keep if _merge == 3
+	
+	drop _merge 
+	
+	* Add Village Survey Info 
+	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
+						mkt_near_dist_dry mkt_near_dist_rain ///
+						dev_proj_tot ///
+						pn_yes pn_sbcc_yn pn_muac_yn pn_wsbcc_yn pn_wash_yn pn_emgy_yn pn_hgdn_yn pn_msg_yn
+	
+	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+								keepusing($villinfo)
+	
+	drop if _merge == 2
+	
+	drop _merge 
+	
+	
+	
 	* Check for Missing variable label and variable label 
 	// iecodebook template using "$out/pnourish_respondent_info_final.xlsx" // export template
 	

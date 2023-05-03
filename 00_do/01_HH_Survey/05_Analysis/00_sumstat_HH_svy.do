@@ -19,7 +19,7 @@ do "$do/00_dir_setting.do"
 	* Respondent Characteristics *
 	****************************************************************************
 
-	use "$dta/pnourish_INCOME_WEALTH_final.dta", clear   
+	use "$dta/pnourish_respondent_info_final.dta", clear   
 
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
@@ -38,19 +38,28 @@ do "$do/00_dir_setting.do"
 	svy: mean respd_chid_num 
 	svy: tab respd_phone, ci 
 
-	svy: tab hh_mem_head, ci 
-	svy: tab hh_mem_highedu, ci 
-	svy: tab hh_mem_occup, ci 
+	svy: tab resp_hhhead, ci 
+	svy: tab resp_highedu, ci 
+	svy: tab resp_occup, ci 
 		
 	svy: tab hhitems_phone, ci 
 	svy: tab prgexpo_pn, ci 
 	svy: tab edu_exposure, ci 
 	
 	** HH Characteristics **
-	
 	svy: mean hh_tot_num
 	
 	svy: tab NationalQuintile, ci 
+	
+	****************************************************************************
+	* HH Income *
+	****************************************************************************
+
+	use "$dta/pnourish_INCOME_WEALTH_final.dta", clear   
+
+	* svy weight apply 
+	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+
 	
 	svy: mean d3_inc_lmth
 	svy: mean income_lastmonth_trim
@@ -1368,7 +1377,7 @@ do "$do/00_dir_setting.do"
 				prgexp_freq_5 prgexp_freq_6 prgexp_freq_7 prgexp_freq_8 ///
 				prgexp_freq_9 {
 					
-		quietly 
+		quietly svy: reg `var' i.NationalQuintile
 		quietly mat list e(b)
 		test 1b.NationalQuintile = 2.NationalQuintile = 3.NationalQuintile = 4.NationalQuintile = 5.NationalQuintile
 		
