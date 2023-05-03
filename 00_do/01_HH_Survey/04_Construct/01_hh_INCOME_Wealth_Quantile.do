@@ -25,9 +25,10 @@ do "$do/00_dir_setting.do"
 	
 	* keep only HH income and characteristc modules 
 	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
-	local mainresp 	respd_id respd_who respd_name respd_sex respd_age respd_status
-
-	
+	local mainresp 	respd_id respd_who respd_name respd_sex respd_age respd_status ///
+					resp_hhhead resp_highedu resp_occup respd_preg respd_child ///
+					respd_1stpreg_age respd_chid_num hhhead_highedu hhhead_occup hh_mem_highedu_all
+					
 	keep 	`maingeo' `mainresp' ///
 			uuid _parent_index ///
 			cal_housing_start-cal_housing_end ///

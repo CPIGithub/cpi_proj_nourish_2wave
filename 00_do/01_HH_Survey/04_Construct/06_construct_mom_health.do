@@ -361,8 +361,13 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Wealth Quantile variable **
+	local mainresp 	respd_id respd_who respd_name respd_sex respd_age respd_status ///
+					resp_hhhead resp_highedu resp_occup respd_preg respd_child ///
+					respd_1stpreg_age respd_chid_num hhhead_highedu hhhead_occup hh_mem_highedu_all
+					
 	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
-							keepusing(income_lastmonth NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
+							keepusing(	`mainresp' ///
+										income_lastmonth NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
 	keep if _merge == 3
 	

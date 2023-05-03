@@ -99,8 +99,8 @@ do "$do/00_dir_setting.do"
 	** (2): HH Head info - hh_mem_head in HH roster 
 	preserve 
 
-	use "$dta/grp_hh.dta", clear
-	
+	use "$dta/grp_hh_clean.dta", clear
+/*	
 	do "$hhimport/grp_hh_labeling.do"
 
 	drop 	_index _parent_table_name _submission__id _submission__uuid ///
@@ -111,10 +111,10 @@ do "$do/00_dir_setting.do"
 	order _parent_index
 
 	destring test calc_age_months, replace
-
-	keep	_parent_index test hh_mem_head hh_mem_marital hh_mem_highedu hh_mem_occup
+*/
+	keep	_parent_index roster_index hh_mem_head hh_mem_marital hh_mem_highedu hh_mem_occup
 	
-	rename test roster_index
+	//rename test roster_index
 	
 	keep if hh_mem_head == 1
 

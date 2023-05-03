@@ -149,6 +149,8 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure child_gam, row 
 	svy: tab prgexpo_join8 child_gam, row 
 	
+	
+	
 
 
 	****************************************************************************
