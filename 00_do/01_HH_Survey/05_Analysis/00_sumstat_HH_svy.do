@@ -150,7 +150,10 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_join8 child_gam, row 
 	
 	
-	
+	foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+		conindex child_gam, rank(`var') svy wagstaff bounded limits(0 1)
+	}
 
 
 	****************************************************************************
@@ -213,7 +216,20 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure cbf, row 
 	
 
+	local outcome eibf ebf2d ebf pre_bf mixmf bof cbf
 	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
+
+	
+	
+
 	* complementary feeding * 
 	svy: mean isssf 
 	svy: mean food_g1 
@@ -261,7 +277,19 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num food_g8, row 
 	svy: tab NationalQuintile food_g8, row
 
+	
+	local outcome isssf food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
 
+	
 	* minimum dietary *
 	svy: mean dietary_tot 
 	svy: mean mdd 
@@ -347,6 +375,28 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure mad, row 
 
 	
+	local outcome dietary_tot
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') truezero svy 
+		}
+	
+	}	
+	
+	local outcome mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf 
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
+
 	****************************************************************************
 	* Child Health Data *
 	****************************************************************************
@@ -413,6 +463,27 @@ do "$do/00_dir_setting.do"
 	
 	
 	
+	local outcome child_bwt_lb
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') truezero svy 
+		}
+	
+	}	
+	
+	local outcome 	child_vita child_deworm child_vaccin child_vaccin_card  child_low_bwt
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
 	
 	* illness *
 	
@@ -444,7 +515,16 @@ do "$do/00_dir_setting.do"
 	
 	
 	
-
+	local outcome  child_ill0 child_ill1 child_ill2 child_ill3 child_ill888
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
 
 	
 	***** DIARRHEA *****
@@ -488,6 +568,16 @@ do "$do/00_dir_setting.do"
 	svy: mean child_diarrh_cope1 child_diarrh_cope2 child_diarrh_cope3 child_diarrh_cope4 child_diarrh_cope5 child_diarrh_cope6 child_diarrh_cope7 child_diarrh_cope8 child_diarrh_cope9 child_diarrh_cope10 child_diarrh_cope11 child_diarrh_cope12 child_diarrh_cope13 child_diarrh_cope14 child_diarrh_cope888 child_diarrh_cope666
 	
 	
+	local outcome child_diarrh_treat child_diarrh_trained child_diarrh_pay
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
 	
 	***** COUGH *****
 	// child_cough_treat
@@ -526,6 +616,18 @@ do "$do/00_dir_setting.do"
 	
 	// child_cough_cope
 	svy: mean child_cough_cope1 child_cough_cope2 child_cough_cope3 child_cough_cope4 child_cough_cope5 child_cough_cope6 child_cough_cope7 child_cough_cope8 child_cough_cope9 child_cough_cope10 child_cough_cope11 child_cough_cope12 child_cough_cope13 child_cough_cope14 child_cough_cope888 child_cough_cope666
+	
+	
+	local outcome child_cough_treat child_cough_trained child_cough_pay
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
 	
 	***** FEVER *****
 	// child_fever_treat, m 
@@ -580,6 +682,16 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure child_fever_trained, row 
 
 
+	local outcome child_fever_treat child_fever_trained child_fever_pay
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
 	
 	****************************************************************************
 	** Mom Dietary Diversity **
@@ -669,6 +781,32 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn mddw_yes, row 
 	svy: tab edu_exposure mddw_yes, row 
 
+	
+	local outcome mddw_score mom_meal_freq
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') truezero svy 
+		}
+	
+	}	
+	
+	
+	local outcome 	mddw_yes ///
+					mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
+					mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
+					mddw_oth_veg mddw_oth_fruit
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
 	
 	****************************************************************************
 	* Mom Health Module *
@@ -800,6 +938,28 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure prgexpo_pn, row 
 
 	
+	local outcome anc_visit_trained
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') truezero svy 
+		}
+	
+	}	
+	
+	
+	local outcome 	anc_yn anc_who_trained anc_visit_trained_4times
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
 	
 	
 	****************************************************************************
@@ -839,6 +999,17 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn insti_birth, row 	
 	svy: tab edu_exposure insti_birth, row 
 
+	
+	local outcome 	insti_birth skilled_battend
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
 	
 	
 	****************************************************************************
@@ -901,6 +1072,19 @@ do "$do/00_dir_setting.do"
 	svy: tab hhitems_phone pnc_who_trained, row 
 	svy: tab prgexpo_pn pnc_who_trained, row 	
 	svy: tab edu_exposure pnc_who_trained, row 
+	
+	
+	local outcome 	pnc_yn pnc_who_trained
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
+	
 	
 	****************************************************************************
 	** Mom NBC **
@@ -976,6 +1160,18 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure nbc_who_trained, row 
 	
 	
+	local outcome 	nbc_yn nbc_2days_yn nbc_who_trained
+	
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
+		}
+	
+	}
+	
+	
 	****************************************************************************
 	** WASH **
 	****************************************************************************
@@ -1023,7 +1219,6 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure water_sum_ladder, row 
 	svy: tab edu_exposure water_rain_ladder, row 
 	svy: tab edu_exposure water_winter_ladder, row 
-	
 	
 	
 	** Sanitation Ladder ** 

@@ -362,10 +362,32 @@ do "$do/00_dir_setting.do"
 	lab var pn_yes "Exposure with at least one of the Project Nourish Activity"
 	tab pn_yes, m 
 	
+	
+	* Check for Missing variable label and variable label 
+	// iecodebook template using "$out/PN_Village_Survey_FINAL_Constructed.xlsx" // export template
+	
+	iecodebook apply using "$raw/PN_Village_Survey_FINAL_Constructed_cleaning.xlsx" 
+
 
 
 	* save as labeled var dataset  
 	save "$dta/PN_Village_Survey_FINAL_Constructed.dta", replace  
+	
+	save "$dta/01_final/PN_Village_Survey_FINAL_Constructed.dta", replace  
+
+	* create codebook 
+	iecodebook template using "$dta/01_Final/PN_Village_Survey_FINAL_Constructed.xlsx", replace 
+
+	
+	** Created De-ID Data 
+	drop	superv_name enu_name cal_town cal_vt cal_vill respd_name org_name
+			
+	label drop org_team_lbl
+	
+	save "$dta/02_Deidentified/PN_Village_Survey_FINAL_Constructed_DEID_Dataset.dta", replace  
+	
+	* create codebook 
+	iecodebook template using "$dta/02_Deidentified/PN_Village_Survey_FINAL_Constructed_DEID_Dataset.xlsx", replace 
 
 
 
