@@ -40,6 +40,7 @@ do "$do/00_dir_setting.do"
 
 	svy: tab resp_hhhead, ci 
 	svy: tab resp_highedu, ci 
+	svy: tab hh_mem_highedu_all, ci 
 	svy: tab resp_occup, ci 
 		
 	svy: tab hhitems_phone, ci 
@@ -50,6 +51,20 @@ do "$do/00_dir_setting.do"
 	svy: mean hh_tot_num
 	
 	svy: tab NationalQuintile, ci 
+	
+
+	* cross-tab 
+	// phone 
+	svy: tab stratum_num resp_highedu, row 
+	svy: tab NationalQuintile resp_highedu, row 
+
+	svy: tab stratum_num hh_mem_highedu_all, row 
+	svy: tab NationalQuintile hh_mem_highedu_all, row 
+
+	// program exposure 
+	svy: tab resp_highedu prgexpo_pn, row 
+	svy: tab hh_mem_highedu_all prgexpo_pn, row 
+
 	
 	****************************************************************************
 	* HH Income *
@@ -155,7 +170,17 @@ do "$do/00_dir_setting.do"
 		conindex child_gam, rank(`var') svy wagstaff bounded limits(0 1)
 	}
 
+	
+	gen stratum_org_inter = stratum * org_name_num  
+	
+	svy: logit child_gam stratum org_name_num stratum_org_inter
+	estimates store m1, title(Model 1: Child Malnutrition)
 
+	estout m1 using "$out/reg_output/01_child_gam.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+   
+   
 	****************************************************************************
 	* Child IYCF Data *
 	****************************************************************************
@@ -228,8 +253,24 @@ do "$do/00_dir_setting.do"
 	}
 
 	
+	gen stratum_org_inter = stratum * org_name_num  
+
+
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
 	
 
+	estout `outcome' using "$out/reg_output/02_bf_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	
+
+	
+	
 	* complementary feeding * 
 	svy: mean isssf 
 	svy: mean food_g1 
@@ -289,6 +330,19 @@ do "$do/00_dir_setting.do"
 	
 	}
 
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/03_child_fg_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	
 	
 	* minimum dietary *
 	svy: mean dietary_tot 
@@ -386,6 +440,21 @@ do "$do/00_dir_setting.do"
 	
 	}	
 	
+	
+	foreach v in `outcome' {
+		
+		svy: reg `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/04_diet_score_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
+	 
 	local outcome mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf 
 	
 	foreach v in `outcome' {
@@ -396,6 +465,21 @@ do "$do/00_dir_setting.do"
 		}
 	
 	}
+	
+	local outcome mdd /*mmf_bf_6to8*/ mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf 
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/05_min_dietary_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	
 
 	****************************************************************************
 	* Child Health Data *
@@ -461,7 +545,9 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn child_vaccin_card, row 
 	svy: tab edu_exposure child_vaccin_card, row 
 	
-	
+
+	gen stratum_org_inter = stratum * org_name_num  
+
 	
 	local outcome child_bwt_lb
 	
@@ -474,6 +560,20 @@ do "$do/00_dir_setting.do"
 	
 	}	
 	
+	foreach v in `outcome' {
+		
+		svy: reg `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/06_child_bweight_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	
+	
 	local outcome 	child_vita child_deworm child_vaccin child_vaccin_card  child_low_bwt
 	
 	foreach v in `outcome' {
@@ -485,6 +585,21 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	
+
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/07_child_health_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
 	* illness *
 	
 	svy: mean child_ill0 
@@ -527,6 +642,20 @@ do "$do/00_dir_setting.do"
 	}
 
 	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/08_child_ill_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
+	   
 	***** DIARRHEA *****
 	// child_diarrh_treat
 	svy: mean child_diarrh_treat
@@ -579,6 +708,19 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/09_child_diarrhea_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	
 	***** COUGH *****
 	// child_cough_treat
 	svy: mean child_cough_treat
@@ -628,6 +770,20 @@ do "$do/00_dir_setting.do"
 		}
 	
 	}
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/10_child_cough_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
 	
 	***** FEVER *****
 	// child_fever_treat, m 
@@ -693,6 +849,20 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/11_child_fever_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
 	****************************************************************************
 	** Mom Dietary Diversity **
 	****************************************************************************
@@ -782,6 +952,8 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure mddw_yes, row 
 
 	
+	gen stratum_org_inter = stratum * org_name_num  
+
 	local outcome mddw_score mom_meal_freq
 	
 	foreach v in `outcome' {
@@ -793,6 +965,20 @@ do "$do/00_dir_setting.do"
 	
 	}	
 	
+	
+	foreach v in `outcome' {
+		
+		svy: reg `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/12_mom_diet_score_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
 	
 	local outcome 	mddw_yes ///
 					mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
@@ -808,6 +994,24 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	
+
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/13_mom_fg_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
+	   
+	
 	****************************************************************************
 	* Mom Health Module *
 	****************************************************************************
@@ -821,10 +1025,12 @@ do "$do/00_dir_setting.do"
 	** Mom ANC **
 	****************************************************************************
 
+	
 	// anc_yn 
 	svy: mean  anc_yn
 	svy: tab stratum_num anc_yn, row 
 	svy: tab NationalQuintile anc_yn, row
+	svy: tab hh_mem_dob_str anc_yn, row 
 
 	svy: reg anc_yn hfc_near_dist_dry 
 	svy: reg anc_yn hfc_near_dist_rain 
@@ -868,7 +1074,8 @@ do "$do/00_dir_setting.do"
 	svy: mean  anc_who_trained
 	svy: tab stratum_num anc_who_trained, row 
 	svy: tab NationalQuintile anc_who_trained, row
-	
+	svy: tab hh_mem_dob_str anc_who_trained, row 
+
 	svy: reg anc_who_trained hfc_near_dist_dry 
 	svy: reg anc_who_trained hfc_near_dist_rain 
 
@@ -918,6 +1125,9 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num anc_visit_trained_4times, row 
 	svy: tab NationalQuintile anc_visit_trained_4times, row
 	
+	svy: tab hh_mem_dob_str anc_visit_trained_4times, row 
+
+	
 	svy: reg anc_visit_trained_4times hfc_near_dist_dry 
 	svy: reg anc_visit_trained_4times hfc_near_dist_rain 	
 	
@@ -950,6 +1160,22 @@ do "$do/00_dir_setting.do"
 	}	
 	
 	
+	gen stratum_org_inter = stratum * org_name_num  
+
+	foreach v in `outcome' {
+		
+		svy: reg `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/14_mom_anc_visit_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+
+	   
+	   
 	local outcome 	anc_yn anc_who_trained anc_visit_trained_4times
 	
 	foreach v in `outcome' {
@@ -962,6 +1188,20 @@ do "$do/00_dir_setting.do"
 	}
 	
 	
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/15_mom_anc_all_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+
+	   
 	****************************************************************************
 	** Mom Deliverty **
 	****************************************************************************
@@ -1011,6 +1251,22 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/16_mom_deli_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
+	svy: tab hh_mem_dob_str insti_birth, row 
+	svy: tab hh_mem_dob_str skilled_battend, row 
 	
 	****************************************************************************
 	** Mom PNC **
@@ -1085,6 +1341,21 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/17_mom_pnc_all_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	
+	svy: tab hh_mem_dob_str pnc_yn, row 
+	svy: tab hh_mem_dob_str pnc_who_trained, row 
 	
 	****************************************************************************
 	** Mom NBC **
@@ -1171,6 +1442,24 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' stratum org_name_num stratum_org_inter
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/18_mom_nbc_all_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	
+	svy: tab hh_mem_dob_str nbc_yn, row 
+	svy: tab hh_mem_dob_str nbc_2days_yn, row 
+	svy: tab hh_mem_dob_str nbc_who_trained, row 
 	
 	****************************************************************************
 	** WASH **

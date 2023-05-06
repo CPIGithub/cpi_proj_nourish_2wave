@@ -52,6 +52,53 @@ do "$do/00_dir_setting.do"
 	drop _merge 
 
 	
+	* Youngest Child Age and DOB info 
+	preserve 
+
+	use "$dta/grp_hh_clean.dta", clear
+	
+	// child age calculation 
+	gen child_age_month		= calc_age_months if hh_mem_certification == 1
+	replace child_age_month = hh_mem_age_month if mi(child_age_month)
+	replace child_age_month = .m if mi(child_age_month)
+	lab var child_age_month "Child Age in months"
+	
+	keep if child_age_month < 24 
+	
+	
+	gen est_dob = svy_date - (child_age_month * 30.04) // average day in month 
+	format %td est_dob 
+	
+	// child birth month calculation 
+	gen dob_m = month(hh_mem_dob)
+	replace dob_m = month(est_dob) if mi(hh_mem_dob)
+	gen dob_y = year(hh_mem_dob)
+	replace dob_y = year(est_dob) if mi(hh_mem_dob)
+	
+	gen hh_mem_dob_str = ym(dob_y, dob_m)
+	format hh_mem_dob_str %tm
+	lab var hh_mem_dob_str "U2 Child DOB"
+	
+	
+	// keep the youngest child 
+	sort _parent_index women_pos1 child_age_month
+	bysort _parent_index women_pos1: keep if _n == 1
+	
+	keep	_parent_index women_pos1 hh_mem_dob_str child_age_month
+	
+	rename women_pos1 roster_index 
+
+	tempfile grp_hh
+	save `grp_hh', replace 
+
+	restore
+
+	merge 1:1 _parent_index roster_index using `grp_hh'
+	
+	drop if _merge == 2 // Mom health session only ask for U2 mom - ummatched came from > 2 yrs old
+	drop _merge 
+	
+	
 	****************************************************************************
 	** Mom ANC **
 	****************************************************************************
@@ -353,7 +400,8 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Weight variable *
-	merge m:1 geo_vill using "$dta/pnourish_hh_weight_final.dta", keepusing(stratum_num weight_final)
+	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
+						keepusing(stratum stratum_num org_name_num weight_final)
 	
 	keep if _merge == 3
 	

@@ -38,7 +38,7 @@ do "$do/00_dir_setting.do"
 	use "$dta/grp_hh_clean.dta", clear
 	
 	keep	_parent_index roster_index hh_mem_name hh_mem_sex hh_mem_age hh_mem_age_month ///
-			hh_mem_dob_know hh_mem_dob hh_mem_certification calc_age_months
+			hh_mem_dob_know hh_mem_dob hh_mem_certification calc_age_months women_pos1
 	
 	tempfile grp_hh
 	save `grp_hh', replace 
@@ -93,7 +93,8 @@ do "$do/00_dir_setting.do"
 
 	
 	* Add Weight variable *
-	merge m:1 geo_vill using "$dta/pnourish_hh_weight_final.dta", keepusing(stratum_num weight_final)
+	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
+						keepusing(stratum stratum_num org_name_num weight_final)
 	
 	keep if _merge == 3
 	

@@ -24,6 +24,11 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/grp_hh.dta", clear
 	
+	merge m:1 _parent_index using "$dta/PN_HH_Survey_HH_Level.dta", keepusing(svy_date) 
+	
+	drop if _merge == 2
+	drop _merge 
+	
 	do "$hhimport/grp_hh_labeling.do"
 
 	drop 	_index _parent_table_name _submission__id _submission__uuid ///
@@ -31,7 +36,7 @@ do "$do/00_dir_setting.do"
 			_submission__notes _submission__status _submission__submitted_by ///
 			_submission__tags
 			
-	order _parent_index
+	order svy_date _parent_index 
 
 	destring test calc_age_months, replace
 
@@ -68,7 +73,7 @@ do "$do/00_dir_setting.do"
 	//gen hh_mem_highedu_all = hh_mem_highedu 
 
 	gen hh_mem_highedu_n = hh_mem_highedu
-	replace hh_mem_highedu_n = .o if hh_mem_highedu == 888
+	replace hh_mem_highedu_n = .o if hh_mem_highedu == 888 | hh_mem_highedu == 8
 	
 	bysort _parent_index: egen hh_mem_highedu_all = max(hh_mem_highedu_n)
 	lab var hh_mem_highedu_all "Highest Education Among All HH Members"

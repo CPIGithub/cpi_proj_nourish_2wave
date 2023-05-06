@@ -140,6 +140,9 @@ lab val stratum_num stratum_num
 tab stratum_num, m 
 
 
+encode org_name, gen(org_name_num)
+order org_name_num, after(org_name)
+
 * export as excel file 
 export excel using "$result/pn_2_survey_weight.xlsx", sheet("weight") firstrow(variable)  nolabel replace 
 

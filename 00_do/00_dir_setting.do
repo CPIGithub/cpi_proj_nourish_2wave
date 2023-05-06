@@ -11,6 +11,8 @@ Modified by			:
 
 ** Settings for stata ** 
 clear all
+label drop _all
+
 set more off
 set mem 100m
 set matsize 11000
