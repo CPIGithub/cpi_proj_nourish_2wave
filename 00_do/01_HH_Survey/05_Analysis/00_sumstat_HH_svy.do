@@ -171,9 +171,12 @@ do "$do/00_dir_setting.do"
 	}
 
 	
-	gen stratum_org_inter = stratum * org_name_num  
+	gen org_name_nokdhw = org_name_num
+	replace org_name_nokdhw = .m if stratum_num == 5
 	
-	svy: logit child_gam stratum org_name_num stratum_org_inter
+	gen KDHW = (stratum_num == 5)
+	
+	svy: logit child_gam KDHW stratum i.org_name_num 
 	estimates store m1, title(Model 1: Child Malnutrition)
 
 	estout m1 using "$out/reg_output/01_child_gam.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
@@ -181,6 +184,21 @@ do "$do/00_dir_setting.do"
 	   stats(r2 df_r bic) replace
    
    
+ 	foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+		conindex child_gam, rank(`var') svy wagstaff bounded limits(0 1)
+	}
+
+	
+	gen stratum_org_inter = stratum * org_name_num  
+	
+	svy: logit child_gam KDHW i.org_name_num##stratum
+	estimates store m1, title(Model 1: Child Malnutrition)
+
+	estout m1 using "$out/reg_output/01_child_gam_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
 	****************************************************************************
 	* Child IYCF Data *
 	****************************************************************************
@@ -254,11 +272,12 @@ do "$do/00_dir_setting.do"
 
 	
 	gen stratum_org_inter = stratum * org_name_num  
+	gen KDHW = (stratum_num == 5)
 
 
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum i.org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -269,6 +288,17 @@ do "$do/00_dir_setting.do"
 	   stats(r2 df_r bic) replace
 	
 
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/02_bf_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
 	
 	
 	* complementary feeding * 
@@ -333,7 +363,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -342,8 +372,20 @@ do "$do/00_dir_setting.do"
 	estout `outcome' using "$out/reg_output/03_child_fg_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
+	   
 	
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum
+		estimates store `v', title(`v')
+		
+	}
 	
+
+	estout `outcome' using "$out/reg_output/03_child_fg_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
 	* minimum dietary *
 	svy: mean dietary_tot 
 	svy: mean mdd 
@@ -443,7 +485,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: reg `v' stratum org_name_num stratum_org_inter
+		svy: reg `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -454,7 +496,18 @@ do "$do/00_dir_setting.do"
 	   stats(r2 df_r bic) replace
 	   
 	   
-	 
+	foreach v in `outcome' {
+		
+		svy: reg `v' KDHW i.org_name_num##stratum
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/04_diet_score_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
 	local outcome mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf 
 	
 	foreach v in `outcome' {
@@ -470,7 +523,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -480,6 +533,20 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	
+	
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/05_min_dietary_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
 
 	****************************************************************************
 	* Child Health Data *
@@ -547,7 +614,7 @@ do "$do/00_dir_setting.do"
 	
 
 	gen stratum_org_inter = stratum * org_name_num  
-
+	gen KDHW = (stratum_num == 5)
 	
 	local outcome child_bwt_lb
 	
@@ -562,7 +629,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: reg `v' stratum org_name_num stratum_org_inter
+		svy: reg `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -573,7 +640,19 @@ do "$do/00_dir_setting.do"
 	   stats(r2 df_r bic) replace
 	   
 	
+	foreach v in `outcome' {
+		
+		svy: reg `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
 	
+
+	estout `outcome' using "$out/reg_output/06_child_bweight_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
 	local outcome 	child_vita child_deworm child_vaccin child_vaccin_card  child_low_bwt
 	
 	foreach v in `outcome' {
@@ -589,13 +668,25 @@ do "$do/00_dir_setting.do"
 
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
 	
 
 	estout `outcome' using "$out/reg_output/07_child_health_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/07_child_health_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
@@ -644,7 +735,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -654,6 +745,17 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/08_child_ill_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
 	   
 	   
 	***** DIARRHEA *****
@@ -710,7 +812,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -720,7 +822,19 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num## stratum  
+		estimates store `v', title(`v')
+		
+	}
 	
+
+	estout `outcome' using "$out/reg_output/09_child_diarrhea_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
 	***** COUGH *****
 	// child_cough_treat
 	svy: mean child_cough_treat
@@ -773,7 +887,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -783,7 +897,17 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
-	   
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/10_child_cough_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace	   
 	
 	***** FEVER *****
 	// child_fever_treat, m 
@@ -852,7 +976,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -862,6 +986,17 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/11_child_fever_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
 	   
 	****************************************************************************
 	** Mom Dietary Diversity **
@@ -953,6 +1088,7 @@ do "$do/00_dir_setting.do"
 
 	
 	gen stratum_org_inter = stratum * org_name_num  
+	gen KDHW = (stratum_num == 5)
 
 	local outcome mddw_score mom_meal_freq
 	
@@ -968,7 +1104,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: reg `v' stratum org_name_num stratum_org_inter
+		svy: reg `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -978,6 +1114,17 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	foreach v in `outcome' {
+		
+		svy: reg `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/12_mom_diet_score_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
 	   
 	
 	local outcome 	mddw_yes ///
@@ -999,7 +1146,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -1010,7 +1157,18 @@ do "$do/00_dir_setting.do"
 	   stats(r2 df_r bic) replace
 	   
 	   
-	   
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/13_mom_fg_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace	   
 	
 	****************************************************************************
 	* Mom Health Module *
@@ -1031,7 +1189,25 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num anc_yn, row 
 	svy: tab NationalQuintile anc_yn, row
 	svy: tab hh_mem_dob_str anc_yn, row 
+	
+	lab var anc_yn "ANC - yes"
 
+	* Create a scatter plot with lowess curves 
+	twoway scatter anc_yn hh_mem_dob_str, ///
+		mcolor(blue) msize(small) ///
+		ytitle("Miles per Gallon") xtitle("Weight") ///
+		title("Scatter Plot with Lowess Curves") ///
+		legend(off)
+
+	* Add lowess curves
+	lowess anc_yn hh_mem_dob_str, ///
+		lcolor(red) lwidth(medium) ///
+		legend(label(1 "Lowess Curve"))
+		
+	graph export "$plots/lowess_anc_childob.png", replace
+
+	
+	
 	svy: reg anc_yn hfc_near_dist_dry 
 	svy: reg anc_yn hfc_near_dist_rain 
 
@@ -1076,6 +1252,21 @@ do "$do/00_dir_setting.do"
 	svy: tab NationalQuintile anc_who_trained, row
 	svy: tab hh_mem_dob_str anc_who_trained, row 
 
+	* Create a scatter plot with lowess curves 
+	twoway scatter anc_who_trained hh_mem_dob_str, ///
+		mcolor(blue) msize(small) ///
+		ytitle("Miles per Gallon") xtitle("Weight") ///
+		title("Scatter Plot with Lowess Curves") ///
+		legend(off)
+
+	* Add lowess curves
+	lowess anc_who_trained hh_mem_dob_str, ///
+		lcolor(red) lwidth(medium) ///
+		legend(label(1 "Lowess Curve"))
+		
+	graph export "$plots/lowess_anc_who_trained_childob.png", replace
+	
+	
 	svy: reg anc_who_trained hfc_near_dist_dry 
 	svy: reg anc_who_trained hfc_near_dist_rain 
 
@@ -1127,6 +1318,20 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hh_mem_dob_str anc_visit_trained_4times, row 
 
+	* Create a scatter plot with lowess curves 
+	twoway scatter anc_visit_trained_4times hh_mem_dob_str, ///
+		mcolor(blue) msize(small) ///
+		ytitle("Miles per Gallon") xtitle("Weight") ///
+		title("Scatter Plot with Lowess Curves") ///
+		legend(off)
+
+	* Add lowess curves
+	lowess anc_visit_trained_4times hh_mem_dob_str, ///
+		lcolor(red) lwidth(medium) ///
+		legend(label(1 "Lowess Curve"))
+		
+	graph export "$plots/lowess_anc_visit_trained_4times_childob.png", replace
+	
 	
 	svy: reg anc_visit_trained_4times hfc_near_dist_dry 
 	svy: reg anc_visit_trained_4times hfc_near_dist_rain 	
@@ -1162,9 +1367,12 @@ do "$do/00_dir_setting.do"
 	
 	gen stratum_org_inter = stratum * org_name_num  
 
+	gen KDHW = (stratum_num == 5)
+
+		
 	foreach v in `outcome' {
 		
-		svy: reg `v' stratum org_name_num stratum_org_inter
+		svy: reg `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -1174,6 +1382,18 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 
+	   
+	foreach v in `outcome' {
+		
+		svy: reg `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/14_mom_anc_visit_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
 	   
 	   
 	local outcome 	anc_yn anc_who_trained anc_visit_trained_4times
@@ -1191,7 +1411,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -1201,6 +1421,17 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/15_mom_anc_all_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
 	   
 	****************************************************************************
 	** Mom Deliverty **
@@ -1254,7 +1485,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -1264,6 +1495,17 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/16_mom_deli_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
 	   
 	svy: tab hh_mem_dob_str insti_birth, row 
 	svy: tab hh_mem_dob_str skilled_battend, row 
@@ -1344,7 +1586,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -1353,7 +1595,19 @@ do "$do/00_dir_setting.do"
 	estout `outcome' using "$out/reg_output/17_mom_pnc_all_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
+
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
 	
+
+	estout `outcome' using "$out/reg_output/17_mom_pnc_all_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
 	svy: tab hh_mem_dob_str pnc_yn, row 
 	svy: tab hh_mem_dob_str pnc_who_trained, row 
 	
@@ -1446,7 +1700,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' stratum org_name_num stratum_org_inter
+		svy: logit `v' KDHW stratum org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -1456,7 +1710,18 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	foreach v in `outcome' {
+		
+		svy: logit `v' KDHW i.org_name_num##stratum  
+		estimates store `v', title(`v')
+		
+	}
 	
+
+	estout `outcome' using "$out/reg_output/18_mom_nbc_all_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
 	svy: tab hh_mem_dob_str nbc_yn, row 
 	svy: tab hh_mem_dob_str nbc_2days_yn, row 
 	svy: tab hh_mem_dob_str nbc_who_trained, row 
