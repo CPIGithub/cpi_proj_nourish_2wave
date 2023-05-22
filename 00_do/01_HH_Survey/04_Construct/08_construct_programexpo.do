@@ -116,6 +116,7 @@ do "$do/00_dir_setting.do"
 	tab pn_yes prgexpo_pn
 	
 	gen pn_access = (pn_yes == 1 & prgexpo_pn == 1)
+	replace pn_access = .m if pn_yes != 1
 	replace pn_access = .m if mi(pn_yes) | mi(prgexpo_pn)
 	lab var pn_access "Program present at village and HH aware about it"
 	tab pn_access
@@ -123,36 +124,42 @@ do "$do/00_dir_setting.do"
 
 	// pn_muac_yn prgexpo_join8
 	gen pn_muac_access = (pn_muac_yn == 1 & prgexpo_join8 == 1)
+	replace pn_muac_access = .m if pn_muac_yn != 1
 	replace pn_muac_access = .m if mi(pn_muac_yn) | mi(prgexpo_join8)
 	lab var pn_muac_access "MUAC present at village and HH participated in it"
 	tab pn_muac_access
 	
 	// pn_msg_yn prgexpo_join6
 	gen pn_msg_access = (pn_msg_yn == 1 & prgexpo_join6 == 1)
+	replace pn_msg_access = .m if pn_msg_yn != 1
 	replace pn_msg_access = .m if mi(pn_msg_yn) | mi(prgexpo_join6)
 	lab var pn_msg_access "MSG present at village and HH participated in it"
 	tab pn_msg_access
 	
 	// pn_wash_yn prgexpo_join4
 	gen pn_wash_access = (pn_wash_yn == 1 & prgexpo_join4 == 1)
+	replace pn_wash_access = .m if pn_wash_yn != 1
 	replace pn_wash_access = .m if mi(pn_wash_yn) | mi(prgexpo_join4)
 	lab var pn_wash_access "WASH infra present at village and HH participated in it"
 	tab pn_wash_access
 	
 	// pn_sbcc_yn pn_wsbcc_yn prgexpo_join5
 	gen pn_sbcc_access = (pn_sbcc_yn == 1 & (pn_wsbcc_yn == 1 | prgexpo_join5 == 1))
+	replace pn_sbcc_access = .m if pn_sbcc_yn != 1
 	replace pn_sbcc_access = .m if mi(pn_sbcc_yn) & (mi(pn_wsbcc_yn) | mi(prgexpo_join5))
 	lab var pn_sbcc_access "SBCC present at village and HH participated in it"
 	tab pn_sbcc_access
 
 	// pn_hgdn_yn prgexpo_join7
 	gen pn_hgdn_access = (pn_hgdn_yn == 1 & prgexpo_join7 == 1)
+	replace pn_hgdn_access = .m if pn_hgdn_yn != 1
 	replace pn_hgdn_access = .m if mi(pn_hgdn_yn) | mi(prgexpo_join7)
 	lab var pn_hgdn_access "Home Gardening present at village and HH participated in it"
 	tab pn_hgdn_access
 	
 	// pn_emgy_yn prgexpo_join1 prgexpo_join2 prgexpo_join3
 	gen pn_emgy_access = (pn_emgy_yn == 1 & (prgexpo_join1 == 1 | prgexpo_join2 == 1 | prgexpo_join3 == 1))
+	replace pn_emgy_access = .m if pn_emgy_yn != 1
 	replace pn_emgy_access = .m if mi(pn_emgy_yn) & (mi(prgexpo_join1) | mi(prgexpo_join2) | mi(prgexpo_join3))
 	lab var pn_emgy_access "Emergency response activities present at village and HH participated in it"
 	tab pn_emgy_access

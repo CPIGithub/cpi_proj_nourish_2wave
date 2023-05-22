@@ -80,6 +80,21 @@ do "$do/00_dir_setting.do"
 	// hfc_vill
 	mean hfc_vill0 hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 
 	
+	preserve 
+	
+	foreach var of varlist hfc_vill0 hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 {
+	    
+		bysort stratum_num: egen `var'_t = total(`var')
+		
+	}
+	
+	bysort stratum_num: keep if _n == 1
+	keep stratum_num *_t
+	rename *_t *
+	list 
+		
+	restore 
+	
 	// hfc_vill_staff
 	replace hfc_vill_staff = .m if hfc_vill0 == 1
 	
@@ -93,6 +108,21 @@ do "$do/00_dir_setting.do"
 	
 	// hfc_near
 	mean hfc_near0 hfc_near1 hfc_near2 hfc_near3 hfc_near4 hfc_near5 hfc_near6 hfc_near888  
+	
+	preserve 
+	
+	foreach var of varlist hfc_near0 hfc_near1 hfc_near2 hfc_near3 hfc_near4 hfc_near5 hfc_near6 hfc_near888 {
+	    
+		bysort stratum_num: egen `var'_t = total(`var')
+		
+	}
+	
+	bysort stratum_num: keep if _n == 1
+	keep stratum_num *_t
+	rename *_t *
+	list 
+		
+	restore 
 	
 	mean hfc_near_dist_dry hfc_near_dist_rain
 
