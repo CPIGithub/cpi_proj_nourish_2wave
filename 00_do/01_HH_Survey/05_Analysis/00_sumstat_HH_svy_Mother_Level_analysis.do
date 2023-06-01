@@ -214,8 +214,33 @@ do "$do/00_dir_setting.do"
 	lab val delivery_month_season delivery_month_season
 	tab delivery_month_season, m 
 	
+	gen child_dob_year = year(dofm(hh_mem_dob_str))
+	tab child_dob_year, m 
 	
-	* ANC Months Season *
+	gen child_dob_season_yr = .m 
+	replace child_dob_season_yr = 1 if child_dob_year == 2021 & delivery_month_season == 1
+	replace child_dob_season_yr = 2 if child_dob_year == 2021 & delivery_month_season == 2
+	replace child_dob_season_yr = 3 if child_dob_year == 2021 & delivery_month_season == 3
+	replace child_dob_season_yr = 4 if child_dob_year == 2022 & delivery_month_season == 1
+	replace child_dob_season_yr = 5 if child_dob_year == 2022 & delivery_month_season == 2
+	replace child_dob_season_yr = 6 if child_dob_year == 2022 & delivery_month_season == 3
+	replace child_dob_season_yr = 7 if child_dob_year == 2023 & delivery_month_season == 1
+	replace child_dob_season_yr = 8 if child_dob_year == 2023 & delivery_month_season == 2
+	replace child_dob_season_yr = 9 if child_dob_year == 2023 & delivery_month_season == 3
+	lab def child_dob_season_yr 1"2021 Summer" ///
+								2"2021 Raining" ///
+								3"2021 Winter" ///
+								4"2022 Summer" ///
+								5"2022 Raining" ///
+								6"2022 Winter" ///
+								7"2023 Summer" ///
+								8"2023 Raining" ///
+								9"2023 Winter"
+	lab val child_dob_season_yr child_dob_season_yr
+	tab child_dob_season_yr, m 
+	
+	
+	* ANC Months Season * // need to check it - revised the code and concept 
 	gen anc_month_season = .m 
 	replace anc_month_season = 1 if 	(hh_mem_dob_str >= tm(2021m2) & hh_mem_dob_str < tm(2021m5)) | ///
 										(hh_mem_dob_str >= tm(2022m2) & hh_mem_dob_str < tm(2022m5)) | ///
@@ -227,6 +252,14 @@ do "$do/00_dir_setting.do"
 										(hh_mem_dob_str >= tm(2022m5) & hh_mem_dob_str < tm(2022m9)) 
 	lab val anc_month_season delivery_month_season
 	tab anc_month_season, m 
+	
+	
+	* NationalQuintile - adjustment 
+	gen NationalQuintile_recod = NationalQuintile
+	replace NationalQuintile_recod = 4 if NationalQuintile > 4 & !mi(NationalQuintile)
+	lab def NationalQuintile_recod 1"Poorest" 2"Poor" 3"Medium" 4"Wealthy"
+	lab val NationalQuintile_recod NationalQuintile_recod
+	tab NationalQuintile_recod, m 
 	
 	
 	****************************************************************************
@@ -266,6 +299,7 @@ do "$do/00_dir_setting.do"
 	svy: tab anc_where,ci
 	svy: tab stratum_num anc_where, row 
 	svy: tab NationalQuintile anc_where, row 
+	svy: tab NationalQuintile_recod anc_where, row 
 	
 	
 	// anc_*_who
@@ -294,6 +328,16 @@ do "$do/00_dir_setting.do"
 		
 		svy: tab NationalQuintile `var', row 
 	}
+	
+
+	foreach var of varlist 	anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 ///
+							anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 ///
+							anc_who_11 anc_who_888 {
+		
+		svy: tab NationalQuintile_recod `var', row 
+	}
+	
+	
 	
 
 	// anc_who_trained
@@ -351,6 +395,7 @@ do "$do/00_dir_setting.do"
 
 	// anc_visit_trained
 	svy: mean  anc_visit_trained
+	svy: mean anc_visit_trained if child_dob_year < 2023, over(child_dob_season_yr) 
 
 	svy: mean anc_visit_trained, over(stratum_num)
 	svy: reg anc_visit_trained i.stratum_num
@@ -389,17 +434,17 @@ do "$do/00_dir_setting.do"
 	svy: tab hhitems_phone anc_yn, row 
 	svy: tab prgexpo_pn anc_yn, row 	
 	svy: tab edu_exposure anc_yn, row 
-	svy: tab anc_month_season anc_yn, row 
+	svy: tab child_dob_season_yr anc_yn if child_dob_year < 2023, row 
 
 	svy: tab hhitems_phone anc_who_trained, row 
 	svy: tab prgexpo_pn anc_who_trained, row 	
 	svy: tab edu_exposure anc_who_trained, row 
-	svy: tab anc_month_season anc_who_trained, row 
+	svy: tab child_dob_season_yr anc_who_trained if child_dob_year < 2023, row 
 	
 	svy: tab hhitems_phone anc_visit_trained_4times, row 
 	svy: tab prgexpo_pn anc_visit_trained_4times, row 	
 	svy: tab edu_exposure anc_visit_trained_4times, row 
-	svy: tab anc_month_season anc_visit_trained_4times, row 
+	svy: tab child_dob_season_yr anc_visit_trained_4times if child_dob_year < 2023, row 
 
 	svy: reg anc_visit_trained hhitems_phone
 	svy: reg anc_visit_trained prgexpo_pn
@@ -493,6 +538,8 @@ do "$do/00_dir_setting.do"
 	svy: tab deliv_place,ci
 	svy: tab stratum_num deliv_place, row 
 	svy: tab NationalQuintile deliv_place, row 
+	svy: tab NationalQuintile_recod deliv_place, row 
+
 
 	// Institutional Deliveries
 	svy: mean  insti_birth
@@ -506,16 +553,19 @@ do "$do/00_dir_setting.do"
 	svy: tab deliv_assist,ci
 	svy: tab stratum_num deliv_assist, row 
 	svy: tab NationalQuintile deliv_assist, row 
-	svy: tab delivery_month_season deliv_assist, row
+	svy: tab NationalQuintile_recod deliv_assist, row 
+
+	svy: tab child_dob_season_yr deliv_assist if child_dob_year < 2023, row
 
 	
 	// Births attended by skilled health personnel
 	svy: mean  skilled_battend
 	svy: tab stratum_num skilled_battend, row 
 	svy: tab NationalQuintile skilled_battend, row
-	svy: tab delivery_month_season skilled_battend, row
+	svy: tab child_dob_season_yr skilled_battend if child_dob_year < 2023, row
 
-	
+	svy: reg skilled_battend i.delivery_month_season child_dob_year if child_dob_year < 2023
+
 	svy: reg skilled_battend hfc_near_dist_dry 
 	svy: reg skilled_battend hfc_near_dist_rain 	
 	
@@ -526,7 +576,10 @@ do "$do/00_dir_setting.do"
 	svy: tab hhitems_phone insti_birth, row 
 	svy: tab prgexpo_pn insti_birth, row 	
 	svy: tab edu_exposure insti_birth, row 
-	svy: tab delivery_month_season insti_birth, row
+	svy: tab child_dob_season_yr insti_birth if child_dob_year < 2023, row
+
+	svy: reg insti_birth i.delivery_month_season child_dob_year if child_dob_year < 2023
+
 	
 	local outcome 	insti_birth skilled_battend
 	
@@ -574,6 +627,7 @@ do "$do/00_dir_setting.do"
 	svy: mean  pnc_yn
 	svy: tab stratum_num pnc_yn, row 
 	svy: tab NationalQuintile pnc_yn, row
+	svy: tab child_dob_season_yr pnc_yn if child_dob_year < 2023, row
 
 	svy: reg pnc_yn hfc_near_dist_dry 
 	svy: reg pnc_yn hfc_near_dist_rain 	
@@ -582,6 +636,8 @@ do "$do/00_dir_setting.do"
 	svy: tab pnc_where,ci
 	svy: tab stratum_num pnc_where, row 
 	svy: tab NationalQuintile pnc_where, row 
+	svy: tab NationalQuintile_recod pnc_where, row 
+	
 
 	// pnc_*_who
 	// pnc_who_1 pnc_who_2 pnc_who_3 pnc_who_4 pnc_who_5 pnc_who_6 pnc_who_7 pnc_who_8 pnc_who_9 pnc_who_10 pnc_who_11 pnc_who_888
@@ -611,11 +667,24 @@ do "$do/00_dir_setting.do"
 		
 		svy: tab NationalQuintile `var', row 
 	}
+	
+	
+	foreach var of varlist 	pnc_who_1 pnc_who_2 pnc_who_3 pnc_who_4 pnc_who_5 ///
+							pnc_who_6 pnc_who_7 pnc_who_8 pnc_who_9 pnc_who_10 ///
+							pnc_who_11 pnc_who_888 {
+		
+		svy: tab NationalQuintile_recod `var', row 
+	}
+		
+	
+	
+	
 		
 	// pnc_who_trained
 	svy: mean  pnc_who_trained
 	svy: tab stratum_num pnc_who_trained, row 
 	svy: tab NationalQuintile pnc_who_trained, row
+	svy: tab child_dob_season_yr pnc_who_trained if child_dob_year < 2023, row
 
 	svy: reg pnc_who_trained hfc_near_dist_dry 
 	svy: reg pnc_who_trained hfc_near_dist_rain 	
@@ -675,6 +744,7 @@ do "$do/00_dir_setting.do"
 	svy: mean  nbc_yn
 	svy: tab stratum_num nbc_yn, row 
 	svy: tab NationalQuintile nbc_yn, row
+	svy: tab child_dob_season_yr nbc_yn if child_dob_year < 2023, row
 
 	svy: reg nbc_yn hfc_near_dist_dry 
 	svy: reg nbc_yn hfc_near_dist_rain 	
@@ -683,6 +753,7 @@ do "$do/00_dir_setting.do"
 	svy: mean  nbc_2days_yn
 	svy: tab stratum_num nbc_2days_yn, row 
 	svy: tab NationalQuintile nbc_2days_yn, row
+	svy: tab child_dob_season_yr nbc_2days_yn if child_dob_year < 2023, row
 
 	svy: reg nbc_2days_yn hfc_near_dist_dry 
 	svy: reg nbc_2days_yn hfc_near_dist_rain 	
@@ -691,6 +762,8 @@ do "$do/00_dir_setting.do"
 	svy: tab nbc_where,ci
 	svy: tab stratum_num nbc_where, row 
 	svy: tab NationalQuintile nbc_where, row 
+	svy: tab NationalQuintile_recod nbc_where, row 
+	
 	
 	// nbc_*_who
 	// nbc_who_1 nbc_who_2 nbc_who_3 nbc_who_4 nbc_who_5 nbc_who_6 nbc_who_7 nbc_who_8 nbc_who_9 nbc_who_10 nbc_who_11 nbc_who_888
@@ -721,10 +794,18 @@ do "$do/00_dir_setting.do"
 	}
 	
 	
+	foreach var of varlist 	nbc_who_1 nbc_who_2 nbc_who_3 nbc_who_4 nbc_who_5 ///
+							nbc_who_6 nbc_who_7 nbc_who_8 nbc_who_9 nbc_who_10 ///
+							nbc_who_11 nbc_who_888 {
+		
+		svy: tab NationalQuintile_recod `var', row 
+	}	
+	
 	// nbc_who_trained
 	svy: mean  nbc_who_trained
 	svy: tab stratum_num nbc_who_trained, row 
 	svy: tab NationalQuintile nbc_who_trained, row
+	svy: tab child_dob_season_yr nbc_who_trained if child_dob_year < 2023, row
 
 	svy: reg nbc_who_trained hfc_near_dist_dry 
 	svy: reg nbc_who_trained hfc_near_dist_rain 	

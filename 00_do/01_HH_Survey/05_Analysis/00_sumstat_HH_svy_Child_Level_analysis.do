@@ -463,22 +463,27 @@ do "$do/00_dir_setting.do"
 	// child_vita
 	svy: tab stratum_num child_vita, row 
 	svy: tab NationalQuintile child_vita, row 
-	svy: tab child_age_yrs child_vita if child_age_yrs < 3, row 
+	svy: tab child_age_yrs child_vita if child_age_yrs < 3 & child_age_month >= 6 & !mi(child_age_month), row 
+	svy: reg child_vita child_age_yrs i.org_name_num stratum if child_age_yrs < 3 & child_age_month >= 6 & !mi(child_age_month)
 
 	// child_deworm
 	svy: tab stratum_num child_deworm, row 
 	svy: tab NationalQuintile child_deworm, row 
-	svy: tab child_age_yrs child_deworm if child_age_yrs < 3, row 
+	svy: tab child_age_yrs child_deworm if child_age_yrs < 3 & child_age_month >= 6 & !mi(child_age_month), row 
+	svy: reg child_deworm child_age_yrs i.org_name_num stratum if child_age_yrs < 3 & child_age_month >= 6 & !mi(child_age_month)
 
 	// child_vaccin  
 	svy: tab stratum_num child_vaccin, row 
 	svy: tab NationalQuintile child_vaccin, row 
 	svy: tab child_age_yrs child_vaccin, row 
+	svy: reg child_vaccin child_age_yrs i.org_name_num stratum 
 
 	// child_vaccin_card 
 	svy: tab stratum_num child_vaccin_card, row 
 	svy: tab NationalQuintile child_vaccin_card, row 
 	svy: tab child_age_yrs child_vaccin_card, row 
+	svy: reg child_vaccin_card child_age_yrs i.org_name_num stratum 
+	svy: reg child_vaccin_card child_age_yrs i.org_name_num stratum if child_age_yrs < 3 
 
 	// child_bwt_lb 
 	svy: mean child_bwt_lb, over(stratum_num)
