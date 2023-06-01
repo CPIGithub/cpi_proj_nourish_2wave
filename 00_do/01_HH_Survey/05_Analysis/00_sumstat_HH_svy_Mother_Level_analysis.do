@@ -197,6 +197,38 @@ do "$do/00_dir_setting.do"
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
+	
+	* Delivery Month Season *
+	tab hh_mem_dob_str, m 
+	
+	gen delivery_month_season = .m 
+	replace delivery_month_season = 1 if 	(hh_mem_dob_str >= tm(2021m3) & hh_mem_dob_str < tm(2021m6)) | ///
+											(hh_mem_dob_str >= tm(2022m3) & hh_mem_dob_str < tm(2022m6)) | ///
+											(hh_mem_dob_str >= tm(2023m3) & hh_mem_dob_str < tm(2023m4))
+	replace delivery_month_season = 2 if 	(hh_mem_dob_str >= tm(2021m6) & hh_mem_dob_str < tm(2021m11)) | ///
+											(hh_mem_dob_str >= tm(2022m6) & hh_mem_dob_str < tm(2022m11))
+	replace delivery_month_season = 3 if 	(hh_mem_dob_str >= tm(2021m1) & hh_mem_dob_str < tm(2021m3)) | ///
+											(hh_mem_dob_str >= tm(2021m11) & hh_mem_dob_str < tm(2022m3)) | ///
+											(hh_mem_dob_str >= tm(2022m11) & hh_mem_dob_str < tm(2023m3))
+	lab def delivery_month_season 1"Summer" 2"Raining" 3"Winter"
+	lab val delivery_month_season delivery_month_season
+	tab delivery_month_season, m 
+	
+	
+	* ANC Months Season *
+	gen anc_month_season = .m 
+	replace anc_month_season = 1 if 	(hh_mem_dob_str >= tm(2021m2) & hh_mem_dob_str < tm(2021m5)) | ///
+										(hh_mem_dob_str >= tm(2022m2) & hh_mem_dob_str < tm(2022m5)) | ///
+										(hh_mem_dob_str >= tm(2023m2) & hh_mem_dob_str < tm(2023m4))						 
+	replace anc_month_season = 2 if 	(hh_mem_dob_str >= tm(2021m1) & hh_mem_dob_str < tm(2022m2)) | ///
+										(hh_mem_dob_str >= tm(2021m9) & hh_mem_dob_str < tm(2022m6)) | ///
+										(hh_mem_dob_str >= tm(2022m9) & hh_mem_dob_str < tm(2023m2))
+	replace anc_month_season = 3 if 	(hh_mem_dob_str >= tm(2021m5) & hh_mem_dob_str < tm(2021m9)) | ///
+										(hh_mem_dob_str >= tm(2022m5) & hh_mem_dob_str < tm(2022m9)) 
+	lab val anc_month_season delivery_month_season
+	tab anc_month_season, m 
+	
+	
 	****************************************************************************
 	** Mom ANC **
 	****************************************************************************
@@ -357,14 +389,17 @@ do "$do/00_dir_setting.do"
 	svy: tab hhitems_phone anc_yn, row 
 	svy: tab prgexpo_pn anc_yn, row 	
 	svy: tab edu_exposure anc_yn, row 
+	svy: tab anc_month_season anc_yn, row 
 
 	svy: tab hhitems_phone anc_who_trained, row 
 	svy: tab prgexpo_pn anc_who_trained, row 	
 	svy: tab edu_exposure anc_who_trained, row 
+	svy: tab anc_month_season anc_who_trained, row 
 	
 	svy: tab hhitems_phone anc_visit_trained_4times, row 
 	svy: tab prgexpo_pn anc_visit_trained_4times, row 	
 	svy: tab edu_exposure anc_visit_trained_4times, row 
+	svy: tab anc_month_season anc_visit_trained_4times, row 
 
 	svy: reg anc_visit_trained hhitems_phone
 	svy: reg anc_visit_trained prgexpo_pn
@@ -471,12 +506,16 @@ do "$do/00_dir_setting.do"
 	svy: tab deliv_assist,ci
 	svy: tab stratum_num deliv_assist, row 
 	svy: tab NationalQuintile deliv_assist, row 
+	svy: tab delivery_month_season deliv_assist, row
+
 	
 	// Births attended by skilled health personnel
 	svy: mean  skilled_battend
 	svy: tab stratum_num skilled_battend, row 
 	svy: tab NationalQuintile skilled_battend, row
+	svy: tab delivery_month_season skilled_battend, row
 
+	
 	svy: reg skilled_battend hfc_near_dist_dry 
 	svy: reg skilled_battend hfc_near_dist_rain 	
 	
@@ -487,7 +526,7 @@ do "$do/00_dir_setting.do"
 	svy: tab hhitems_phone insti_birth, row 
 	svy: tab prgexpo_pn insti_birth, row 	
 	svy: tab edu_exposure insti_birth, row 
-
+	svy: tab delivery_month_season insti_birth, row
 	
 	local outcome 	insti_birth skilled_battend
 	

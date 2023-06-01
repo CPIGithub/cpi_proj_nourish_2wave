@@ -441,6 +441,15 @@ do "$do/00_dir_setting.do"
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
+	/*
+	
+	 - for vaccinations, we wanted to look at the change in "ever vaccinated" for our households, not just compare with mcct baseline. Can we do this/have we done, for children under 1, under 2 (since coup) or older? Can we also map this and write a bit more in the section? It was an area of interest for EHOs.
+
+	*/
+	
+	recode child_age_month (0/11 = 1)(12/23 = 2)(24/35 = 3)(36/47 = 4)(48/59 = 5), gen(child_age_yrs)
+	tab child_age_yrs, m 
+	
 
 	** Child Birth Weight **
 	svy: mean child_vita 
@@ -454,18 +463,22 @@ do "$do/00_dir_setting.do"
 	// child_vita
 	svy: tab stratum_num child_vita, row 
 	svy: tab NationalQuintile child_vita, row 
+	svy: tab child_age_yrs child_vita if child_age_yrs < 3, row 
 
 	// child_deworm
 	svy: tab stratum_num child_deworm, row 
 	svy: tab NationalQuintile child_deworm, row 
+	svy: tab child_age_yrs child_deworm if child_age_yrs < 3, row 
 
 	// child_vaccin  
 	svy: tab stratum_num child_vaccin, row 
 	svy: tab NationalQuintile child_vaccin, row 
+	svy: tab child_age_yrs child_vaccin, row 
 
 	// child_vaccin_card 
 	svy: tab stratum_num child_vaccin_card, row 
 	svy: tab NationalQuintile child_vaccin_card, row 
+	svy: tab child_age_yrs child_vaccin_card, row 
 
 	// child_bwt_lb 
 	svy: mean child_bwt_lb, over(stratum_num)
@@ -477,7 +490,8 @@ do "$do/00_dir_setting.do"
 	// child_low_bwt  
 	svy: tab stratum_num child_low_bwt, row 
 	svy: tab NationalQuintile child_low_bwt, row 
-	
+	svy: tab child_age_yrs child_low_bwt, row 
+
 	
 	svy: tab hhitems_phone child_vita, row 
 	svy: tab prgexpo_pn child_vita, row 
