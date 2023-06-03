@@ -40,6 +40,7 @@ do "$do/00_dir_setting.do"
 	foreach v in `fies' {
 		
 		replace `v' = .d if `v' == 98 | `v' == 97
+		replace `v' = 0 if `v' == 2
 		tab `v', m 
 	} 
 
@@ -86,9 +87,39 @@ do "$do/00_dir_setting.do"
 	
 	iecodebook apply using "$raw/pnourish_FIES_cleaning.xlsx" 
 	
-
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_FIES_final.dta", replace  
+	
+	
+	** For Rasch Model analysis in R **
+	keep 	stratum_num weight_final ///
+			respd_id respd_sex respd_age resp_highedu ///
+			gfi1_notegh gfi2_unhnut gfi3_fewfd gfi4_skp_ml gfi5_less gfi6_rout_fd gfi7_hunger gfi8_wout_eat ///
+			
+	foreach var of varlist gfi1_notegh gfi2_unhnut gfi3_fewfd gfi4_skp_ml gfi5_less gfi6_rout_fd gfi7_hunger gfi8_wout_eat {
+		
+		replace `var' = 0 if `var' == 2
+		 
+	}
+	
+	lab drop fies
+	 
+
+	order 	stratum_num weight_final ///
+			respd_id respd_sex respd_age resp_highedu ///
+			gfi1_notegh gfi2_unhnut gfi3_fewfd gfi4_skp_ml gfi5_less gfi6_rout_fd gfi7_hunger gfi8_wout_eat ///
+	
+	rename gfi1_notegh		WORRIED
+	rename gfi2_unhnut		HEALTHY
+	rename gfi3_fewfd		FEWFOOD
+	rename gfi4_skp_ml		SKIPPED
+	rename gfi5_less		ATELESS
+	rename gfi6_rout_fd		RUNOUT
+	rename gfi7_hunger		HUNGRY
+	rename gfi8_wout_eat	WHLDAY
+ 
+	** SAVE for Rasch Model analysis dataset 
+	save "$dta/pnourish_FIES_Rasch_Model_final.dta", replace  
 
 
 // END HERE 
