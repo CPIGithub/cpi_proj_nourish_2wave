@@ -51,6 +51,18 @@ do "$do/00_dir_setting.do"
 									mi(gfi7_hunger) | mi(gfi8_wout_eat)
 	tab fies_rawscore, m  
 	
+	
+	* FIES - category - naive * 
+	* cutoffs for the raw score of 4+ = mod/severe and 7-8 = severe
+	gen fies_category = (fies_rawscore >= 4) 
+	replace fies_category = 2 if fies_rawscore >= 7 & !mi(fies_rawscore)
+	replace fies_category = .m if mi(fies_rawscore)
+	lab def fies_category 0"Food secure (0-3)" 1"Moderate food insecurity (4-6)" 2"Severe food insecurity (7-8)"
+	lab var fies_category "Food Security Status by FIES ( discrete assignment appraoch)"
+	lab val fies_category fies_category
+	tab fies_category, m 
+	
+	
 	* Add Weight variable *
 	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
 						keepusing(stratum stratum_num org_name_num weight_final)

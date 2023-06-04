@@ -900,6 +900,26 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	   
+	* Childhood illness vs WASH 
+	merge m:1 _parent_index using "$dta/pnourish_WASH_final.dta"    
+	
+	drop if _merge == 2
+	drop _merge 
+	
+	// Sanitation Ladder and illness
+	svy: tab sanitation_ladder child_ill1, row 
+	svy: tab water_winter_ladder child_ill1, row 
+
+	// Handwashing - critical time with soap 
+	svy: tab hw_critical_soap child_ill1, row 
+	svy: tab hw_critical_soap child_ill2, row 
+	svy: tab hw_critical_soap child_ill3, row 
+
+	
+	
+	
+	
 	
 // END HERE 
 

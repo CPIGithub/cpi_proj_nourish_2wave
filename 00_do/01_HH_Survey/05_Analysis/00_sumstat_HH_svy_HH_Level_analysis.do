@@ -305,7 +305,12 @@ do "$do/00_dir_setting.do"
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 	
-	  
+	* fies category 
+	svy: tab fies_category, ci 
+	svy: tab stratum_num fies_category, row 
+	svy: tab NationalQuintile fies_category, row
+
+
 	// fies_rawscore
 	svy: mean  fies_rawscore
 
@@ -450,6 +455,30 @@ do "$do/00_dir_setting.do"
 		svy: tab NationalQuintile `var', row
 	
 	}
+	
+	
+	* Additional Variable ** 
+	// food Exposure 
+	svy: mean foodcash_exposure_d
+	svy: tab foodcash_exposure, ci 
+
+	svy: tab stratum_num foodcash_exposure, row 
+	svy: tab NationalQuintile foodcash_exposure, row
+	
+	svy: mean foodcash_exposure, over(stratum_num)
+	svy: mean foodcash_exposure, over(NationalQuintile)
+
+
+	
+	// nutrition sensitive 
+	svy: mean nutsensitive_exposure_d
+	svy: tab nutsensitive_exposure, ci 
+	
+	svy: tab stratum_num nutsensitive_exposure, row 
+	svy: tab NationalQuintile nutsensitive_exposure, row	
+
+	svy: mean foodcash_exposure, over(stratum_num)
+	svy: mean foodcash_exposure, over(NationalQuintile)
 
 	
 // END HERE 
