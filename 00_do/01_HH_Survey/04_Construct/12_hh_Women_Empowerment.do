@@ -108,6 +108,55 @@ do "$do/00_dir_setting.do"
 	
 	drop _merge 
 	
+	
+	
+	** Inverse covariance weighting - application **
+	* recode the variable applied for index development
+	/*
+	-1 Men vs 1 Women and 0 for joint
+	
+	
+	*/
+	
+	local attributes 	wempo_childcare wempo_mom_health wempo_child_health wempo_women_wages ///
+						wempo_major_purchase wempo_visiting wempo_women_health wempo_child_wellbeing
+	
+	foreach var in `attributes' {
+	    
+		gen `var'_d = (`var' == 1) 
+		replace `var'_d = -1 if `var' == 2
+		replace `var'_d = .m if `var' == 0 | `var' > 3
+		tab `var'_d, m 
+	}
+	
+	
+	egen wempo_grp_tot = rowtotal(wempo_group2 wempo_group3 wempo_group4 wempo_group5 wempo_group888)
+	replace wempo_grp_tot = 0 if wempo_group1 == 1
+	replace wempo_grp_tot = .m if mi(wempo_group)
+	tab wempo_grp_tot, m 
+	
+	
+	* standartized the variable  inputs for ICW index development 
+	local inputs 	wempo_grp_tot wempo_childcare_d wempo_mom_health_d ///
+					wempo_child_health_d wempo_women_wages_d wempo_major_purchase_d ///
+					wempo_visiting_d wempo_women_health_d wempo_child_wellbeing_d
+	
+	foreach var in `inputs' {
+	    
+		zindex `var', gen(`var'_z) 
+		
+	}
+	
+	
+	* index development // not included the # of groups participate 
+	icw_index	wempo_childcare_d_z wempo_mom_health_d_z wempo_child_health_d_z ///
+				wempo_women_wages_d_z wempo_major_purchase_d_z wempo_visiting_d_z ///
+				wempo_women_health_d_z wempo_child_wellbeing_d_z, gen(wempo_index)
+				
+	lab var wempo_index "Women Empowerment Index (ICW-index)"		
+	tab wempo_index, m 
+	
+	
 	* Check for Missing variable label and variable label 
 	// iecodebook template using "$out/pnourish_WOMEN_EMPOWER_final.xlsx" // export template
 	

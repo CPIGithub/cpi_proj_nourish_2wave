@@ -22,6 +22,11 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_mom_diet_final.dta", clear 
 	
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index)
+	
+	drop if _merge == 2 
+	drop _merge 
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
@@ -77,6 +82,11 @@ do "$do/00_dir_setting.do"
 	svy: mean mddw_score, over(NationalQuintile)
 	svy: reg mddw_score i.NationalQuintile
 
+	svy: reg mddw_score wempo_index 
+	
+	svy: reg mom_meal_freq wempo_index 
+
+	
 	
 	// mddw_yes
 	svy: mean  mddw_yes
@@ -88,6 +98,9 @@ do "$do/00_dir_setting.do"
 	
 	svy: reg mddw_score hhitems_phone
 	svy: reg mddw_score prgexpo_pn
+	
+	svy: reg mddw_yes wempo_index 
+
 
 	// dietary_tot 
 	svy: mean mddw_score, over(hhitems_phone)
@@ -194,6 +207,11 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_mom_health_final.dta", clear   
 
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index)
+	
+	drop if _merge == 2 
+	drop _merge 
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
@@ -451,6 +469,13 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure prgexpo_pn, row 
 
 	
+	svy: reg anc_yn wempo_index 
+	svy: reg anc_who_trained wempo_index 
+	svy: reg anc_visit_trained wempo_index 
+
+	
+	
+	
 	local outcome anc_visit_trained
 	
 	foreach v in `outcome' {
@@ -579,6 +604,9 @@ do "$do/00_dir_setting.do"
 	svy: tab child_dob_season_yr insti_birth if child_dob_year < 2023, row
 
 	svy: reg insti_birth i.delivery_month_season child_dob_year if child_dob_year < 2023
+
+	svy: reg skilled_battend wempo_index 
+	svy: reg insti_birth wempo_index 
 
 	
 	local outcome 	insti_birth skilled_battend
@@ -737,6 +765,10 @@ do "$do/00_dir_setting.do"
 	svy: tab hh_mem_dob_str pnc_yn, row 
 	svy: tab hh_mem_dob_str pnc_who_trained, row 
 	
+	svy: reg pnc_yn wempo_index 
+	svy: reg pnc_who_trained wempo_index 
+
+	
 	****************************************************************************
 	** Mom NBC **
 	****************************************************************************
@@ -864,6 +896,9 @@ do "$do/00_dir_setting.do"
 	svy: tab hh_mem_dob_str nbc_2days_yn, row 
 	svy: tab hh_mem_dob_str nbc_who_trained, row 
 	
+	svy: reg nbc_yn wempo_index 
+	svy: reg nbc_2days_yn wempo_index 
+	svy: reg nbc_who_trained wempo_index 
 	
 	****************************************************************************
 	** PHQ9 **
@@ -996,6 +1031,19 @@ do "$do/00_dir_setting.do"
 	svy: tab hhitems_phone wempo_child_wellbeing, row 
 	svy: tab prgexpo_pn wempo_child_wellbeing, row 	
 	svy: tab edu_exposure wempo_child_wellbeing, row 
+	
+	// wempo_index - Women Empowerment Index - ICW - Index 
+	svy: mean wempo_index, over(NationalQuintile)	
+	svy: mean wempo_index, over(stratum_num)
+	
+	svy: mean wempo_index, over(hhitems_phone)
+	svy: mean wempo_index, over(prgexpo_pn)
+	svy: mean wempo_index, over(edu_exposure)
+	
+	svy: reg wempo_grp_tot wempo_index 
+
+	
+	
 	
 	
 	
