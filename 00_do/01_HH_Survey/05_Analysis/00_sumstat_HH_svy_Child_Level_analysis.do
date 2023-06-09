@@ -88,6 +88,11 @@ do "$do/00_dir_setting.do"
 	
 	use "$dta/pnourish_child_iycf_final.dta", clear 
 	
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index)
+	
+	drop if _merge == 2 
+	drop _merge 
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
@@ -288,10 +293,12 @@ do "$do/00_dir_setting.do"
 	
 	svy: mean dietary_tot, over(NationalQuintile)
 	svy: reg dietary_tot i.NationalQuintile
-	
+	svy: reg dietary_tot wempo_index 
+
 	// mdd 
 	svy: tab stratum_num mdd, row 
 	svy: tab NationalQuintile mdd, row
+	svy: reg mdd wempo_index 
 	
 	// mmf_bf_6to8 
 	svy: tab stratum_num mmf_bf_6to8 , row 
@@ -312,6 +319,7 @@ do "$do/00_dir_setting.do"
 	// mmf 
 	svy: tab stratum_num mmf , row 
 	svy: tab NationalQuintile mmf , row
+	svy: reg mmf wempo_index 
 	
 	// mmff 
 	svy: tab stratum_num mmff, row 
@@ -320,7 +328,8 @@ do "$do/00_dir_setting.do"
 	// mad 
 	svy: tab stratum_num mad, row 
 	svy: tab NationalQuintile mad, row
-	
+	svy: reg mad wempo_index 
+
 	// mad_bf 
 	svy: tab stratum_num  mad_bf, row 
 	svy: tab NationalQuintile  mad_bf, row
