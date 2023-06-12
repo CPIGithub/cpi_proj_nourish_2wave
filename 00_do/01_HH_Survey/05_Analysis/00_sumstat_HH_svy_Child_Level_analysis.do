@@ -96,6 +96,9 @@ do "$do/00_dir_setting.do"
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
+	* generate the interaction variable - stratum Vs quantile 
+	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
+
 	* breastfeeding *
 	svy: mean eibf 
 	svy: mean ebf2d 
@@ -440,15 +443,112 @@ do "$do/00_dir_setting.do"
 	   stats(r2 df_r bic) replace
 	   
 
+	   
+	* IYCF ALL *
+	local outcome ebf pre_bf dietary_tot mdd mmf mad 
+	
+	foreach v in `outcome' {
+		
+		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/05_child_iycf_FINAL.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
+	* IYCF ALL *
+	// 		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
+
+	local outcome dietary_tot  
+	
+	// Model 1 
+	local i = 1
+	foreach var of varlist org_name_num NationalQuintile stratum wempo_index {
+	    
+		foreach v in `outcome' {
+			
+			if `i' < 3 {
+			    svy: reg `v' i.`var'
+			} 
+			else {
+				svy: reg `v' `var'
+			}
+			//eststo model`i'
+			estimates store `v', title(`v')
+			
+		}
+		
+		estout `outcome' using "$out/reg_output/FINAL_IYCF_Model_1_`var'.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+		
+		local i = `i' + 1
+	}
+
+
+	// Model 2
+	foreach v in `outcome' {
+		
+		svy: reg `v' i.NationalQuintile i.org_name_num stratum 
+		eststo model_A
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_IYCF_Model_2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+		
+
+	// Model 3
+	foreach v in `outcome' {
+		
+		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum 
+		eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_IYCF_Model_3.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+
+		   
+	// Model 4
+	foreach v in `outcome' {
+		
+		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_IYCF_Model_4.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+		   
+		   
 	****************************************************************************
 	* Child Health Data *
 	****************************************************************************
 
 	use "$dta/pnourish_child_health_final.dta", clear 
 	
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index)
+	
+	drop if _merge == 2 
+	drop _merge 
+
 	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+
+	* generate the interaction variable - stratum Vs quantile 
+	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
 
 	/*
 	
@@ -927,8 +1027,24 @@ do "$do/00_dir_setting.do"
 
 	
 	
+	* Child Health ALL *
+	local outcome	child_vita child_deworm child_vaccin child_vaccin_card  child_low_bwt ///
+					child_ill1 child_ill2 child_ill3 ///
+					child_diarrh_trained child_cough_trained child_fever_trained 
 	
+	foreach v in `outcome' {
+		
+		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
+		estimates store `v', title(`v')
+		
+	}
 	
+
+	estout `outcome' using "$out/reg_output/11_child_health_FINAL.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	
+
 	
 // END HERE 
 

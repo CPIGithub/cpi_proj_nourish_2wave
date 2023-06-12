@@ -30,6 +30,8 @@ do "$do/00_dir_setting.do"
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
+	* generate the interaction variable - stratum Vs quantile 
+	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
 	
 	// mom_meal_freq
 	svy: mean mom_meal_freq
@@ -157,7 +159,18 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	foreach v in `outcome' {
+		
+		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
+		estimates store `v', title(`v')
+		
+	}
 	
+
+	estout `outcome' using "$out/reg_output/12_mom_diet_score_table_FINAL.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
 	local outcome 	mddw_yes ///
 					mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
 					mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
@@ -201,6 +214,20 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace	   
 	
+	
+	foreach v in `outcome' {
+		
+		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/13_mom_fg_table_FINAL.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
 	****************************************************************************
 	* Mom Health Module *
 	****************************************************************************
@@ -214,6 +241,9 @@ do "$do/00_dir_setting.do"
 	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+
+	* generate the interaction variable - stratum Vs quantile 
+	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
 
 	
 	* Delivery Month Season *
@@ -472,8 +502,6 @@ do "$do/00_dir_setting.do"
 	svy: reg anc_yn wempo_index 
 	svy: reg anc_who_trained wempo_index 
 	svy: reg anc_visit_trained wempo_index 
-
-	
 	
 	
 	local outcome anc_visit_trained
@@ -556,6 +584,8 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	   
+
 	****************************************************************************
 	** Mom Deliverty **
 	****************************************************************************
@@ -900,6 +930,27 @@ do "$do/00_dir_setting.do"
 	svy: reg nbc_2days_yn wempo_index 
 	svy: reg nbc_who_trained wempo_index 
 	
+	
+	** ALL MOM HEALTH **
+	
+	local outcome	anc_yn anc_who_trained anc_visit_trained anc_visit_trained_4times ////
+					insti_birth skilled_battend ///
+					pnc_yn pnc_who_trained ///
+					nbc_yn nbc_2days_yn nbc_who_trained 
+	   	
+	foreach v in `outcome' {
+		
+		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
+		estimates store `v', title(`v')
+		
+	}
+	
+
+	estout `outcome' using "$out/reg_output/18_mom_healthseeking_all_FINAL.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+	   legend label varlabels(_cons constant)              ///
+	   stats(r2 df_r bic) replace
+	   
+	   
 	****************************************************************************
 	** PHQ9 **
 	****************************************************************************
@@ -946,7 +997,7 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num women_visit, row 
 	svy: tab NationalQuintile women_visit, row
 	
-	foreach var of varlist 	wempo_childcare wempo_mom_health wempo_child_health ///
+/*	foreach var of varlist 	wempo_childcare wempo_mom_health wempo_child_health ///
 							wempo_women_wages wempo_major_purchase wempo_visiting ///
 							wempo_women_health wempo_child_wellbeing {
 								
@@ -955,7 +1006,7 @@ do "$do/00_dir_setting.do"
 		drop `var'
 		rename `var'_d `var'
 		tab `var', m 
-							}
+							}*/
 
 							
 	svy: mean 	wempo_childcare wempo_mom_health wempo_child_health ///
