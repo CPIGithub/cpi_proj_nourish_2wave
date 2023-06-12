@@ -99,6 +99,16 @@ do "$do/00_dir_setting.do"
 	* generate the interaction variable - stratum Vs quantile 
 	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
 
+	egen wealth_quintile_ns = xtile(NationalScore), n(5)
+	egen wealth_quintile_inc = xtile(income_lastmonth), n(5)
+	lab def w_quintile 1"Poorest" 2"Poor" 3"Medium" 4"Wealthy" 5"Wealthiest"
+	lab val wealth_quintile_ns wealth_quintile_inc w_quintile
+	lab var wealth_quintile_ns "Wealth Quintiles by PN pop-based EquityTool national score distribution"
+	lab var wealth_quintile_inc "Wealth Quintiles by last month income"
+	tab1 wealth_quintile_ns wealth_quintile_inc, m 
+	
+	tab NationalQuintile wealth_quintile_ns
+	
 	* breastfeeding *
 	svy: mean eibf 
 	svy: mean ebf2d 
@@ -531,6 +541,31 @@ do "$do/00_dir_setting.do"
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace	
 		   
+		   
+	// nested model test    
+	nestreg: reg dietary_tot (i.NationalQuintile) (i.org_name_num) (i.NationalQuintile##stratum) (wempo_index)
+	
+	reg dietary_tot i.NationalQuintile i.org_name_num 
+	eststo model_A
+	reg dietary_tot i.NationalQuintile i.org_name_num i.NationalQuintile##stratum
+	eststo model_B
+
+	lrtest model_A model_B
+	
+	
+	// Model 4
+	local outcome	ebf pre_bf mdd mmf mad 
+	foreach v in `outcome' {
+		
+		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_IYCF_Model_4_logistic.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
 		   
 	****************************************************************************
 	* Child Health Data *
@@ -1044,7 +1079,22 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	
-
+	
+	// Model 4
+	local outcome	child_vita child_deworm child_vaccin child_vaccin_card child_low_bwt ///
+					child_ill1 child_ill2 child_ill3 ///
+					child_diarrh_trained child_cough_trained child_fever_trained 
+	foreach v in `outcome' {
+		
+		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_Child_Model_4_logistic.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
 	
 // END HERE 
 

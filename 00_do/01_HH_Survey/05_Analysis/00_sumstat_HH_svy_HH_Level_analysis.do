@@ -72,6 +72,16 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_INCOME_WEALTH_final.dta", clear   
 
+	egen wealth_quintile_ns = xtile(NationalScore), n(5)
+	egen wealth_quintile_inc = xtile(income_lastmonth), n(5)
+	lab def w_quintile 1"Poorest" 2"Poor" 3"Medium" 4"Wealthy" 5"Wealthiest"
+	lab val wealth_quintile_ns wealth_quintile_inc w_quintile
+	lab var wealth_quintile_ns "Wealth Quintiles by PN pop-based EquityTool national score distribution"
+	lab var wealth_quintile_inc "Wealth Quintiles by last month income"
+	tab1 wealth_quintile_ns wealth_quintile_inc, m 
+	
+	tab NationalQuintile wealth_quintile_ns
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 

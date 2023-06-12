@@ -226,8 +226,40 @@ do "$do/00_dir_setting.do"
 	estout `outcome' using "$out/reg_output/13_mom_fg_table_FINAL.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
-	   
-	   
+	 
+	 
+	// Model 4
+	local outcome	mddw_score mom_meal_freq
+	
+	foreach v in `outcome' {
+		
+		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+
+	local outcome	mddw_yes ///
+					mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
+					mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
+					mddw_oth_veg mddw_oth_fruit
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4_logistic.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+		   
 	****************************************************************************
 	* Mom Health Module *
 	****************************************************************************
@@ -950,7 +982,38 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
-	   
+	// Model 4
+	local outcome	anc_visit_trained
+	
+	foreach v in `outcome' {
+		
+		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_MomHealth_Model_4.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+
+	local outcome	anc_yn anc_who_trained anc_visit_trained_4times ////
+					insti_birth skilled_battend ///
+					pnc_yn pnc_who_trained ///
+					nbc_yn nbc_2days_yn nbc_who_trained 
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_MomHealth_Model_4_logistic.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+		   
 	****************************************************************************
 	** PHQ9 **
 	****************************************************************************
