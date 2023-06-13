@@ -270,7 +270,26 @@ do "$do/00_dir_setting.do"
 	drop _merge 
 
 	
+	* Re-construction of wealth quantile using PN pop distribution 
+	* svy weight apply 
+	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 	
+	xtile wealth_quintile_ns = NationalScore [pweight=weight_final], nq(5)
+	xtile wealth_quintile_inc = d3_inc_lmth [pweight=weight_final], nq(5)
+	lab def w_quintile 1"Poorest" 2"Poor" 3"Medium" 4"Wealthy" 5"Wealthiest"
+	lab val wealth_quintile_ns wealth_quintile_inc w_quintile
+	lab var wealth_quintile_ns "Wealth Quintiles by PN pop-based EquityTool national score distribution"
+	lab var wealth_quintile_inc "Wealth Quintiles by last month income"
+	tab1 wealth_quintile_ns wealth_quintile_inc, m 
+	
+	tab NationalQuintile wealth_quintile_ns
+	
+	svy: tab wealth_quintile_ns
+	svy: tab NationalQuintile wealth_quintile_ns
+
+	svy: tab wealth_quintile_inc
+	svy: tab NationalQuintile wealth_quintile_inc
+
 	* Check for Missing variable label and variable label 
 	// iecodebook template using "$out/pnourish_INCOME_WEALTH_final.xlsx" // export template
 	

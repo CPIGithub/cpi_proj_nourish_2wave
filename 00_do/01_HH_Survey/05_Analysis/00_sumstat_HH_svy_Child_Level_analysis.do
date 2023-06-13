@@ -99,6 +99,7 @@ do "$do/00_dir_setting.do"
 	* generate the interaction variable - stratum Vs quantile 
 	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
 
+	/*
 	egen wealth_quintile_ns = xtile(NationalScore), n(5)
 	egen wealth_quintile_inc = xtile(income_lastmonth), n(5)
 	lab def w_quintile 1"Poorest" 2"Poor" 3"Medium" 4"Wealthy" 5"Wealthiest"
@@ -106,6 +107,7 @@ do "$do/00_dir_setting.do"
 	lab var wealth_quintile_ns "Wealth Quintiles by PN pop-based EquityTool national score distribution"
 	lab var wealth_quintile_inc "Wealth Quintiles by last month income"
 	tab1 wealth_quintile_ns wealth_quintile_inc, m 
+	*/
 	
 	tab NationalQuintile wealth_quintile_ns
 	
@@ -160,6 +162,15 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure cbf, row 
 	
 
+	foreach var of varlist eibf ebf2d ebf pre_bf mixmf bof cbf{
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}
+	
+	
 	local outcome eibf ebf2d ebf pre_bf mixmf bof cbf
 	
 	foreach v in `outcome' {
@@ -249,6 +260,14 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num food_g8, row 
 	svy: tab NationalQuintile food_g8, row
 
+	
+	foreach var of varlist isssf food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8 {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}
 	
 	local outcome isssf food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8
 	
@@ -375,6 +394,15 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn mad, row 
 	svy: tab edu_exposure mad, row 
 
+	svy: mean dietary_tot, over(wealth_quintile_ns)
+
+	foreach var of varlist mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf  {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}
 	
 	local outcome dietary_tot
 	
@@ -469,6 +497,8 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	
+
 	   
 	* IYCF ALL *
 	// 		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
@@ -541,6 +571,18 @@ do "$do/00_dir_setting.do"
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace	
 		   
+	foreach v in `outcome' {
+		
+		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_IYCF_Model_4_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+		   
 		   
 	// nested model test    
 	nestreg: reg dietary_tot (i.NationalQuintile) (i.org_name_num) (i.NationalQuintile##stratum) (wempo_index)
@@ -566,7 +608,21 @@ do "$do/00_dir_setting.do"
 		estout `outcome' using "$out/reg_output/FINAL_IYCF_Model_4_logistic.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace	
-		   
+		
+		
+	foreach v in `outcome' {
+		
+		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_IYCF_Model_4_logistic_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace		
+	
+	
 	****************************************************************************
 	* Child Health Data *
 	****************************************************************************
@@ -658,7 +714,16 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn child_vaccin_card, row 
 	svy: tab edu_exposure child_vaccin_card, row 
 	
+	svy: mean child_bwt_lb, over(wealth_quintile_ns)
 
+	foreach var of varlist child_vita child_deworm child_vaccin child_vaccin_card  child_low_bwt {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}
+	
 	gen stratum_org_inter = stratum * org_name_num  
 	gen KDHW = (stratum_num == 5)
 	
@@ -766,6 +831,13 @@ do "$do/00_dir_setting.do"
 	svy: tab NationalQuintile child_ill888, row 
 	
 	
+	foreach var of varlist child_ill0 child_ill1 child_ill2 child_ill3 child_ill888 {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}
 	
 	local outcome  child_ill0 child_ill1 child_ill2 child_ill3 child_ill888
 	
@@ -818,11 +890,13 @@ do "$do/00_dir_setting.do"
 	svy: tab child_diarrh_where,ci
 	svy: tab stratum_num child_diarrh_where, row 
 	svy: tab NationalQuintile child_diarrh_where, row 
+	svy: tab wealth_quintile_ns child_diarrh_where, row 
 	
 	// child_diarrh_who
 	svy: tab child_diarrh_who,ci 
 	svy: tab stratum_num child_diarrh_who, row 
 	svy: tab NationalQuintile child_diarrh_who, row 
+	svy: tab wealth_quintile_ns child_diarrh_who, row 
 	
 	// child_diarrh_trained 
 	svy: mean child_diarrh_trained
@@ -843,6 +917,15 @@ do "$do/00_dir_setting.do"
 	
 	// child_diarrh_cope
 	svy: mean child_diarrh_cope1 child_diarrh_cope2 child_diarrh_cope3 child_diarrh_cope4 child_diarrh_cope5 child_diarrh_cope6 child_diarrh_cope7 child_diarrh_cope8 child_diarrh_cope9 child_diarrh_cope10 child_diarrh_cope11 child_diarrh_cope12 child_diarrh_cope13 child_diarrh_cope14 child_diarrh_cope888 child_diarrh_cope666
+	
+	
+	foreach var of varlist child_diarrh_treat child_diarrh_trained child_diarrh_pay {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}
 	
 	
 	local outcome child_diarrh_treat child_diarrh_trained child_diarrh_pay
@@ -894,11 +977,14 @@ do "$do/00_dir_setting.do"
 	svy: tab child_cough_where,ci
 	svy: tab stratum_num child_cough_where, row 
 	svy: tab NationalQuintile child_cough_where, row 
+	svy: tab wealth_quintile_ns child_cough_where, row 
+	
 	
 	// child_cough_who
 	svy: tab child_cough_who,ci
 	svy: tab stratum_num child_cough_who, row 
 	svy: tab NationalQuintile child_cough_who, row 
+	svy: tab wealth_quintile_ns child_cough_who, row 
 	
 	// child_cough_trained 
 	svy: mean child_cough_trained
@@ -918,6 +1004,15 @@ do "$do/00_dir_setting.do"
 	
 	// child_cough_cope
 	svy: mean child_cough_cope1 child_cough_cope2 child_cough_cope3 child_cough_cope4 child_cough_cope5 child_cough_cope6 child_cough_cope7 child_cough_cope8 child_cough_cope9 child_cough_cope10 child_cough_cope11 child_cough_cope12 child_cough_cope13 child_cough_cope14 child_cough_cope888 child_cough_cope666
+	
+	
+	foreach var of varlist child_cough_treat child_cough_trained child_cough_pay {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}	
 	
 	
 	local outcome child_cough_treat child_cough_trained child_cough_pay
@@ -968,11 +1063,13 @@ do "$do/00_dir_setting.do"
 	svy: tab child_fever_where, ci 
 	svy: tab stratum_num child_fever_where, row 
 	svy: tab NationalQuintile child_fever_where, row
+	svy: tab wealth_quintile_ns child_fever_where, row
 	
 	// child_fever_who  
 	svy: tab child_fever_who, ci
 	svy: tab stratum_num child_fever_who, row 
 	svy: tab NationalQuintile child_fever_who, row
+	svy: tab wealth_quintile_ns child_fever_who, row
 	
 	// child_fever_trained
 	svy: mean child_fever_trained
@@ -1007,7 +1104,25 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn child_fever_trained, row 
 	svy: tab edu_exposure child_fever_trained, row 
 
-
+	
+	foreach var of varlist child_fever_treat child_fever_trained child_fever_pay {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}	
+	
+	
+	foreach var of varlist child_fever_treat child_fever_trained child_fever_pay {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}
+	
+	
 	local outcome child_fever_treat child_fever_trained child_fever_pay
 	
 	foreach v in `outcome' {
@@ -1095,6 +1210,21 @@ do "$do/00_dir_setting.do"
 		estout `outcome' using "$out/reg_output/FINAL_Child_Model_4_logistic.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace	
+	
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_Child_Model_4_logistic_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace	
+	
+	
 	
 // END HERE 
 

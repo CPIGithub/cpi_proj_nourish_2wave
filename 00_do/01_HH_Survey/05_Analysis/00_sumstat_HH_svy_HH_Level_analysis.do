@@ -51,6 +51,7 @@ do "$do/00_dir_setting.do"
 	svy: mean hh_tot_num
 	
 	svy: tab NationalQuintile, ci 
+	svy: tab wealth_quintile_ns, ci 
 	
 
 	* cross-tab 
@@ -72,8 +73,12 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_INCOME_WEALTH_final.dta", clear   
 
-	egen wealth_quintile_ns = xtile(NationalScore), n(5)
-	egen wealth_quintile_inc = xtile(income_lastmonth), n(5)
+	* svy weight apply 
+	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+	
+	/*
+	xtile wealth_quintile_ns = NationalScore [pweight=weight_final], nq(5)
+	xtile wealth_quintile_inc = d3_inc_lmth [pweight=weight_final], nq(5)
 	lab def w_quintile 1"Poorest" 2"Poor" 3"Medium" 4"Wealthy" 5"Wealthiest"
 	lab val wealth_quintile_ns wealth_quintile_inc w_quintile
 	lab var wealth_quintile_ns "Wealth Quintiles by PN pop-based EquityTool national score distribution"
@@ -81,9 +86,15 @@ do "$do/00_dir_setting.do"
 	tab1 wealth_quintile_ns wealth_quintile_inc, m 
 	
 	tab NationalQuintile wealth_quintile_ns
+	*/
+	svy: tab wealth_quintile_ns
+	svy: tab NationalQuintile wealth_quintile_ns
+
+	//svy: tab wealth_quintile_inc
+	//svy: tab NationalQuintile wealth_quintile_inc
 	
-	* svy weight apply 
-	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+	
+	svy: mean d3_inc_lmth, over(wealth_quintile_ns)
 
 	
 	svy: mean d3_inc_lmth
@@ -112,6 +123,7 @@ do "$do/00_dir_setting.do"
 	
 	* cross-tab 
 	svy: tab stratum_num NationalQuintile, row 
+	svy: tab stratum_num wealth_quintile_ns, row 
 	
 	svy: mean d3_inc_lmth, over(stratum_num)
 	svy: reg d3_inc_lmth i.stratum_num
@@ -130,6 +142,10 @@ do "$do/00_dir_setting.do"
 	// sbcc exposure 
 	svy: tab stratum_num edu_exposure, row 
 	svy: tab NationalQuintile edu_exposure, row 
+
+	svy: tab wealth_quintile_ns hhitems_phone, row 
+	svy: tab wealth_quintile_ns prgexpo_pn, row 
+	svy: tab wealth_quintile_ns edu_exposure, row 
 
 	
 	// income 			
@@ -192,6 +208,10 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure water_rain_ladder, row 
 	svy: tab edu_exposure water_winter_ladder, row 
 	
+	svy: tab wealth_quintile_ns water_sum_ladder
+	svy: tab wealth_quintile_ns water_rain_ladder
+	svy: tab wealth_quintile_ns water_winter_ladder
+
 	
 	** Sanitation Ladder ** 
 	// latrine_type
@@ -207,7 +227,8 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn sanitation_ladder, row 	
 	svy: tab edu_exposure sanitation_ladder, row 
 	
-	
+	svy: tab wealth_quintile_ns sanitation_ladder
+
 	** Hygiene Ladder ** 
 	// hw_ladder
 	svy: tab hw_ladder, ci 
@@ -218,6 +239,8 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn hw_ladder, row 	
 	svy: tab edu_exposure hw_ladder, row 
 	
+	svy: tab wealth_quintile_ns hw_ladder
+
 	** Handwashing at Critical Time ** 
 	// soap_yn
 	svy: tab soap_yn, ci 
@@ -239,7 +262,9 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn hw_critical_soap, row 	
 	svy: tab edu_exposure hw_critical_soap, row 
 
-	
+	svy: tab wealth_quintile_ns soap_yn
+	svy: tab wealth_quintile_ns hw_critical_soap
+
 	** Water Treatment **
 	// water_sum_treat water_rain_treat water_winter_treat
 	svy: mean water_sum_treat water_rain_treat water_winter_treat
@@ -259,12 +284,18 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num watertx_winter_good, row 
 	svy: tab NationalQuintile watertx_winter_good, row
 	
+	svy: tab wealth_quintile_ns watertx_sum_good
+	svy: tab wealth_quintile_ns watertx_rain_good
+	svy: tab wealth_quintile_ns watertx_winter_good
+
 	** Water Pot ** 
 	// waterpot_yn
 	svy: tab waterpot_yn, ci 
 	svy: tab stratum_num waterpot_yn, row 
 	svy: tab NationalQuintile waterpot_yn, row
 
+	svy: tab wealth_quintile_ns waterpot_yn, row 
+	
 	// waterpot_capacity
 	svy: mean  waterpot_capacity
 
@@ -293,7 +324,15 @@ do "$do/00_dir_setting.do"
 		svy: tab NationalQuintile `var', row 
 	}
 	
-	  
+	 
+	foreach var of varlist 	waterpot_condition1 waterpot_condition2 waterpot_condition3 ///
+							waterpot_condition4 waterpot_condition0 {
+		
+		svy: tab wealth_quintile_ns `var', row 
+	} 
+
+		
+		
 	replace prgexpo_pn = 0 if prgexpo_pn == 999
 	
 	svy: tab hhitems_phone water_sum_ladder, row 
@@ -340,6 +379,9 @@ do "$do/00_dir_setting.do"
 	svy: mean fies_rawscore, over(edu_exposure)
 	test _b[c.fies_rawscore@0bn.edu_exposure] = _b[c.fies_rawscore@1bn.edu_exposure]
 
+	svy: tab wealth_quintile_ns fies_category, row 
+	svy: mean fies_rawscore, over(wealth_quintile_ns)
+
 	
 	****************************************************************************
 	** Program Exposure **
@@ -354,7 +396,9 @@ do "$do/00_dir_setting.do"
 	svy: mean  prgexpo_pn
 	svy: tab stratum_num prgexpo_pn, row 
 	svy: tab NationalQuintile prgexpo_pn, row
-	
+
+	svy: tab wealth_quintile_ns prgexpo_pn, row 
+
 	
 	// prgexpo_join1 prgexpo_join2 prgexpo_join3 prgexpo_join4 prgexpo_join5 prgexpo_join6 prgexpo_join7 prgexpo_join8 prgexpo_join9
 	svy: mean prgexpo_join1 
@@ -391,6 +435,18 @@ do "$do/00_dir_setting.do"
 				prgexpo_join6 prgexpo_join7 prgexpo_join8 prgexpo_join9, ///
 				over(NationalQuintile)		
 	
+	foreach var of varlist 	prgexpo_join1 prgexpo_join2 prgexpo_join3 prgexpo_join4 ///
+							prgexpo_join5 prgexpo_join6 prgexpo_join7 prgexpo_join8 ///
+							prgexpo_join9 {
+								
+		svy: tab wealth_quintile_ns `var', row 
+		
+							}
+							
+	svy: mean 	prgexpo_join1 prgexpo_join2 prgexpo_join3 prgexpo_join4 prgexpo_join5 ///
+				prgexpo_join6 prgexpo_join7 prgexpo_join8 prgexpo_join9, ///
+				over(wealth_quintile_ns)		
+
 	
 	// prgexp_freq_1 prgexp_freq_2 prgexp_freq_3 prgexp_freq_4 prgexp_freq_5 prgexp_freq_6 prgexp_freq_7 prgexp_freq_8 prgexp_freq_9
 	svy: mean  	prgexp_freq_1 prgexp_freq_2 prgexp_freq_3 prgexp_freq_4 ///
@@ -454,15 +510,30 @@ do "$do/00_dir_setting.do"
 				prgexp_iec5 prgexp_iec6 prgexp_iec7 , ///
 				over(NationalQuintile)		
 	
+	foreach var of varlist 	prgexp_iec0 prgexp_iec1 prgexp_iec2 prgexp_iec3 ///
+							prgexp_iec4 prgexp_iec5 prgexp_iec6 prgexp_iec7  {
+								
+		svy: tab wealth_quintile_ns `var', row 
+		
+							}
+			
+	svy: mean 	prgexp_iec0 prgexp_iec1 prgexp_iec2 prgexp_iec3 prgexp_iec4 ///
+				prgexp_iec5 prgexp_iec6 prgexp_iec7 , ///
+				over(wealth_quintile_ns)		
+	
+	
+	
 	** Program Access **
 	// pn_access pn_muac_access pn_msg_access pn_wash_access pn_sbcc_access pn_hgdn_access pn_emgy_access
 	
 	foreach var of varlist pn_access pn_muac_access pn_msg_access pn_wash_access pn_sbcc_access pn_hgdn_access pn_emgy_access {
 	    
 		di "`var'"
-		svy: mean  `var'
-		svy: tab stratum_num `var', row 
-		svy: tab NationalQuintile `var', row
+		//svy: mean  `var'
+		//svy: tab stratum_num `var', row 
+		//svy: tab NationalQuintile `var', row
+		
+		svy: tab wealth_quintile_ns `var', row
 	
 	}
 	
@@ -478,7 +549,9 @@ do "$do/00_dir_setting.do"
 	svy: mean foodcash_exposure, over(stratum_num)
 	svy: mean foodcash_exposure, over(NationalQuintile)
 
+	svy: mean foodcash_exposure, over(wealth_quintile_ns)
 
+	
 	
 	// nutrition sensitive 
 	svy: mean nutsensitive_exposure_d
@@ -487,8 +560,11 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num nutsensitive_exposure, row 
 	svy: tab NationalQuintile nutsensitive_exposure, row	
 
-	svy: mean foodcash_exposure, over(stratum_num)
-	svy: mean foodcash_exposure, over(NationalQuintile)
+	svy: mean nutsensitive_exposure, over(stratum_num)
+	svy: mean nutsensitive_exposure, over(NationalQuintile)
+	
+	svy: mean nutsensitive_exposure, over(wealth_quintile_ns)
+	
 
 	
 // END HERE 

@@ -42,6 +42,8 @@ do "$do/00_dir_setting.do"
 	svy: mean mom_meal_freq, over(NationalQuintile)
 	svy: reg mom_meal_freq i.NationalQuintile
 
+	svy: mean mom_meal_freq, over(wealth_quintile_ns)
+
 	
 	// food groups 
 	svy: mean  mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
@@ -73,7 +75,18 @@ do "$do/00_dir_setting.do"
 				mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
 				mddw_oth_veg mddw_oth_fruit, ///
 				over(NationalQuintile)							
-								
+
+				
+	foreach var of varlist 	mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
+							mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
+							mddw_oth_veg mddw_oth_fruit {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}	
+	
 	
 	// mddw_score
 	svy: mean  mddw_score
@@ -83,6 +96,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: mean mddw_score, over(NationalQuintile)
 	svy: reg mddw_score i.NationalQuintile
+	svy: mean mddw_score, over(wealth_quintile_ns)
 
 	svy: reg mddw_score wempo_index 
 	
@@ -94,6 +108,7 @@ do "$do/00_dir_setting.do"
 	svy: mean  mddw_yes
 	svy: tab stratum_num mddw_yes, row 
 	svy: tab NationalQuintile mddw_yes, row
+	svy: tab wealth_quintile_ns mddw_yes, row
 	
 	svy: tab hhitems_phone mddw_yes, row 
 	svy: tab prgexpo_pn mddw_yes, row 	
@@ -242,7 +257,19 @@ do "$do/00_dir_setting.do"
 		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace	
-
+		   
+	foreach v in `outcome' {
+		
+		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace
+		   
 	local outcome	mddw_yes ///
 					mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
 					mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
@@ -260,6 +287,20 @@ do "$do/00_dir_setting.do"
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace	
 		   
+		   
+	foreach v in `outcome' {
+		
+		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4_logistic_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace		
+	
+	
 	****************************************************************************
 	* Mom Health Module *
 	****************************************************************************
@@ -380,6 +421,7 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num anc_where, row 
 	svy: tab NationalQuintile anc_where, row 
 	svy: tab NationalQuintile_recod anc_where, row 
+	svy: tab wealth_quintile_ns anc_where, row 
 	
 	
 	// anc_*_who
@@ -417,7 +459,12 @@ do "$do/00_dir_setting.do"
 		svy: tab NationalQuintile_recod `var', row 
 	}
 	
-	
+	foreach var of varlist 	anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 ///
+							anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 ///
+							anc_who_11 anc_who_888 {
+		
+		svy: tab wealth_quintile_ns `var', row 
+	}	
 	
 
 	// anc_who_trained
@@ -534,7 +581,17 @@ do "$do/00_dir_setting.do"
 	svy: reg anc_yn wempo_index 
 	svy: reg anc_who_trained wempo_index 
 	svy: reg anc_visit_trained wempo_index 
+
 	
+	svy: mean anc_visit_trained, over(wealth_quintile_ns)
+
+	foreach var of varlist anc_yn anc_who_trained anc_visit_trained_4times	{
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_ns `var', row
+	
+	}	
 	
 	local outcome anc_visit_trained
 	
@@ -626,12 +683,13 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num deliv_place, row 
 	svy: tab NationalQuintile deliv_place, row 
 	svy: tab NationalQuintile_recod deliv_place, row 
-
+	svy: tab wealth_quintile_ns deliv_place, row
 
 	// Institutional Deliveries
 	svy: mean  insti_birth
 	svy: tab stratum_num insti_birth, row 
 	svy: tab NationalQuintile insti_birth, row
+	svy: tab wealth_quintile_ns insti_birth, row
 
 	svy: reg insti_birth hfc_near_dist_dry 
 	svy: reg insti_birth hfc_near_dist_rain 	
@@ -641,6 +699,7 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num deliv_assist, row 
 	svy: tab NationalQuintile deliv_assist, row 
 	svy: tab NationalQuintile_recod deliv_assist, row 
+	svy: tab wealth_quintile_ns deliv_assist, row
 
 	svy: tab child_dob_season_yr deliv_assist if child_dob_year < 2023, row
 
@@ -669,6 +728,9 @@ do "$do/00_dir_setting.do"
 
 	svy: reg skilled_battend wempo_index 
 	svy: reg insti_birth wempo_index 
+	
+	svy: tab wealth_quintile_ns insti_birth, row
+	svy: tab wealth_quintile_ns skilled_battend, row
 
 	
 	local outcome 	insti_birth skilled_battend
@@ -718,7 +780,8 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num pnc_yn, row 
 	svy: tab NationalQuintile pnc_yn, row
 	svy: tab child_dob_season_yr pnc_yn if child_dob_year < 2023, row
-
+	svy: tab wealth_quintile_ns pnc_yn, row
+	
 	svy: reg pnc_yn hfc_near_dist_dry 
 	svy: reg pnc_yn hfc_near_dist_rain 	
 	
@@ -727,6 +790,7 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num pnc_where, row 
 	svy: tab NationalQuintile pnc_where, row 
 	svy: tab NationalQuintile_recod pnc_where, row 
+	svy: tab wealth_quintile_ns pnc_where, row 
 	
 
 	// pnc_*_who
@@ -767,7 +831,12 @@ do "$do/00_dir_setting.do"
 	}
 		
 	
-	
+	foreach var of varlist 	pnc_who_1 pnc_who_2 pnc_who_3 pnc_who_4 pnc_who_5 ///
+							pnc_who_6 pnc_who_7 pnc_who_8 pnc_who_9 pnc_who_10 ///
+							pnc_who_11 pnc_who_888 {
+		
+		svy: tab wealth_quintile_ns `var', row 
+	}	
 	
 		
 	// pnc_who_trained
@@ -775,6 +844,7 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num pnc_who_trained, row 
 	svy: tab NationalQuintile pnc_who_trained, row
 	svy: tab child_dob_season_yr pnc_who_trained if child_dob_year < 2023, row
+	svy: tab wealth_quintile_ns pnc_who_trained, row
 
 	svy: reg pnc_who_trained hfc_near_dist_dry 
 	svy: reg pnc_who_trained hfc_near_dist_rain 	
@@ -839,7 +909,8 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num nbc_yn, row 
 	svy: tab NationalQuintile nbc_yn, row
 	svy: tab child_dob_season_yr nbc_yn if child_dob_year < 2023, row
-
+	svy: tab wealth_quintile_ns nbc_yn, row
+	
 	svy: reg nbc_yn hfc_near_dist_dry 
 	svy: reg nbc_yn hfc_near_dist_rain 	
 	
@@ -848,6 +919,7 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num nbc_2days_yn, row 
 	svy: tab NationalQuintile nbc_2days_yn, row
 	svy: tab child_dob_season_yr nbc_2days_yn if child_dob_year < 2023, row
+	svy: tab wealth_quintile_ns nbc_2days_yn, row
 
 	svy: reg nbc_2days_yn hfc_near_dist_dry 
 	svy: reg nbc_2days_yn hfc_near_dist_rain 	
@@ -857,6 +929,7 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num nbc_where, row 
 	svy: tab NationalQuintile nbc_where, row 
 	svy: tab NationalQuintile_recod nbc_where, row 
+	svy: tab wealth_quintile_ns nbc_where, row 
 	
 	
 	// nbc_*_who
@@ -895,11 +968,21 @@ do "$do/00_dir_setting.do"
 		svy: tab NationalQuintile_recod `var', row 
 	}	
 	
+	
+	foreach var of varlist 	nbc_who_1 nbc_who_2 nbc_who_3 nbc_who_4 nbc_who_5 ///
+							nbc_who_6 nbc_who_7 nbc_who_8 nbc_who_9 nbc_who_10 ///
+							nbc_who_11 nbc_who_888 {
+		
+		svy: tab wealth_quintile_ns `var', row 
+	}	
+		
+	
 	// nbc_who_trained
 	svy: mean  nbc_who_trained
 	svy: tab stratum_num nbc_who_trained, row 
 	svy: tab NationalQuintile nbc_who_trained, row
 	svy: tab child_dob_season_yr nbc_who_trained if child_dob_year < 2023, row
+	svy: tab wealth_quintile_ns nbc_who_trained, row
 
 	svy: reg nbc_who_trained hfc_near_dist_dry 
 	svy: reg nbc_who_trained hfc_near_dist_rain 	
@@ -997,6 +1080,18 @@ do "$do/00_dir_setting.do"
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace	
 
+	foreach v in `outcome' {
+		
+		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_MomHealth_Model_4_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace
+		   
 	local outcome	anc_yn anc_who_trained anc_visit_trained_4times ////
 					insti_birth skilled_battend ///
 					pnc_yn pnc_who_trained ///
@@ -1013,7 +1108,21 @@ do "$do/00_dir_setting.do"
 		estout `outcome' using "$out/reg_output/FINAL_MomHealth_Model_4_logistic.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace	
-		   
+	
+	foreach v in `outcome' {
+		
+		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		//eststo model_B
+		estimates store `v', title(`v')
+		
+	}
+		
+		estout `outcome' using "$out/reg_output/FINAL_MomHealth_Model_4_logistic_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
+		   legend label varlabels(_cons constant)              ///
+		   stats(r2 df_r bic) replace		
+	
+	
+	
 	****************************************************************************
 	** PHQ9 **
 	****************************************************************************
