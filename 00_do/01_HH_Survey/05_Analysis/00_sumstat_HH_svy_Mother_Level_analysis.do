@@ -1266,9 +1266,19 @@ do "$do/00_dir_setting.do"
 	svy: reg wempo_grp_tot wempo_index 
 
 	
+	* Women empowerment by stratum 
+	svy: mean wempo_index, over(stratum_num)
+	test _b[c.wempo_index@1bn.stratum_num] = _b[c.wempo_index@2bn.stratum_num] = _b[c.wempo_index@3bn.stratum_num] = _b[c.wempo_index@4bn.stratum_num] = _b[c.wempo_index@5bn.stratum_num]
+
 	
+	* Women empowerment by wealth quintile - national cut-off 
+	svy: mean wempo_index, over(NationalQuintile)
+	test _b[c.wempo_index@1bn.NationalQuintile] = _b[c.wempo_index@2bn.NationalQuintile] = _b[c.wempo_index@3bn.NationalQuintile] = _b[c.wempo_index@4bn.NationalQuintile] = _b[c.wempo_index@5bn.NationalQuintile]
 	
-	
+	* Women empowerment by wealth quintile - project nourish cut-off  
+	svy: mean wempo_index, over(wealth_quintile_ns)
+	test _b[c.wempo_index@1bn.wealth_quintile_ns] = _b[c.wempo_index@2bn.wealth_quintile_ns] = _b[c.wempo_index@3bn.wealth_quintile_ns] = _b[c.wempo_index@4bn.wealth_quintile_ns] = _b[c.wempo_index@5bn.wealth_quintile_ns]
+
 	
 // END HERE 
 
