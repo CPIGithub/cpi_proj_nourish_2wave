@@ -1055,7 +1055,7 @@ do "$do/00_dir_setting.do"
 	   	
 	foreach v in `outcome' {
 		
-		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
+		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num 
 		estimates store `v', title(`v')
 		
 	}
@@ -1070,7 +1070,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index i.resp_highedu i.hh_mem_highedu_all
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1082,7 +1082,7 @@ do "$do/00_dir_setting.do"
 
 	foreach v in `outcome' {
 		
-		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index i.resp_highedu i.hh_mem_highedu_all
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1099,7 +1099,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index i.resp_highedu i.hh_mem_highedu_all
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1111,7 +1111,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index i.resp_highedu i.hh_mem_highedu_all
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1140,6 +1140,11 @@ do "$do/00_dir_setting.do"
 	svy: tab prgexpo_pn phq9_cat, row 	
 	svy: tab edu_exposure phq9_cat, row 
 	
+	svy: tab wealth_quintile_ns phq9_cat, row 
+	
+	
+	
+
 	****************************************************************************
 	** Women Empowerment **
 	****************************************************************************

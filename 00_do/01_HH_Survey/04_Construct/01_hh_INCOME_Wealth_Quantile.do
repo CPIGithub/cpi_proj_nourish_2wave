@@ -24,7 +24,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	* keep only HH income and characteristc modules 
-	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
+	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name enu_name
 	local mainresp 	respd_id respd_who respd_name respd_sex respd_age respd_status ///
 					resp_hhhead resp_highedu resp_occup respd_preg respd_child ///
 					respd_1stpreg_age respd_chid_num hhhead_highedu hhhead_occup hh_mem_highedu_all
@@ -219,6 +219,11 @@ do "$do/00_dir_setting.do"
 								Q7_NAT+ Q8_NAT+ Q9_NAT+ Q10_NAT+ Q11_NAT+ ///
 								Q12_NAT+ Q13_NAT+ Q14_NAT+ Q15_NAT
 
+	gen double NationalScore_noph =  	Q1_NAT+ /*Q2_NAT+*/ Q3_NAT+ Q4_NAT+ Q5_NAT+ Q6_NAT+ ///
+										Q7_NAT+ Q8_NAT+ Q9_NAT+ Q10_NAT+ Q11_NAT+ ///
+										Q12_NAT+ Q13_NAT+ Q14_NAT+ Q15_NAT
+
+								
 	** Assign respondents to national quintiles based on their national scores
 	generate NationalQuintile = .
 	replace NationalQuintile = 1 if 	NationalScore > -100 & NationalScore <-0.523858129524
@@ -276,9 +281,13 @@ do "$do/00_dir_setting.do"
 	
 	xtile wealth_quintile_ns = NationalScore [pweight=weight_final], nq(5)
 	xtile wealth_quintile_inc = d3_inc_lmth [pweight=weight_final], nq(5)
+	xtile wealth_quintile_ns_noph = NationalScore_noph [pweight=weight_final], nq(5)
+	
+	
 	lab def w_quintile 1"Poorest" 2"Poor" 3"Medium" 4"Wealthy" 5"Wealthiest"
-	lab val wealth_quintile_ns wealth_quintile_inc w_quintile
+	lab val wealth_quintile_ns wealth_quintile_inc wealth_quintile_ns_noph w_quintile
 	lab var wealth_quintile_ns "Wealth Quintiles by PN pop-based EquityTool national score distribution"
+	lab var wealth_quintile_ns_noph "Wealth Quintiles (Excluded Mobile Phone) by PN pop-based EquityTool national score distribution"
 	lab var wealth_quintile_inc "Wealth Quintiles by last month income"
 	tab1 wealth_quintile_ns wealth_quintile_inc, m 
 	
@@ -289,6 +298,14 @@ do "$do/00_dir_setting.do"
 
 	svy: tab wealth_quintile_inc
 	svy: tab NationalQuintile wealth_quintile_inc
+
+	svy: tab wealth_quintile_ns_noph
+	
+	svy: tab wealth_quintile_ns_noph
+	svy: tab NationalQuintile wealth_quintile_ns_noph
+	svy: tab wealth_quintile_ns wealth_quintile_ns_noph
+	svy: tab wealth_quintile_ns hhitems_phone, row
+	svy: tab wealth_quintile_ns_noph hhitems_phone, row
 
 	* Check for Missing variable label and variable label 
 	// iecodebook template using "$out/pnourish_INCOME_WEALTH_final.xlsx" // export template
