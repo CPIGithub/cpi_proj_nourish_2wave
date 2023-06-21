@@ -50,6 +50,8 @@ do "$do/00_dir_setting.do"
 	sum d3_inc_lmth, d 
 	gen income_lastmonth_trim = d3_inc_lmth 
 	replace income_lastmonth_trim = .m if d3_inc_lmth > `r(p99)' & !mi(d3_inc_lmth)
+	replace income_lastmonth_trim = .m if d3_inc_lmth == 9999
+	replace income_lastmonth_trim = .m if d3_inc_lmth < 100
 	tab income_lastmonth_trim, m 
 	
 	sum income_lastmonth_trim, d 

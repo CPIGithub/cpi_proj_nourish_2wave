@@ -62,6 +62,10 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num hh_mem_highedu_all, row 
 	svy: tab NationalQuintile hh_mem_highedu_all, row 
 
+	svy: tab wealth_quintile_ns resp_highedu, row 
+	svy: tab wealth_quintile_ns hh_mem_highedu_all, row 
+
+	
 	// program exposure 
 	svy: tab resp_highedu prgexpo_pn, row 
 	svy: tab hh_mem_highedu_all prgexpo_pn, row 
@@ -87,11 +91,42 @@ do "$do/00_dir_setting.do"
 	
 	tab NationalQuintile wealth_quintile_ns
 	*/
+	
+	* HH mobile phone ownership by quintiles 
+	
+	//xtile wealth_10pct_ns_noph = NationalScore_noph [pweight=weight_final], nq(20)
+	xtile wealth_10pct_inc = income_lastmonth_trim [pweight=weight_final], nq(100) // d3_inc_lmth
+	xtile wealth_10pct_ns = NationalScore [pweight=weight_final], nq(40)
+	
+	// replace income_lastmonth_trim = .m if d3_inc_lmth
+	// pctile pct = income_lastmonth_trim [pweight = weight_final], nq(40)
+	
+	// NationalScore
+	// NationalScore_noph
+	
+	//svy: tab wealth_10pct_ns_noph hhitems_phone, row
+	svy: tab wealth_10pct_ns hhitems_phone, row
+	svy: tab wealth_10pct_inc hhitems_phone, row
+	
+	svy: tab NationalScore hhitems_phone, row
+	svy: tab NationalScore_noph hhitems_phone, row
+	svy: tab d3_inc_lmth hhitems_phone, row
+	
 	svy: tab wealth_quintile_ns
 	svy: tab NationalQuintile wealth_quintile_ns
 
 	//svy: tab wealth_quintile_inc
 	//svy: tab NationalQuintile wealth_quintile_inc
+	
+	
+	** Dummy Variable - based on percentile vs mobile phone ** 
+	gen wealth_10pct_ns_cut1 = (wealth_10pct_ns < 7.5)
+	gen wealth_10pct_ns_cut2 = (wealth_10pct_ns < 17.5)
+	replace wealth_10pct_ns_cut1 = .m if mi(wealth_10pct_ns)
+	replace wealth_10pct_ns_cut2 = .m if mi(wealth_10pct_ns)
+	
+	svy: tab wealth_10pct_ns_cut1 hhitems_phone, row 
+	svy: tab wealth_10pct_ns_cut2 hhitems_phone, row 
 	
 	
 	svy: mean d3_inc_lmth, over(wealth_quintile_ns)
