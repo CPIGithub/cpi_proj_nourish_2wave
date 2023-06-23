@@ -237,18 +237,13 @@ do "00_dir_setting_w1.do"
 	foreach var of varlist grain pulses diary meat egg vitfruitveg othfruitveg {
 		
 		di "`var'"
-		// diff `var', t(person) p(source) cov(respd_age resp_highedu child_age_month c_breastmilk)
-		reg `var' source person did respd_age resp_highedu child_age_month c_breastmilk, r
+		diff `var' [pweight = weight_final], t(person) p(source) cov(respd_age resp_highedu child_age_month)
+		// reg `var' source person did respd_age resp_highedu child_age_month c_breastmilk [pweight = weight_final], r
 		
 	}
 	
-	&&
-	reg meat source person did respd_age resp_highedu child_age_month c_breastmilk, r
-	ieddtab meat, time(source) treatment(person) 
-	diff meat, t(person) p(source) cov(respd_age resp_highedu child_age_month c_breastmilk)
-	
-	
-	 weight_final ///
+
+
 					
 					
 					
@@ -288,14 +283,5 @@ do "00_dir_setting_w1.do"
 
 	*/
 	
-
-
-
-
-
-
-
-
-
 
 ** end of dofile 
