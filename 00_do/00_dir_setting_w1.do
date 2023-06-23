@@ -46,11 +46,11 @@ else if "`user'" == "XX" {
 }
 
 
-global  raw	 	"$dir/01_raw"
-global do		"$dir/02_do"
-global dta		"$dir/03_cleaned_data"
-global out		"$dir/04_outputs"
-global result 	"$dir/05_results"
+global w1raw	 	"$dir/01_raw"
+global w1do			"$dir/02_do"
+global w1dta		"$dir/03_cleaned_data"
+global w1out		"$dir/04_outputs"
+global w1result 	"$dir/05_results"
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
