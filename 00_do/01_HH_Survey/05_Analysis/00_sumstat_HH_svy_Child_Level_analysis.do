@@ -561,7 +561,7 @@ do "$do/00_dir_setting.do"
 	// Model 4
 	foreach v in `outcome' {
 		
-		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile stratum wempo_index
 		eststo model_B
 		estimates store `v', title(`v')
 		
@@ -573,7 +573,7 @@ do "$do/00_dir_setting.do"
 		   
 	foreach v in `outcome' {
 		
-		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns stratum wempo_index
 		eststo model_B
 		estimates store `v', title(`v')
 		
@@ -599,7 +599,7 @@ do "$do/00_dir_setting.do"
 	local outcome	ebf pre_bf mdd mmf mad 
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile stratum wempo_index
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -612,7 +612,7 @@ do "$do/00_dir_setting.do"
 		
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns stratum wempo_index
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1201,7 +1201,7 @@ do "$do/00_dir_setting.do"
 					child_diarrh_trained child_cough_trained child_fever_trained 
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile stratum wempo_index
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1214,7 +1214,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns stratum wempo_index
 		//eststo model_B
 		estimates store `v', title(`v')
 		

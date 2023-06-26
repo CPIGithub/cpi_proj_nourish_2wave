@@ -248,7 +248,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile stratum wempo_index
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -260,7 +260,7 @@ do "$do/00_dir_setting.do"
 		   
 	foreach v in `outcome' {
 		
-		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns stratum wempo_index
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -277,7 +277,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index
+		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile stratum wempo_index
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -290,7 +290,7 @@ do "$do/00_dir_setting.do"
 		   
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index
+		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns stratum wempo_index
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1070,7 +1070,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index i.resp_highedu i.hh_mem_highedu_all
+		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile stratum wempo_index // i.resp_highedu i.hh_mem_highedu_all
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1082,7 +1082,7 @@ do "$do/00_dir_setting.do"
 
 	foreach v in `outcome' {
 		
-		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index i.resp_highedu i.hh_mem_highedu_all
+		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns stratum wempo_index // i.resp_highedu i.hh_mem_highedu_all
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1099,7 +1099,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile##stratum wempo_index i.resp_highedu i.hh_mem_highedu_all
+		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile stratum wempo_index // i.resp_highedu i.hh_mem_highedu_all
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1111,7 +1111,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach v in `outcome' {
 		
-		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns##stratum wempo_index i.resp_highedu i.hh_mem_highedu_all
+		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns stratum wempo_index // i.resp_highedu i.hh_mem_highedu_all
 		//eststo model_B
 		estimates store `v', title(`v')
 		
@@ -1284,6 +1284,12 @@ do "$do/00_dir_setting.do"
 	svy: mean wempo_index, over(wealth_quintile_ns)
 	test _b[c.wempo_index@1bn.wealth_quintile_ns] = _b[c.wempo_index@2bn.wealth_quintile_ns] = _b[c.wempo_index@3bn.wealth_quintile_ns] = _b[c.wempo_index@4bn.wealth_quintile_ns] = _b[c.wempo_index@5bn.wealth_quintile_ns]
 
+	encode enu_name, gen(enu_name_num)
+	svy: mean wempo_index if org_name_num == 1, over(enu_name_num)
+	svy: mean wempo_index if org_name_num == 2, over(enu_name_num)
+	svy: mean wempo_index if org_name_num == 3, over(enu_name_num)
+	
+	
 	
 // END HERE 
 
