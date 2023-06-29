@@ -172,6 +172,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	local outcome eibf ebf2d ebf pre_bf mixmf bof cbf
+	* Concentration Index - absolute
 	
 	foreach v in `outcome' {
 		
@@ -182,6 +183,17 @@ do "$do/00_dir_setting.do"
 	
 	}
 
+	* Concentration Index - absolute
+ 	local outcome eibf ebf2d ebf pre_bf mixmf bof cbf
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
+		
+			di "`v'"	
+			conindex `v', rank(`var') svy truezero generalized
+		}
+	
+	}	
 	
 	gen stratum_org_inter = stratum * org_name_num  
 	gen KDHW = (stratum_num == 5)
@@ -270,7 +282,7 @@ do "$do/00_dir_setting.do"
 	}
 	
 	local outcome isssf food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8
-	
+	* Concentration Index - relative 
 	foreach v in `outcome' {
 		
 		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
@@ -280,6 +292,17 @@ do "$do/00_dir_setting.do"
 	
 	}
 
+	* Concentration Index - absolute
+ 	local outcome isssf food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
+		
+			di "`v'"	
+			conindex `v', rank(`var') svy truezero generalized
+		}
+	
+	}	
 	
 	foreach v in `outcome' {
 		
@@ -404,13 +427,26 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
-	local outcome dietary_tot
 	
+	
+	* Concentration Index - relative 
+	local outcome dietary_tot 
 	foreach v in `outcome' {
 		
 		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
 		
-			conindex `v', rank(`var') truezero svy 
+			conindex `v', rank(`var') svy wagstaff bounded limits(0 8)
+		}
+	
+	}		
+	
+	* Concentration Index - absolute 	
+	local outcome dietary_tot 
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
+		
+			conindex `v', rank(`var') svy truezero generalized
 		}
 	
 	}	
@@ -442,7 +478,7 @@ do "$do/00_dir_setting.do"
 	   stats(r2 df_r bic) replace
 	   
 	local outcome mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf 
-	
+	* Concentration Index - relative 
 	foreach v in `outcome' {
 		
 		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
@@ -451,6 +487,19 @@ do "$do/00_dir_setting.do"
 		}
 	
 	}
+	
+	
+	* Concentration Index - absolute
+ 	local outcome mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf 
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
+		
+			di "`v'"	
+			conindex `v', rank(`var') svy truezero generalized
+		}
+	
+	}	
 	
 	local outcome mdd /*mmf_bf_6to8*/ mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf 
 	
@@ -728,12 +777,24 @@ do "$do/00_dir_setting.do"
 	gen KDHW = (stratum_num == 5)
 	
 	local outcome child_bwt_lb
-	
+	* Concentration Index - relative 
 	foreach v in `outcome' {
 		
 		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
 		
-			conindex `v', rank(`var') truezero svy 
+			conindex `v', rank(`var') svy wagstaff bounded limits(2 44)
+		}
+	
+	}	
+	
+	* Concentration Index - absolute
+ 	local outcome child_bwt_lb
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
+		
+			di "`v'"	
+			conindex `v', rank(`var') svy truezero generalized
 		}
 	
 	}	
@@ -765,7 +826,7 @@ do "$do/00_dir_setting.do"
 	   
 	   
 	local outcome 	child_vita child_deworm child_vaccin child_vaccin_card  child_low_bwt
-	
+	* Concentration Index - relative 
 	foreach v in `outcome' {
 		
 		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
@@ -775,7 +836,18 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	* Concentration Index - absolute
+ 	local outcome child_vita child_deworm child_vaccin child_vaccin_card  child_low_bwt
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
+		
+			di "`v'"	
+			conindex `v', rank(`var') svy truezero generalized
+		}
 	
+	}	
+
 
 	foreach v in `outcome' {
 		
@@ -840,7 +912,7 @@ do "$do/00_dir_setting.do"
 	}
 	
 	local outcome  child_ill0 child_ill1 child_ill2 child_ill3 child_ill888
-	
+	* Concentration Index - relative 
 	foreach v in `outcome' {
 		
 		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
@@ -850,6 +922,18 @@ do "$do/00_dir_setting.do"
 	
 	}
 
+	
+	* Concentration Index - absolute
+ 	local outcome child_ill0 child_ill1 child_ill2 child_ill3 child_ill888
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
+		
+			di "`v'"	
+			conindex `v', rank(`var') svy truezero generalized
+		}
+	
+	}	
 	
 	foreach v in `outcome' {
 		

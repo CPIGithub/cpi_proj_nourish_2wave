@@ -139,16 +139,34 @@ do "$do/00_dir_setting.do"
 	gen KDHW = (stratum_num == 5)
 
 	local outcome mddw_score mom_meal_freq
-	
+	* Concentration Index - relative 
 	foreach v in `outcome' {
 		
 		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
-		
-			conindex `v', rank(`var') truezero svy 
+		di "`v'"
+			if "`v'" == "mddw_score" {
+			    conindex `v', rank(`var') svy wagstaff bounded limits(1 10)
+				
+			}
+			else {
+			    conindex `v', rank(`var') svy wagstaff bounded limits(1 8)
+			}
+			
 		}
 	
 	}	
 	
+	* Concentration Index - absolute
+ 	local outcome mddw_score mom_meal_freq
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
+		
+			di "`v'"	
+			conindex `v', rank(`var') svy truezero generalized
+		}
+	
+	}	
 	
 	foreach v in `outcome' {
 		
@@ -191,6 +209,7 @@ do "$do/00_dir_setting.do"
 					mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
 					mddw_oth_veg mddw_oth_fruit
 	
+	* Concentration Index - relative 
 	foreach v in `outcome' {
 		
 		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
@@ -201,7 +220,17 @@ do "$do/00_dir_setting.do"
 	}
 	
 	
-
+	* Concentration Index - absolute
+ 	local outcome mddw_yes
+	foreach v in `outcome' {
+		
+		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
+		
+			di "`v'"	
+			conindex `v', rank(`var') svy truezero generalized
+		}
+	
+	}	
 	
 	foreach v in `outcome' {
 		

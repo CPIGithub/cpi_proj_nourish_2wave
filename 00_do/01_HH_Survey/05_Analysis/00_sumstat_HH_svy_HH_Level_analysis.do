@@ -418,6 +418,23 @@ do "$do/00_dir_setting.do"
 	svy: mean fies_rawscore, over(wealth_quintile_ns)
 
 	
+	* Concentration Index - relative 
+	foreach var of varlist fies_rawscore {
+	    
+		di "`var'"		
+		conindex `var', rank(NationalQuintile) svy wagstaff bounded limits(0 8)
+	
+	}
+	
+	
+	* Concentration Index - absolute 
+	foreach var of varlist fies_rawscore {
+	    
+		di "`var'"		
+		conindex `var', rank(NationalQuintile) svy truezero generalized
+	
+	}
+	
 	****************************************************************************
 	** Program Exposure **
 	****************************************************************************
@@ -600,7 +617,24 @@ do "$do/00_dir_setting.do"
 	
 	svy: mean nutsensitive_exposure, over(wealth_quintile_ns)
 	
-
+	
+	* Concentration Index - relative 
+	foreach var of varlist pn_access /*pn_muac_access*/ pn_msg_access pn_wash_access pn_sbcc_access pn_hgdn_access pn_emgy_access {
+	    
+		di "`var'"		
+		conindex `var', rank(NationalQuintile) svy wagstaff bounded limits(0 1)
+	
+	}
+	
+	
+	* Concentration Index - absolute 
+	foreach var of varlist pn_access /*pn_muac_access*/ pn_msg_access pn_wash_access pn_sbcc_access pn_hgdn_access pn_emgy_access {
+	    
+		di "`var'"		
+		conindex `var', rank(NationalQuintile) svy truezero generalized
+	
+	}
+	
 	
 // END HERE 
 
