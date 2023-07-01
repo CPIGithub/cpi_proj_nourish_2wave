@@ -22,10 +22,14 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_mom_diet_final.dta", clear 
 	
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index)
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index progressivenss)
 	
 	drop if _merge == 2 
 	drop _merge 
+	
+	* treated other and monestic education as missing
+	replace resp_highedu = .m if resp_highedu > 7 
+	tab resp_highedu, m 
 	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
@@ -44,6 +48,9 @@ do "$do/00_dir_setting.do"
 
 	svy: mean mom_meal_freq, over(wealth_quintile_ns)
 
+	svy: mean mom_meal_freq, over(wealth_quintile_modify)
+	
+	
 	
 	// food groups 
 	svy: mean  mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
@@ -97,7 +104,8 @@ do "$do/00_dir_setting.do"
 	svy: mean mddw_score, over(NationalQuintile)
 	svy: reg mddw_score i.NationalQuintile
 	svy: mean mddw_score, over(wealth_quintile_ns)
-
+	svy: mean mddw_score, over(wealth_quintile_modify)
+	
 	svy: reg mddw_score wempo_index 
 	
 	svy: reg mom_meal_freq wempo_index 
@@ -109,6 +117,7 @@ do "$do/00_dir_setting.do"
 	svy: tab stratum_num mddw_yes, row 
 	svy: tab NationalQuintile mddw_yes, row
 	svy: tab wealth_quintile_ns mddw_yes, row
+	svy: tab wealth_quintile_modify mddw_yes, row
 	
 	svy: tab hhitems_phone mddw_yes, row 
 	svy: tab prgexpo_pn mddw_yes, row 	
@@ -328,6 +337,76 @@ do "$do/00_dir_setting.do"
 		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4_logistic_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace		
+	
+	
+
+	
+	// FINAL TABLEs
+	local outcomes	mddw_score mom_meal_freq 
+	
+	foreach outcome in `outcomes' {
+	 
+		local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss
+		
+		foreach v in `regressor' {
+			
+			putexcel set "$out/reg_output/MDDW_`outcome'_logistic_models.xls", sheet("`v'") modify 
+		
+			if "`v'" != "income_lastmonth" & "`v'" != "wempo_index" {
+				svy: reg `outcome' i.`v'
+			}
+			else {
+				svy: reg `outcome' `v'
+			}
+			
+			estimates store `v', title(`v')
+			
+			putexcel (A1) = etable
+			
+		}
+			
+	}
+	
+
+	local outcomes	mddw_score mom_meal_freq 
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/MDDW_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: reg `outcome' i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+	
+		putexcel (A1) = etable
+			
+	}
+	
+	
+	// mddw_yes
+	local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss
+	
+	foreach v in `regressor' {
+		
+		putexcel set "$out/reg_output/MDDW_mddw_yes_logistic_models.xls", sheet("`v'") modify 
+	
+		if "`v'" != "income_lastmonth" & "`v'" != "wempo_index" {
+		    svy: logistic mddw_yes i.`v'
+		}
+		else {
+		    svy: logistic mddw_yes `v'
+		}
+		
+		estimates store `v', title(`v')
+		
+		putexcel (A1) = etable
+		
+	}
+	
+	putexcel set "$out/reg_output/MDDW_mddw_yes_logistic_models.xls", sheet("Final_model") modify 
+	
+	svy: logistic mddw_yes i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+	
+	putexcel (A1) = etable
 	
 	
 	****************************************************************************
@@ -1301,6 +1380,7 @@ do "$do/00_dir_setting.do"
 
 	
 	* Women empowerment by stratum 
+	svy: mean wempo_index
 	svy: mean wempo_index, over(stratum_num)
 	test _b[c.wempo_index@1bn.stratum_num] = _b[c.wempo_index@2bn.stratum_num] = _b[c.wempo_index@3bn.stratum_num] = _b[c.wempo_index@4bn.stratum_num] = _b[c.wempo_index@5bn.stratum_num]
 
@@ -1313,10 +1393,16 @@ do "$do/00_dir_setting.do"
 	svy: mean wempo_index, over(wealth_quintile_ns)
 	test _b[c.wempo_index@1bn.wealth_quintile_ns] = _b[c.wempo_index@2bn.wealth_quintile_ns] = _b[c.wempo_index@3bn.wealth_quintile_ns] = _b[c.wempo_index@4bn.wealth_quintile_ns] = _b[c.wempo_index@5bn.wealth_quintile_ns]
 
+	svy: mean wempo_index, over(wealth_quintile_modify)
+	test _b[c.wempo_index@1bn.wealth_quintile_modify] = _b[c.wempo_index@2bn.wealth_quintile_modify] = _b[c.wempo_index@3bn.wealth_quintile_modify] = _b[c.wempo_index@4bn.wealth_quintile_modify] = _b[c.wempo_index@5bn.wealth_quintile_modify]
+
+	
 	encode enu_name, gen(enu_name_num)
 	svy: mean wempo_index if org_name_num == 1, over(enu_name_num)
 	svy: mean wempo_index if org_name_num == 2, over(enu_name_num)
 	svy: mean wempo_index if org_name_num == 3, over(enu_name_num)
+	
+	
 	
 	
 	

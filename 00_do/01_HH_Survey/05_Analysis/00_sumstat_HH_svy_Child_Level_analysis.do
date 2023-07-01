@@ -88,10 +88,14 @@ do "$do/00_dir_setting.do"
 	
 	use "$dta/pnourish_child_iycf_final.dta", clear 
 	
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index)
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index progressivenss)
 	
 	drop if _merge == 2 
 	drop _merge 
+	
+	* treated other and monestic education as missing
+	replace resp_highedu = .m if resp_highedu > 7 
+	tab resp_highedu, m 
 	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
@@ -170,6 +174,13 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	foreach var of varlist eibf ebf2d ebf pre_bf mixmf bof cbf{
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_modify `var', row
+	
+	}
 	
 	local outcome eibf ebf2d ebf pre_bf mixmf bof cbf
 	* Concentration Index - absolute
@@ -280,6 +291,17 @@ do "$do/00_dir_setting.do"
 		svy: tab wealth_quintile_ns `var', row
 	
 	}
+	
+	
+	foreach var of varlist isssf food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8 {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_modify `var', row
+	
+	}	
+	
+	
 	
 	local outcome isssf food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8
 	* Concentration Index - relative 
@@ -418,6 +440,7 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure mad, row 
 
 	svy: mean dietary_tot, over(wealth_quintile_ns)
+	svy: mean dietary_tot, over(wealth_quintile_modify)
 
 	foreach var of varlist mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf  {
 	    
@@ -426,6 +449,14 @@ do "$do/00_dir_setting.do"
 		svy: tab wealth_quintile_ns `var', row
 	
 	}
+	
+	foreach var of varlist mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf  {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_modify `var', row
+	
+	}	
 	
 	
 	
@@ -672,6 +703,77 @@ do "$do/00_dir_setting.do"
 		   stats(r2 df_r bic) replace		
 	
 	
+
+	// FINAL TABLEs
+	local outcomes	ebf pre_bf mdd mmf mad 
+	
+	foreach outcome in `outcomes' {
+	 
+		local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss
+		
+		foreach v in `regressor' {
+			
+			putexcel set "$out/reg_output/IYCF_`outcome'_logistic_models.xls", sheet("`v'") modify 
+		
+			if "`v'" != "income_lastmonth" & "`v'" != "wempo_index" {
+				svy: logistic `outcome' i.`v'
+			}
+			else {
+				svy: logistic `outcome' `v'
+			}
+			
+			estimates store `v', title(`v')
+			
+			putexcel (A1) = etable
+			
+		}
+			
+	}
+	
+
+	local outcomes	ebf pre_bf mdd mmf mad 
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/IYCF_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: logistic `outcome' i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+	
+		putexcel (A1) = etable
+			
+	}
+	
+	
+	local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss
+	
+	foreach v in `regressor' {
+		
+		putexcel set "$out/reg_output/IYCF_dietary_tot_logistic_models.xls", sheet("`v'") modify 
+	
+		if "`v'" != "income_lastmonth" & "`v'" != "wempo_index" {
+		    svy: reg dietary_tot i.`v'
+		}
+		else {
+		    svy: reg dietary_tot `v'
+		}
+		
+		estimates store `v', title(`v')
+		
+		putexcel (A1) = etable
+		
+	}
+	
+	putexcel set "$out/reg_output/IYCF_dietary_tot_logistic_models.xls", sheet("Final_model") modify 
+	
+	svy: reg dietary_tot i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+	
+	putexcel (A1) = etable
+	
+	
+
+	
+	
 	****************************************************************************
 	* Child Health Data *
 	****************************************************************************
@@ -764,7 +866,8 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure child_vaccin_card, row 
 	
 	svy: mean child_bwt_lb, over(wealth_quintile_ns)
-
+	svy: mean child_bwt_lb, over(wealth_quintile_modify)
+	
 	foreach var of varlist child_vita child_deworm child_vaccin child_vaccin_card  child_low_bwt {
 	    
 		di "`var'"
@@ -772,6 +875,16 @@ do "$do/00_dir_setting.do"
 		svy: tab wealth_quintile_ns `var', row
 	
 	}
+	
+	foreach var of varlist child_vita child_deworm child_vaccin child_vaccin_card  child_low_bwt {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_modify `var', row
+	
+	}	
+	
+	
 	
 	gen stratum_org_inter = stratum * org_name_num  
 	gen KDHW = (stratum_num == 5)
@@ -910,6 +1023,17 @@ do "$do/00_dir_setting.do"
 		svy: tab wealth_quintile_ns `var', row
 	
 	}
+	
+	
+	
+	foreach var of varlist child_ill0 child_ill1 child_ill2 child_ill3 child_ill888 {
+	    
+		di "`var'"
+		
+		svy: tab wealth_quintile_modify `var', row
+	
+	}	
+	
 	
 	local outcome  child_ill0 child_ill1 child_ill2 child_ill3 child_ill888
 	* Concentration Index - relative 

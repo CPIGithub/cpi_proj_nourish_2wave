@@ -308,7 +308,24 @@ do "$do/00_dir_setting.do"
 	svy: tab wealth_quintile_ns wealth_quintile_ns_noph
 	svy: tab wealth_quintile_ns hhitems_phone, row
 	svy: tab wealth_quintile_ns_noph hhitems_phone, row
-
+	
+	
+	* Re-construct Wealth Quintiles - with two degree in poorest * 
+	tab NationalQuintile, m 
+	
+	recode NationalQuintile (2 = 3) (3 = 4) (4 = 5) (5 = 6), gen(wealth_quintile_modify)
+	
+	lab def wealth_quintile_modify  1"Severe Poorest" 2"Moderate Poorest" 3"Poor" 4"Medium" 5"Wealthy" 6"Wealthiest"
+	lab val wealth_quintile_modify wealth_quintile_modify
+	tab wealth_quintile_modify, m 
+	
+	xtile wealth_quintile_poorest = NationalScore [pweight=weight_final] if NationalQuintile == 1, nq(2)
+	tab wealth_quintile_poorest, m 
+	
+	replace wealth_quintile_modify = 1 if wealth_quintile_poorest == 1
+	replace wealth_quintile_modify = 2 if wealth_quintile_poorest == 2
+	tab wealth_quintile_modify, m 
+	
 	* Check for Missing variable label and variable label 
 	// iecodebook template using "$out/pnourish_INCOME_WEALTH_final.xlsx" // export template
 	

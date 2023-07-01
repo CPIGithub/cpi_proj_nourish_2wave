@@ -52,6 +52,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab NationalQuintile, ci 
 	svy: tab wealth_quintile_ns, ci 
+	svy: tab wealth_quintile_modify, ci 
 	
 
 	* cross-tab 
@@ -386,6 +387,26 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_FIES_final.dta", clear   
 
+	// get the women empowerment index 
+	merge 1:1 uuid using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index)  
+	drop _merge 
+	
+	* FIES - food insecurity dummy outcome * 
+	* cutoffs for the raw score of 4+ = food insecurity 
+	gen fies_insecurity = (fies_rawscore >= 4) 
+	replace fies_insecurity = .m if mi(fies_rawscore)
+	lab def fies_insecurity 0"Food secure" 1"Food insecue"
+	lab val fies_insecurity fies_insecurity
+	tab fies_insecurity, m 
+	
+	* treated other and monestic education as missing
+	replace resp_highedu = .m if resp_highedu > 7 
+	tab resp_highedu, m 
+	
+	* Interaction term 
+	gen wempo_index_inter_wealth = wempo_index * NationalScore
+	lab var wempo_index_inter_wealth "Women Empowerment Index * Health EquityTool National Score"
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 	
@@ -393,7 +414,7 @@ do "$do/00_dir_setting.do"
 	svy: tab fies_category, ci 
 	svy: tab stratum_num fies_category, row 
 	svy: tab NationalQuintile fies_category, row
-
+	svy: tab wealth_quintile_modify fies_category, row
 
 	// fies_rawscore
 	svy: mean  fies_rawscore
@@ -404,6 +425,10 @@ do "$do/00_dir_setting.do"
 	svy: mean fies_rawscore, over(NationalQuintile)
 	svy: reg fies_rawscore i.NationalQuintile
 	
+	svy: mean fies_insecurity
+	svy: mean fies_insecurity, over(NationalQuintile)
+	conindex fies_insecurity, rank(NationalQuintile) svy wagstaff bounded limits(0 1)
+
 	
 	svy: mean fies_rawscore, over(hhitems_phone)
 	test _b[c.fies_rawscore@0bn.hhitems_phone] = _b[c.fies_rawscore@1bn.hhitems_phone]
@@ -416,7 +441,8 @@ do "$do/00_dir_setting.do"
 
 	svy: tab wealth_quintile_ns fies_category, row 
 	svy: mean fies_rawscore, over(wealth_quintile_ns)
-
+	svy: mean fies_rawscore, over(wealth_quintile_modify)
+	
 	
 	* Concentration Index - relative 
 	foreach var of varlist fies_rawscore {
@@ -434,6 +460,114 @@ do "$do/00_dir_setting.do"
 		conindex `var', rank(NationalQuintile) svy truezero generalized
 	
 	}
+	
+	
+	svy: logit fies_insecurity wempo_index
+	svy: reg fies_rawscore wempo_index
+
+	svy: tab hhitems_phone fies_insecurity, row 
+	svy: logit fies_insecurity hhitems_phone
+
+	svy: tab resp_highedu fies_insecurity, row 
+	svy: logit fies_insecurity i.resp_highedu
+
+	svy: tab stratum_num fies_insecurity, row 
+	svy: logit fies_insecurity i.stratum_num
+	
+	svy: tab NationalQuintile fies_insecurity, row 
+	svy: logit fies_insecurity i.NationalQuintile
+
+	conindex fies_insecurity, rank(NationalQuintile) svy wagstaff bounded limits(0 1)
+	
+	
+	local regressor  hhitems_phone resp_highedu org_name_num stratum NationalQuintile hh_mem_highedu_all resp_hhhead income_lastmonth wempo_index progressivenss
+	
+	foreach v in `regressor' {
+		
+		putexcel set "$out/reg_output/FIES_logistic_models.xls", sheet("`v'") modify 
+	
+		if "`v'" != "income_lastmonth" & "`v'" != "wempo_index" {
+		    svy: logistic fies_insecurity i.`v'
+		}
+		else {
+		    svy: logistic fies_insecurity `v'
+		}
+		
+		estimates store `v', title(`v')
+		
+		putexcel (A1) = etable
+		
+	}
+		
+		
+	/*
+	Model 1 – HH wealth + [other SES vars eg education gap male/female; education; income… 
+	whichever were p<0.1 in crude model – check variance inflation (vif) to guard against collinearity]
+	*/
+	putexcel set "$out/reg_output/FIES_logistic_models.xls", sheet("model 1") modify
+	
+	svy: logistic fies_insecurity i.NationalQuintile i.resp_highedu i.org_name_num stratum
+	estimates store model1, title(model1)
+
+	putexcel (A1) = etable
+	
+	/*
+	Model 2 – women's empowerment + [whichever SES were significant in 1]
+	*/
+	
+	putexcel set "$out/reg_output/FIES_logistic_models.xls", sheet("model 2") modify
+
+	svy: logistic fies_insecurity wempo_index i.NationalQuintile i.resp_highedu i.org_name_num stratum
+	estimates store model2, title(model2)
+	
+	putexcel (A1) = etable
+	
+	
+	/*
+	Model 3 - interaction wealth vs women empowerment - both continious 
+	*/	
+
+	putexcel set "$out/reg_output/FIES_logistic_models.xls", sheet("model 3") modify
+	
+	svy: logistic fies_insecurity wempo_index i.NationalQuintile i.resp_highedu i.org_name_num stratum wempo_index_inter_wealth
+	estimates store model3, title(model3)
+
+	putexcel (A1) = etable
+
+
+	/*
+	Model 4 - interaction wealth vs women empowerment - both category 
+	*/	
+	
+	putexcel set "$out/reg_output/FIES_logistic_models.xls", sheet("model 4") modify
+
+	svy: logistic fies_insecurity wempo_index i.NationalQuintile##i.progressivenss i.resp_highedu i.org_name_num stratum  
+	estimates store model4, title(model4)
+	
+	putexcel (A1) = etable
+
+	/*
+	// not able to export OR, only coefficient 
+	estout `regressor' model1 model2 model3 model4 using "$out/reg_output/FIES_logistic_bivariate.xls", cells(b(star fmt(3)) ci(par fmt(2)))  ///
+	legend label varlabels(_cons constant)              ///
+	stats(r2 df_r bic) replace	
+	*/
+	
+	
+	
+	
+	
+	/*
+	Model 3 - adjusted for model 1 vars and [anything else significant a p<0.1 in crude model]
+	
+	svy: logit fies_insecurity wempo_index i.NationalQuintile i.resp_highedu i.org_name_num##i.stratum
+
+
+	wempo_index
+	hhitems_phone
+	resp_highedu
+	NationalQuintile
+	*/
 	
 	****************************************************************************
 	** Program Exposure **
@@ -588,6 +722,14 @@ do "$do/00_dir_setting.do"
 		svy: tab wealth_quintile_ns `var', row
 	
 	}
+	
+	foreach var of varlist pn_access pn_muac_access pn_msg_access pn_wash_access pn_sbcc_access pn_hgdn_access pn_emgy_access {
+	    
+		di "`var'"	
+		svy: tab wealth_quintile_modify `var', row
+	
+	}
+	
 	
 	
 	* Additional Variable ** 

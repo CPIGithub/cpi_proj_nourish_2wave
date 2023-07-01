@@ -239,7 +239,8 @@ do "$do/00_dir_setting.do"
 	* Add Wealth Quantile variable **
 	// drop prgexpo_pn
 	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
-							keepusing(income_lastmonth wealth_quintile_ns NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
+							keepusing(income_lastmonth wealth_quintile_ns wealth_quintile_modify ///
+							NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
 	keep if _merge == 3
 	

@@ -423,7 +423,8 @@ do "$do/00_dir_setting.do"
 					
 	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
 							keepusing(	`mainresp' ///
-										income_lastmonth wealth_quintile_ns NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
+										income_lastmonth wealth_quintile_ns NationalQuintile ///
+										wealth_quintile_modify NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
 	keep if _merge == 3
 	
