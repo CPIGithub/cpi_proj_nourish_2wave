@@ -45,7 +45,7 @@ do "$do/00_dir_setting.do"
 							prgexpo_join5 prgexpo_join6 prgexpo_join7 prgexpo_join8 ///
 							prgexpo_join0 prgexpo_join9 {
 	
-		replace `var' = .m if prgexpo_pn != 1
+		replace `var' = 0 if prgexpo_pn == 0 
 		tab `var', m 
 								
 	}

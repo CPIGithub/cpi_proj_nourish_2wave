@@ -148,7 +148,6 @@ do "$do/00_dir_setting.do"
 		
 	}
 	
-	
 	* index development // not included the # of groups participate 
 	icw_index	wempo_childcare_d_z wempo_mom_health_d_z wempo_child_health_d_z ///
 				wempo_women_wages_d_z wempo_major_purchase_d_z wempo_visiting_d_z ///
@@ -159,8 +158,8 @@ do "$do/00_dir_setting.do"
 	
 	* progressiveness 
 	sum wempo_index, d 
-	gen progressivenss = (wempo_index >= `r(p50)')
-	lab var progressivenss "Women Empowerment Progressivenss (Index >= median score)"
+	gen progressivenss = (wempo_index < `r(p50)')
+	lab var progressivenss "Low Women Empowerment (Index < median score)"
 	tab progressivenss, m 
 	
 	* Check for Missing variable label and variable label 

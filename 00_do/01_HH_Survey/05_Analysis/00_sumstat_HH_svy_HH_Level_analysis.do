@@ -388,7 +388,7 @@ do "$do/00_dir_setting.do"
 	use "$dta/pnourish_FIES_final.dta", clear   
 
 	// get the women empowerment index 
-	merge 1:1 uuid using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index)  
+	merge 1:1 uuid using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index progressivenss)  
 	drop _merge 
 	
 	* FIES - food insecurity dummy outcome * 
@@ -400,8 +400,17 @@ do "$do/00_dir_setting.do"
 	tab fies_insecurity, m 
 	
 	* treated other and monestic education as missing
+	gen resp_highedu_ci = resp_highedu
+	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
+	tab resp_highedu_ci, m 
+	
 	replace resp_highedu = .m if resp_highedu > 7 
+	replace resp_highedu = 4 if resp_highedu > 4 & !mi(resp_highedu)
 	tab resp_highedu, m 
+	
+	
+	replace hh_mem_highedu_all = 4 if hh_mem_highedu_all > 4 & !mi(hh_mem_highedu_all)
+	tab hh_mem_highedu_all, m 
 	
 	* Interaction term 
 	gen wempo_index_inter_wealth = wempo_index * NationalScore
@@ -477,6 +486,19 @@ do "$do/00_dir_setting.do"
 	svy: tab NationalQuintile fies_insecurity, row 
 	svy: logit fies_insecurity i.NationalQuintile
 
+	svy: tab org_name_num fies_insecurity, row 
+	svy: tab stratum fies_insecurity, row 
+
+	svy: tab hh_mem_highedu_all fies_insecurity, row 
+
+	svy: tab resp_hhhead fies_insecurity, row 
+	svy: tab progressivenss fies_insecurity, row 
+		
+		
+	svy: mean income_lastmonth, over(fies_insecurity)
+	svy: mean wempo_index, over(fies_insecurity)
+
+	
 	conindex fies_insecurity, rank(NationalQuintile) svy wagstaff bounded limits(0 1)
 	
 	
@@ -541,7 +563,7 @@ do "$do/00_dir_setting.do"
 	
 	putexcel set "$out/reg_output/FIES_logistic_models.xls", sheet("model 4") modify
 
-	svy: logistic fies_insecurity wempo_index i.NationalQuintile##i.progressivenss i.resp_highedu i.org_name_num stratum  
+	svy: logistic fies_insecurity /*wempo_index*/ i.NationalQuintile##i.progressivenss i.resp_highedu i.org_name_num stratum  
 	estimates store model4, title(model4)
 	
 	putexcel (A1) = etable
@@ -554,7 +576,36 @@ do "$do/00_dir_setting.do"
 	*/
 	
 	
+	putexcel set "$out/reg_output/FIES_logistic_models.xls", sheet("final model") modify
+
+	svy: logistic fies_insecurity i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+
+	estimates store model4, title(model4)
 	
+	putexcel (A1) = etable
+	
+	// health equitytools national score as rank 
+	conindex fies_insecurity, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 fies_insecurity, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+
+	conindex fies_rawscore, rank(NationalScore) svy wagstaff bounded limits(0 8)
+	conindex2 fies_rawscore, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 8)	
+	
+	// resp edu as rank 
+	conindex fies_rawscore, rank(resp_highedu_ci) svy wagstaff bounded limits(0 8)
+	conindex2 fies_rawscore, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 8)	
+	
+	conindex fies_insecurity, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 fies_insecurity, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+
+	
+	// Women empowerment as rank 
+	conindex fies_rawscore, rank(wempo_index) svy wagstaff bounded limits(0 8)
+	conindex2 fies_rawscore, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 8)	
+	
+	conindex fies_insecurity, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 fies_insecurity, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+
 	
 	
 	/*
@@ -575,6 +626,11 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_program_exposure_final.dta", clear   
 
+	// get the women empowerment index 
+	merge 1:1 uuid using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index progressivenss)  
+	drop _merge 
+
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 	
@@ -616,7 +672,20 @@ do "$do/00_dir_setting.do"
 		svy: tab NationalQuintile `var', row 
 		
 							}
+						
+	
+	foreach var of varlist 	prgexpo_pn prgexpo_join1 prgexpo_join2 prgexpo_join3 prgexpo_join4 ///
+							prgexpo_join5 prgexpo_join6 prgexpo_join7 prgexpo_join8 {
+					
+		di "`var'"
+		//svy: tab NationalQuintile `var', row 
+		conindex `var', rank(NationalScore) svy wagstaff bounded limits(0 1)
+		
+		}
 							
+	sum prgexpo_pn prgexpo_join1 prgexpo_join2 prgexpo_join3 prgexpo_join4 ///
+							prgexpo_join5 prgexpo_join6 prgexpo_join7 prgexpo_join8				
+	
 	svy: mean 	prgexpo_join1 prgexpo_join2 prgexpo_join3 prgexpo_join4 prgexpo_join5 ///
 				prgexpo_join6 prgexpo_join7 prgexpo_join8 prgexpo_join9, ///
 				over(NationalQuintile)		
@@ -765,6 +834,7 @@ do "$do/00_dir_setting.do"
 	    
 		di "`var'"		
 		conindex `var', rank(NationalQuintile) svy wagstaff bounded limits(0 1)
+		conindex2 `var', rank(NationalQuintile) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)
 	
 	}
 	
@@ -773,7 +843,7 @@ do "$do/00_dir_setting.do"
 	foreach var of varlist pn_access /*pn_muac_access*/ pn_msg_access pn_wash_access pn_sbcc_access pn_hgdn_access pn_emgy_access {
 	    
 		di "`var'"		
-		conindex `var', rank(NationalQuintile) svy truezero generalized
+		//conindex `var', rank(NationalQuintile) svy truezero generalized
 	
 	}
 	

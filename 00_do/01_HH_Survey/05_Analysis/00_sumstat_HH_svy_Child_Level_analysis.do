@@ -94,7 +94,12 @@ do "$do/00_dir_setting.do"
 	drop _merge 
 	
 	* treated other and monestic education as missing
+	gen resp_highedu_ci = resp_highedu
+	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
+	tab resp_highedu_ci, m 
+	
 	replace resp_highedu = .m if resp_highedu > 7 
+	replace resp_highedu = 4 if resp_highedu > 4 & !mi(resp_highedu)
 	tab resp_highedu, m 
 	
 	* svy weight apply 
@@ -772,6 +777,76 @@ do "$do/00_dir_setting.do"
 	
 	
 
+	svy: tab progressivenss ebf , row 
+	svy: tab progressivenss mdd , row 
+	svy: tab progressivenss mmf , row 
+	svy: tab progressivenss mad , row 
+	svy: mean dietary_tot , over(progressivenss) 
+	
+	
+	svy: tab resp_highedu ebf , row 
+	svy: tab resp_highedu mdd , row 
+	svy: tab resp_highedu mmf , row 
+	svy: tab resp_highedu mad , row 
+	svy: mean dietary_tot , over(resp_highedu) 
+	
+	svy: tab org_name_num ebf , row 
+	svy: tab org_name_num mdd , row 
+	svy: tab org_name_num mmf , row 
+	svy: tab org_name_num mad , row 
+	svy: mean dietary_tot , over(org_name_num) 
+	
+	
+	// EBF 
+	conindex ebf, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 ebf, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)
+
+	conindex ebf, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 ebf, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+
+	// MDD
+	conindex mdd, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 mdd, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+
+	conindex mdd, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 mdd, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+
+	// MMF
+	conindex mmf, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 mmf, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+	
+	conindex mmf, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 mmf, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+
+	// MAD
+	conindex mad, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 mad, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+	
+	conindex mad, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 mad, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+
+	// Food Groups 
+	conindex dietary_tot, rank(NationalScore) svy truezero generalized
+	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy truezero generalized
+
+	conindex dietary_tot, rank(resp_highedu_ci) svy truezero generalized
+	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy truezero generalized	
+
+	// Women empowerment as rank 
+	conindex ebf, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 ebf, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+
+	conindex mdd, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 mdd, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+
+	conindex mmf, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 mmf, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+
+	conindex dietary_tot, rank(wempo_index) svy truezero generalized
+	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy truezero generalized	
+
+	
+	
 	
 	
 	****************************************************************************

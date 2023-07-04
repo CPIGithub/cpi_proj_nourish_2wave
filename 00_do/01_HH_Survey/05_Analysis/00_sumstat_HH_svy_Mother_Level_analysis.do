@@ -28,8 +28,14 @@ do "$do/00_dir_setting.do"
 	drop _merge 
 	
 	* treated other and monestic education as missing
+	gen resp_highedu_ci = resp_highedu
+	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
+	tab resp_highedu_ci, m 
+	
 	replace resp_highedu = .m if resp_highedu > 7 
+	replace resp_highedu = 4 if resp_highedu > 4 & !mi(resp_highedu)
 	tab resp_highedu, m 
+	
 	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
@@ -408,6 +414,40 @@ do "$do/00_dir_setting.do"
 	
 	putexcel (A1) = etable
 	
+	
+	svy: tab progressivenss mddw_yes , row 
+	svy: mean mddw_score , over(progressivenss) 
+	
+	svy: tab resp_highedu mddw_yes , row 
+	svy: mean mddw_score , over(resp_highedu) 
+	
+	svy: tab org_name_num mddw_yes , row 
+	svy: mean mddw_score , over(org_name_num) 
+	
+	
+	// mddw_yes 
+	conindex mddw_yes, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 mddw_yes, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)
+	
+	conindex mddw_yes, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 mddw_yes, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+
+	// Food Groups 
+	conindex mddw_score, rank(NationalScore) svy truezero generalized
+	conindex2 mddw_score, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy truezero generalized
+
+	conindex mddw_score, rank(resp_highedu_ci) svy truezero generalized
+	conindex2 mddw_score, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy truezero generalized	
+
+
+	// Women empowerment as rank 
+	conindex mddw_yes, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 mddw_yes, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+
+	conindex mddw_score, rank(wempo_index) svy truezero generalized
+	conindex2 mddw_score, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy truezero generalized	
+	
+
 	
 	****************************************************************************
 	* Mom Health Module *
@@ -1324,6 +1364,25 @@ do "$do/00_dir_setting.do"
 				wempo_women_health wempo_child_wellbeing, ///
 				over(NationalQuintile)	
 				
+	
+	
+	foreach var of varlist 	wempo_childcare wempo_mom_health wempo_child_health ///
+							wempo_women_wages wempo_major_purchase wempo_visiting ///
+							wempo_women_health wempo_child_wellbeing {
+					
+		di "`var'"
+		gen `var'_w = (`var' == 1)
+		replace `var'_w = .m if mi(`var')
+		//svy: tab NationalQuintile `var', row 
+		conindex `var'_w, rank(NationalScore) svy wagstaff bounded limits(0 1)
+		
+		}
+			
+			
+	sum wempo_childcare wempo_mom_health wempo_child_health ///
+							wempo_women_wages wempo_major_purchase wempo_visiting ///
+							wempo_women_health wempo_child_wellbeing
+							
 	// women group 
 	svy: mean 	wempo_group1 wempo_group2 wempo_group3 wempo_group4 wempo_group5 wempo_group888
 	
@@ -1403,7 +1462,12 @@ do "$do/00_dir_setting.do"
 	svy: mean wempo_index if org_name_num == 3, over(enu_name_num)
 	
 	
+	conindex progressivenss, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex wempo_index, rank(NationalScore) svy truezero generalized
 	
+	svy: mean progressivenss
+	svy: mean progressivenss, over(NationalQuintile)
+
 	
 	
 // END HERE 
