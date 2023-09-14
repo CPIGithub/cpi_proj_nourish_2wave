@@ -35,6 +35,14 @@ if "`user'" == "Nicholus Tint Zaw" {
 	
 }
 
+
+else if "`user'" == "wb598050" {
+    * NCL
+	global dir		"C:\Users\wb598050\Dropbox\PN_DataWork"
+	global github		"C:\Users\wb598050\cpi_proj_nourish_2wave"
+	
+}
+
 // Adam, please update your machine directory 
 else if "`user'" == "XX" {
     * Adam Directory
