@@ -455,11 +455,67 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_mom_health_final.dta", clear   
 
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index)
+	* women empowerment dataset 
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
 	
 	drop if _merge == 2 
 	drop _merge 
 	
+	* respondent info
+	merge m:1 _parent_index using "$dta/pnourish_respondent_info_final.dta", keepusing(respd_age resp_highedu respd_chid_num) 
+	
+	drop if _merge == 2 
+	drop _merge 
+	
+	* treated other and monestic education as missing
+	gen resp_highedu_ci = resp_highedu
+	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
+	tab resp_highedu_ci, m 
+	
+	replace resp_highedu = .m if resp_highedu > 7 
+	replace resp_highedu = 4 if resp_highedu > 4 & !mi(resp_highedu)
+	tab resp_highedu, m 
+	
+	gen mom_age_grp = (respd_age < 25)
+	replace mom_age_grp = 2 if respd_age >= 25 & respd_age < 35 
+	replace mom_age_grp = 3 if respd_age >= 35  
+	replace mom_age_grp = .m if mi(respd_age)
+	lab def mom_age_grp 1"< 25 years old" 2"25 - 34 years old" 3"35+ years old"
+	lab val mom_age_grp mom_age_grp
+	tab mom_age_grp, m 
+	
+	
+	recode respd_chid_num (1 = 1) (2 = 2) (3/15 = 3), gen(respd_chid_num_grp)
+	replace respd_chid_num_grp = .m if mi(respd_chid_num)
+	lab def respd_chid_num_grp 1"Has only one child" 2"Has two children" 3"Has three children & more" 
+	lab val respd_chid_num_grp respd_chid_num_grp 
+	lab var respd_chid_num_grp "Number of Children"
+	tab respd_chid_num_grp, m 
+	
+	* Add Village Survey Info 
+	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
+						mkt_near_dist_dry mkt_near_dist_rain ///
+						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
+	
+	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+								keepusing($villinfo)
+	
+	drop if _merge == 2
+	drop _merge 
+	
+	
+	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
+	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
+	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
+	tab hfc_near_dist, m 
+	
+	tab hfc_vill0, m 
+	gen hfc_vill_yes = (hfc_vill0 == 0)
+	replace hfc_vill_yes = .m if mi(hfc_vill0)
+	lab val hfc_vill_yes yesno 
+	tab hfc_vill_yes, m 
+	
+
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
@@ -479,7 +535,9 @@ do "$do/00_dir_setting.do"
 	replace delivery_month_season = 3 if 	(hh_mem_dob_str >= tm(2021m1) & hh_mem_dob_str < tm(2021m3)) | ///
 											(hh_mem_dob_str >= tm(2021m11) & hh_mem_dob_str < tm(2022m3)) | ///
 											(hh_mem_dob_str >= tm(2022m11) & hh_mem_dob_str < tm(2023m3))
-	lab def delivery_month_season 1"Summer" 2"Raining" 3"Winter"
+	// lab def delivery_month_season 1"Summer" 2"Raining" 3"Winter"
+	replace delivery_month_season = 1 if delivery_month_season == 3
+	lab def delivery_month_season 1"Dry" 2"Wet"
 	lab val delivery_month_season delivery_month_season
 	tab delivery_month_season, m 
 	
@@ -509,20 +567,91 @@ do "$do/00_dir_setting.do"
 	tab child_dob_season_yr, m 
 	
 	
-	* ANC Months Season * // need to check it - revised the code and concept 
-	gen anc_month_season = .m 
-	replace anc_month_season = 1 if 	(hh_mem_dob_str >= tm(2021m2) & hh_mem_dob_str < tm(2021m5)) | ///
-										(hh_mem_dob_str >= tm(2022m2) & hh_mem_dob_str < tm(2022m5)) | ///
-										(hh_mem_dob_str >= tm(2023m2) & hh_mem_dob_str < tm(2023m4))						 
-	replace anc_month_season = 2 if 	(hh_mem_dob_str >= tm(2021m1) & hh_mem_dob_str < tm(2022m2)) | ///
-										(hh_mem_dob_str >= tm(2021m9) & hh_mem_dob_str < tm(2022m6)) | ///
-										(hh_mem_dob_str >= tm(2022m9) & hh_mem_dob_str < tm(2023m2))
-	replace anc_month_season = 3 if 	(hh_mem_dob_str >= tm(2021m5) & hh_mem_dob_str < tm(2021m9)) | ///
-										(hh_mem_dob_str >= tm(2022m5) & hh_mem_dob_str < tm(2022m9)) 
-	lab val anc_month_season delivery_month_season
-	tab anc_month_season, m 
+	* ANC Months Season * 
+	* it will be better to construct # of gestation age month cover by dry or wet season in 2 and 3rd trimester 
+/*	
+			2 and 3 trimester	all trimester		
+	Season	Month	dry	wet	tot	dry	wet	tot
+	dry			1	2	4	6	4	5	9
+	dry			2	3	3	6	4	5	9
+	dry			3	4	2	6	4	5	9
+	dry			4	5	1	6	5	4	9
+	dry			5	6	0	6	6	3	9
+	wet			6	6	0	6	7	2	9
+	wet			7	5	1	6	7	2	9
+	wet			8	4	2	6	7	2	9
+	wet			9	3	3	6	6	3	9
+	wet			10	2	4	6	5	4	9
+	dry			11	1	5	6	4	5	9
+	dry			12	1	5	6	4	5	9
+
+*/
+	gen child_dob_month = month(dofm(hh_mem_dob_str))
+	
+	// the whole pregnancy gestation age period 
+	gen anc_month_dry = .m 
+	replace anc_month_dry = 4 if child_dob_month == 1
+	replace anc_month_dry = 4 if child_dob_month == 2
+	replace anc_month_dry = 4 if child_dob_month == 3
+	replace anc_month_dry = 5 if child_dob_month == 4
+	replace anc_month_dry = 6 if child_dob_month == 5
+	replace anc_month_dry = 7 if child_dob_month == 6
+	replace anc_month_dry = 7 if child_dob_month == 7
+	replace anc_month_dry = 7 if child_dob_month == 8
+	replace anc_month_dry = 6 if child_dob_month == 9
+	replace anc_month_dry = 5 if child_dob_month == 10
+	replace anc_month_dry = 4 if child_dob_month == 11
+	replace anc_month_dry = 4 if child_dob_month == 12
+	tab anc_month_dry, m 
+
+	gen anc_month_wet = .m 
+	replace anc_month_wet = 5 if child_dob_month == 1
+	replace anc_month_wet = 5 if child_dob_month == 2
+	replace anc_month_wet = 5 if child_dob_month == 3
+	replace anc_month_wet = 4 if child_dob_month == 4
+	replace anc_month_wet = 3 if child_dob_month == 5
+	replace anc_month_wet = 2 if child_dob_month == 6
+	replace anc_month_wet = 2 if child_dob_month == 7
+	replace anc_month_wet = 2 if child_dob_month == 8
+	replace anc_month_wet = 3 if child_dob_month == 9
+	replace anc_month_wet = 4 if child_dob_month == 10
+	replace anc_month_wet = 5 if child_dob_month == 11
+	replace anc_month_wet = 5 if child_dob_month == 12
+	tab anc_month_wet, m 
+
+
+	// in the last 2 trimesters 
+	gen anc_month_wet_2s = .m 
+	replace anc_month_wet_2s = 4 if child_dob_month == 1
+	replace anc_month_wet_2s = 3 if child_dob_month == 2
+	replace anc_month_wet_2s = 2 if child_dob_month == 3
+	replace anc_month_wet_2s = 1 if child_dob_month == 4
+	replace anc_month_wet_2s = 0 if child_dob_month == 5
+	replace anc_month_wet_2s = 0 if child_dob_month == 6
+	replace anc_month_wet_2s = 1 if child_dob_month == 7
+	replace anc_month_wet_2s = 2 if child_dob_month == 8
+	replace anc_month_wet_2s = 3 if child_dob_month == 9
+	replace anc_month_wet_2s = 4 if child_dob_month == 10
+	replace anc_month_wet_2s = 5 if child_dob_month == 11
+	replace anc_month_wet_2s = 5 if child_dob_month == 12
+	tab anc_month_wet_2s, m 
 	
 	
+	gen anc_month_dry_2s = .m 
+	replace anc_month_dry_2s = 2 if child_dob_month == 1
+	replace anc_month_dry_2s = 3 if child_dob_month == 2
+	replace anc_month_dry_2s = 4 if child_dob_month == 3
+	replace anc_month_dry_2s = 5 if child_dob_month == 4
+	replace anc_month_dry_2s = 6 if child_dob_month == 5
+	replace anc_month_dry_2s = 6 if child_dob_month == 6
+	replace anc_month_dry_2s = 5 if child_dob_month == 7
+	replace anc_month_dry_2s = 4 if child_dob_month == 8
+	replace anc_month_dry_2s = 3 if child_dob_month == 9
+	replace anc_month_dry_2s = 2 if child_dob_month == 10
+	replace anc_month_dry_2s = 1 if child_dob_month == 11
+	replace anc_month_dry_2s = 1 if child_dob_month == 12
+	tab anc_month_dry_2s, m 
+
 	* NationalQuintile - adjustment 
 	gen NationalQuintile_recod = NationalQuintile
 	replace NationalQuintile_recod = 4 if NationalQuintile > 4 & !mi(NationalQuintile)
@@ -532,10 +661,62 @@ do "$do/00_dir_setting.do"
 	
 	
 	****************************************************************************
-	** Mom ANC **
+	** Mom (REspondent) Characteristics **
 	****************************************************************************
+	
+	// resp_highedu
+	svy: tab resp_highedu, ci 
+	
+	// mom_age_grp
+	svy: tab mom_age_grp,ci
+	
+	svy: tab respd_chid_num_grp, ci 
+	
+	// wempo_index
+	svy: mean wempo_index
+
+	// progressivenss
+	svy: tab progressivenss,ci
+
+	// wempo_category
+	svy: tab wempo_category,ci
+	
+	
+	svy: tab stratum_num progressivenss, row 
+	svy: tab stratum_num wempo_category, row 
+
+	svy: mean wempo_index
+	svy: mean wempo_index, over(stratum_num)
+	test 	_b[c.wempo_index@1bn.stratum_num] = ///
+			_b[c.wempo_index@2bn.stratum_num] = ///
+			_b[c.wempo_index@3bn.stratum_num] = ///
+			_b[c.wempo_index@4bn.stratum_num] = ///
+			_b[c.wempo_index@5bn.stratum_num]
+		
+	svy: tab wealth_quintile_ns progressivenss, row 
+	svy: tab wealth_quintile_ns wempo_category, row 
+
+	svy: mean wempo_index
+	svy: mean wempo_index, over(wealth_quintile_ns)
+	test 	_b[c.wempo_index@1bn.wealth_quintile_ns] = ///
+			_b[c.wempo_index@2bn.wealth_quintile_ns] = ///
+			_b[c.wempo_index@3bn.wealth_quintile_ns] = ///
+			_b[c.wempo_index@4bn.wealth_quintile_ns] = ///
+			_b[c.wempo_index@5bn.wealth_quintile_ns]
+			
 
 	
+	****************************************************************************
+	** Mom ANC **
+	****************************************************************************
+	* adjustment - make 0 for those who did not get ANC
+	foreach var of varlist anc_who_trained anc_visit_trained anc_visit_trained_4times {
+	    
+	    tab `var', m 
+		replace `var' = 0 if anc_yn == 0
+		tab `var', m 
+	}
+
 	// anc_yn 
 	svy: mean  anc_yn
 	svy: tab stratum_num anc_yn, row 
@@ -823,6 +1004,241 @@ do "$do/00_dir_setting.do"
 	   
 	   
 
+	* additional table for ANC paper 
+	// resp_highedu
+	svy: tab resp_highedu anc_yn, row 
+	svy: tab resp_highedu anc_who_trained, row 	
+	svy: tab resp_highedu anc_visit_trained_4times, row 
+
+	svy: mean anc_visit_trained, over(resp_highedu)
+	svy: reg anc_visit_trained i.resp_highedu
+	
+	foreach var of varlist anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 anc_who_11 anc_who_888 {
+	   
+	   svy: tab resp_highedu `var', row 
+	   
+	}
+	
+	// stratum
+	svy: tab stratum anc_yn, row 
+	svy: tab stratum anc_who_trained, row 	
+	svy: tab stratum anc_visit_trained_4times, row 
+
+	svy: mean anc_visit_trained, over(stratum)
+	svy: reg anc_visit_trained i.stratum
+	
+	svy: tab stratum anc_where, row 
+	svy: tab hfc_vill_yes anc_where, row 
+
+	svy: mean hfc_near_dist, over(anc_where)
+	svy: reg hfc_near_dist i.anc_where
+	
+	foreach var of varlist anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 anc_who_11 anc_who_888 {
+	   
+	   svy: tab stratum `var', row 
+	   
+	}
+	
+
+	// hfc_vill_yes
+	svy: tab hfc_vill_yes anc_yn, row 
+	svy: tab hfc_vill_yes anc_who_trained, row 	
+	svy: tab hfc_vill_yes anc_visit_trained_4times, row 
+
+	svy: mean anc_visit_trained, over(hfc_vill_yes)
+	svy: reg anc_visit_trained i.hfc_vill_yes
+
+	svy: tab resp_highedu anc_where, row 
+
+	foreach var of varlist anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 anc_who_11 anc_who_888 {
+	   
+	   svy: tab hfc_vill_yes `var', row 
+	   
+	}	
+	
+	
+	//hfc_vill_yes
+	//hfc_near_dist
+	
+	
+	// hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888
+	
+	// anc cope: anc_cope1 anc_cope2 anc_cope3 anc_cope4 anc_cope5 anc_cope6 anc_cope7 anc_cope8 anc_cope9 anc_cope10 anc_cope11 anc_cope12 anc_cope13 anc_cope14 anc_cope888
+	svy: mean anc_cope1 anc_cope2 anc_cope3 anc_cope4 anc_cope5 anc_cope6 anc_cope7 anc_cope8 anc_cope9 anc_cope10 anc_cope11 anc_cope12 anc_cope13 anc_cope14 anc_cope888
+
+
+	// anc no - why: anc_noreason1 anc_noreason2 anc_noreason3 anc_noreason4 anc_noreason5 anc_noreason6 anc_noreason7 anc_noreason8 anc_noreason9 anc_noreason10 anc_noreason11 anc_noreason12 anc_noreason13 anc_noreason888
+	svy: mean anc_noreason1 anc_noreason2 anc_noreason3 anc_noreason4 anc_noreason5 anc_noreason6 anc_noreason7 anc_noreason8 anc_noreason9 anc_noreason10 anc_noreason11 anc_noreason12 anc_noreason13 anc_noreason888
+	
+	// Mom age
+	svy: tab mom_age_grp, ci 
+	
+	svy: tab mom_age_grp anc_yn, row 
+	svy: tab mom_age_grp anc_who_trained, row 	
+	svy: tab mom_age_grp anc_visit_trained_4times, row 
+
+	svy: mean anc_visit_trained, over(mom_age_grp)
+	svy: reg anc_visit_trained i.mom_age_grp
+
+	svy: tab mom_age_grp anc_yn, row 
+	svy: tab mom_age_grp anc_yn, row 
+	
+	
+	svy: tab mom_age_grp anc_where, row 
+	
+	foreach var of varlist anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 anc_who_11 anc_who_888 {
+	   
+	   svy: tab mom_age_grp `var', row 
+	   
+	}
+	
+	**********************
+	** FOR FINAL TABLES **
+	**********************
+	
+	// anc_yn
+	svy: tab resp_highedu anc_yn, row 
+	svy: tab mom_age_grp anc_yn, row 
+	svy: tab respd_chid_num_grp anc_yn, row 
+
+	svy: mean anc_month_dry_2s , over(anc_yn) 
+	svy: mean anc_month_wet_2s , over(anc_yn) 
+	
+	svy: tab hfc_vill_yes anc_yn, row 
+	svy: mean hfc_near_dist , over(anc_yn) 
+	
+	svy: tab wealth_quintile_ns anc_yn, row 
+	svy: tab progressivenss anc_yn, row 
+
+	svy: tab org_name_num anc_yn, row 
+	svy: tab stratum anc_yn, row 
+
+	// CI 
+	conindex anc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 anc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								anc_month_dry_2s anc_month_wet_2s ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								progressivenss) ///
+						svy wagstaff bounded limits(0 1)
+	
+	// anc_who_trained
+	svy: tab resp_highedu anc_who_trained, row 
+	svy: tab mom_age_grp anc_who_trained, row 
+	svy: tab respd_chid_num_grp anc_who_trained, row 
+
+	svy: mean anc_month_dry_2s , over(anc_who_trained) 
+	svy: mean anc_month_wet_2s , over(anc_who_trained) 
+	
+	svy: tab hfc_vill_yes anc_who_trained, row 
+	svy: mean hfc_near_dist , over(anc_who_trained) 
+	
+	svy: tab wealth_quintile_ns anc_who_trained, row 
+	svy: tab progressivenss anc_who_trained, row 
+
+	svy: tab org_name_num anc_who_trained, row 
+	svy: tab stratum anc_who_trained, row 	
+	
+	conindex anc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 anc_who_trained, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								anc_month_dry_2s anc_month_wet_2s ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								progressivenss) ///
+						svy wagstaff bounded limits(0 1)
+						
+	// anc_visit_trained_4times
+	svy: tab resp_highedu anc_visit_trained_4times, row 
+	svy: tab mom_age_grp anc_visit_trained_4times, row 
+	svy: tab respd_chid_num_grp anc_visit_trained_4times, row 
+
+	svy: mean anc_month_dry_2s , over(anc_visit_trained_4times) 
+	svy: mean anc_month_wet_2s , over(anc_visit_trained_4times) 
+	
+	svy: tab hfc_vill_yes anc_visit_trained_4times, row 
+	svy: mean hfc_near_dist , over(anc_visit_trained_4times) 
+	
+	svy: tab wealth_quintile_ns anc_visit_trained_4times, row 
+	svy: tab progressivenss anc_visit_trained_4times, row 
+
+	svy: tab org_name_num anc_visit_trained_4times, row 
+	svy: tab stratum anc_visit_trained_4times, row 
+	
+	conindex anc_visit_trained_4times, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 anc_visit_trained_4times, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								anc_month_dry_2s anc_month_wet_2s ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								progressivenss) ///
+						svy wagstaff bounded limits(0 1)
+						
+	// Logistic regression 					
+	local outcomes	anc_yn anc_who_trained anc_visit_trained_4times
+	
+	foreach outcome in `outcomes' {
+	 
+		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
+							anc_month_dry_2s anc_month_wet_2s ///
+							hfc_vill_yes hfc_near_dist ///
+							wealth_quintile_ns progressivenss org_name_num stratum  
+		
+		foreach v in `regressor' {
+			
+			putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("`v'") modify 
+		
+			if "`v'" == "anc_month_dry_2s" | "`v'" == "anc_month_wet_2s" | "`v'" == "hfc_near_dist" {
+				svy: reg `outcome' `v'
+			}
+			else {
+				svy: reg `outcome' i.`v'
+			}
+			
+			estimates store `v', title(`v')
+			
+			putexcel (A1) = etable
+			
+		}
+			
+	}
+	
+
+	local outcomes	anc_yn anc_who_trained anc_visit_trained_4times
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: reg `outcome' 	i.resp_highedu ///
+							i.mom_age_grp ///
+							i.respd_chid_num_grp ///
+							anc_month_dry_2s anc_month_wet_2s ///
+							hfc_vill_yes ///
+							hfc_near_dist ///
+							i.wealth_quintile_ns ///
+							i.org_name_num ///
+							stratum ///
+							progressivenss
+	
+		putexcel (A1) = etable
+			
+	}
+	
 	****************************************************************************
 	** Mom Deliverty **
 	****************************************************************************
@@ -920,9 +1336,180 @@ do "$do/00_dir_setting.do"
 	svy: tab hh_mem_dob_str insti_birth, row 
 	svy: tab hh_mem_dob_str skilled_battend, row 
 	
+	
+	* additional table for ANC paper 
+	// resp_highedu
+	svy: tab resp_highedu insti_birth, row 
+	svy: tab resp_highedu skilled_battend, row 	
+	svy: tab resp_highedu deliv_place, row 
+	svy: tab resp_highedu deliv_assist, row 
+	
+	
+	// stratum
+	svy: tab stratum insti_birth, row 
+	svy: tab stratum skilled_battend, row 
+
+	svy: tab stratum deliv_place, row 
+	svy: tab stratum deliv_assist, row 
+
+	
+	// hfc_vill_yes
+	svy: tab hfc_vill_yes deliv_place, row 
+	svy: tab hfc_vill_yes deliv_assist, row 
+
+	svy: tab hfc_vill_yes insti_birth, row 
+	svy: tab hfc_vill_yes skilled_battend, row 
+	
+	// mom_age_grp
+	svy: tab mom_age_grp deliv_place, row 
+	svy: tab mom_age_grp deliv_assist, row 
+
+	svy: tab mom_age_grp insti_birth, row 
+	svy: tab mom_age_grp skilled_battend, row 
+	
+	
+	svy: mean deliv_cope1 deliv_cope2 deliv_cope3 deliv_cope4 deliv_cope5 deliv_cope6 deliv_cope7 deliv_cope8 deliv_cope9 deliv_cope10 deliv_cope11 deliv_cope12 deliv_cope13 deliv_cope14 deliv_cope888
+	
+	
+	// ANC vs Delivery 
+	svy: tab anc_yn insti_birth , row 
+	svy: tab anc_yn skilled_battend, row 
+
+	svy: tab anc_who_trained insti_birth, row 	
+	svy: tab anc_who_trained skilled_battend, row 	
+
+	svy: tab anc_yn deliv_place , row 
+	svy: tab anc_who_trained deliv_place, row 	
+	
+	**************************
+	** FINAL MODEL TABLES **
+	**************************
+	// insti_birth
+	svy: tab resp_highedu insti_birth, row 
+	svy: tab mom_age_grp insti_birth, row 
+	svy: tab respd_chid_num_grp insti_birth, row 
+
+	svy: tab delivery_month_season insti_birth, row
+	
+	svy: tab hfc_vill_yes insti_birth, row 
+	svy: mean hfc_near_dist , over(insti_birth) 
+	
+	svy: tab wealth_quintile_ns insti_birth, row 
+	svy: tab progressivenss insti_birth, row 
+
+	svy: tab org_name_num insti_birth, row 
+	svy: tab stratum insti_birth, row 
+	
+	conindex insti_birth, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 insti_birth, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								i.delivery_month_season ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								progressivenss) ///
+						svy wagstaff bounded limits(0 1)
+
+	// skilled_battend
+	svy: tab resp_highedu skilled_battend, row 
+	svy: tab mom_age_grp skilled_battend, row 
+	svy: tab respd_chid_num_grp skilled_battend, row 
+
+	svy: tab delivery_month_season skilled_battend, row 
+	
+	svy: tab hfc_vill_yes skilled_battend, row 
+	svy: mean hfc_near_dist , over(skilled_battend) 
+	
+	svy: tab wealth_quintile_ns skilled_battend, row 
+	svy: tab progressivenss skilled_battend, row 
+
+	svy: tab org_name_num skilled_battend, row 
+	svy: tab stratum skilled_battend, row 
+	
+	conindex skilled_battend, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 skilled_battend, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								i.delivery_month_season ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								progressivenss) ///
+						svy wagstaff bounded limits(0 1)
+
+						
+	// Logistic regression 					
+	local outcomes	insti_birth skilled_battend 
+	
+	foreach outcome in `outcomes' {
+	 
+		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
+							delivery_month_season ///
+							hfc_vill_yes hfc_near_dist ///
+							wealth_quintile_ns progressivenss org_name_num stratum  
+		
+		foreach v in `regressor' {
+			
+			putexcel set "$out/reg_output/Delivery_`outcome'_logistic_models.xls", sheet("`v'") modify 
+		
+			if "`v'" == "hfc_near_dist" {
+				svy: reg `outcome' `v'
+			}
+			else {
+				svy: reg `outcome' i.`v'
+			}
+			
+			estimates store `v', title(`v')
+			
+			putexcel (A1) = etable
+			
+		}
+			
+	}
+	
+
+	local outcomes	insti_birth skilled_battend 
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/Delivery_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: reg `outcome' 	i.resp_highedu ///
+							i.mom_age_grp ///
+							i.respd_chid_num_grp ///
+							i.delivery_month_season ///
+							hfc_vill_yes ///
+							hfc_near_dist ///
+							i.wealth_quintile_ns ///
+							i.org_name_num ///
+							stratum ///
+							progressivenss
+	
+		putexcel (A1) = etable
+			
+	}
+	
+							
+							
 	****************************************************************************
 	** Mom PNC **
 	****************************************************************************
+	
+	* adjustment - make 0 for those who did not get ANC
+	foreach var of varlist pnc_who_trained {
+	    
+	    tab `var', m 
+		replace `var' = 0 if pnc_yn == 0
+		tab `var', m 
+	}
+	
+	&&
 	// pnc_yn 
 	svy: mean  pnc_yn
 	svy: tab stratum_num pnc_yn, row 
@@ -1052,6 +1639,15 @@ do "$do/00_dir_setting.do"
 	****************************************************************************
 	** Mom NBC **
 	****************************************************************************
+	* adjustment - make 0 for those who did not get ANC
+	foreach var of varlist nbc_2days_yn nbc_who_trained {
+	    
+	    tab `var', m 
+		replace `var' = 0 if nbc_yn == 0
+		tab `var', m 
+	}
+	
+	&&&
 	// nbc_yn 
 	svy: mean  nbc_yn
 	svy: tab stratum_num nbc_yn, row 

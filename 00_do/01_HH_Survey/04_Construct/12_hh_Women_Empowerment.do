@@ -156,6 +156,14 @@ do "$do/00_dir_setting.do"
 	lab var wempo_index "Women Empowerment Index (ICW-index)"		
 	tab wempo_index, m 
 	
+	* Category - by quintile 
+	xtile wempo_category = wempo_index [pweight=weight_final], nq(3)
+	lab def wempo_category 1"Low" 2"Moderate" 3"High"
+	lab val wempo_category wempo_category
+	lab var wempo_category "Women Empowerment (Category)"
+	tab wempo_category, m 
+	
+	
 	* progressiveness 
 	sum wempo_index, d 
 	gen progressivenss = (wempo_index < `r(p50)')

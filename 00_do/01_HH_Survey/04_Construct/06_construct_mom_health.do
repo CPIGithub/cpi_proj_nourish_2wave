@@ -261,7 +261,6 @@ do "$do/00_dir_setting.do"
 	replace anc_visit_trained_4times = .m if mi(anc_visit_trained)
 	tab anc_visit_trained_4times, m 
 	
-	
 	****************************************************************************
 	** Mom Deliverty **
 	****************************************************************************

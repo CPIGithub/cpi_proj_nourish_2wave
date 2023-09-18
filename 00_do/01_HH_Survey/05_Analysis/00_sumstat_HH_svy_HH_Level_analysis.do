@@ -70,7 +70,65 @@ do "$do/00_dir_setting.do"
 	// program exposure 
 	svy: tab resp_highedu prgexpo_pn, row 
 	svy: tab hh_mem_highedu_all prgexpo_pn, row 
+	
+	
+	
+	** For only U2 Mom **
+	merge 1:m _parent_index using "$dta/pnourish_mom_health_final.dta"
+	
+	keep if _merge == 3
+	
+	drop _merge 
+	
+	* stratum 
+	svy: tab stratum_num, ci 
+	
+	** respondent characteristics ** 
+	svy: tab respd_who, ci 
+	
+	svy: mean respd_age
+	svy: tab respd_status, ci 
+	svy: tab respd_preg, ci 
+	svy: tab respd_chid_num, ci 
+	svy: mean respd_chid_num 
+	svy: tab respd_phone, ci 
 
+	svy: tab resp_hhhead, ci 
+	svy: tab resp_highedu, ci 
+	svy: tab hh_mem_highedu_all, ci 
+	svy: tab resp_occup, ci 
+		
+	svy: tab hhitems_phone, ci 
+	svy: tab prgexpo_pn, ci 
+	svy: tab edu_exposure, ci 
+	
+	** HH Characteristics **
+	svy: mean hh_tot_num
+	
+	svy: tab NationalQuintile, ci 
+	svy: tab wealth_quintile_ns, ci 
+	svy: tab wealth_quintile_modify, ci 
+	
+	svy: tab stratum, ci 
+
+	* cross-tab 
+	// phone 
+	svy: tab stratum resp_highedu, row 
+	svy: tab stratum_num resp_highedu, row 
+	svy: tab NationalQuintile resp_highedu, row 
+
+	svy: tab stratum hh_mem_highedu_all, row 
+	svy: tab stratum_num hh_mem_highedu_all, row 
+	svy: tab NationalQuintile hh_mem_highedu_all, row 
+
+	svy: tab wealth_quintile_ns resp_highedu, row 
+	svy: tab wealth_quintile_ns hh_mem_highedu_all, row 
+
+	
+	// program exposure 
+	svy: tab resp_highedu prgexpo_pn, row 
+	svy: tab hh_mem_highedu_all prgexpo_pn, row 
+	
 	
 	****************************************************************************
 	* HH Income *
@@ -194,7 +252,85 @@ do "$do/00_dir_setting.do"
 	test 1b.NationalQuintile = 2.NationalQuintile = 3.NationalQuintile = 4.NationalQuintile = 5.NationalQuintile
 		
 
+	** For only U2 Mom **
+	merge 1:m _parent_index using "$dta/pnourish_mom_health_final.dta"
+	
+	keep if _merge == 3
+	
+	drop _merge 
+	
+	svy: mean d3_inc_lmth
+	svy: mean income_lastmonth_trim
+	svy: tab d7_inc_govngo, ci 
+	
+	svy: tab d4_inc_status, ci 
+	
+	// d5_reason
+	local reasons 	d5_reason1 d5_reason2 d5_reason3 d5_reason4 d5_reason5 d5_reason6 ///
+					d5_reason7 d5_reason8 d5_reason9 d5_reason10 d5_reason11 d5_reason12 ///
+					d5_reason13 d5_reason14 d5_reason15 d5_reason16 d5_reason17 d5_reason18 d5_reason99
+	
+	svy: mean `reasons'
 
+	// d6_cope
+	local copes d6_cope1 d6_cope2 d6_cope3 d6_cope4 d6_cope5 d6_cope6 d6_cope7 ///
+				d6_cope8 d6_cope9 d6_cope10 d6_cope11 d6_cope12 d6_cope13 d6_cope14 ///
+				d6_cope15 d6_cope16 d6_cope17 d6_cope18 d6_cope19 d6_cope20 d6_cope99
+	
+	svy: mean `copes'
+	
+	svy: tab jan_incom_status, ci 
+	svy: tab thistime_incom_status, ci 
+	
+	
+	// phone 
+	svy: tab hhitems_phone, ci 
+
+	// program exposure 
+	svy: tab prgexpo_pn, ci 
+
+	// sbcc exposure 
+	svy: tab edu_exposure, ci 
+
+	* cross-tab 
+	svy: tab stratum NationalQuintile, row 
+	svy: tab stratum wealth_quintile_ns, row 
+	
+	svy: tab stratum_num NationalQuintile, row 
+	svy: tab stratum_num wealth_quintile_ns, row 
+	
+	svy: mean d3_inc_lmth, over(stratum)
+	svy: reg d3_inc_lmth i.stratum
+
+	svy: mean d3_inc_lmth, over(stratum_num)
+	svy: reg d3_inc_lmth i.stratum_num
+	
+	svy: mean d3_inc_lmth, over(NationalQuintile)
+	svy: reg d3_inc_lmth i.NationalQuintile
+
+	svy: mean d3_inc_lmth, over(wealth_quintile_ns)
+
+	
+	// phone 
+	svy: tab stratum hhitems_phone, row 
+	svy: tab stratum_num hhitems_phone, row 
+	svy: tab NationalQuintile hhitems_phone, row 
+
+	// program exposure 
+	svy: tab stratum prgexpo_pn, row 
+	svy: tab stratum_num prgexpo_pn, row 
+	svy: tab NationalQuintile prgexpo_pn, row 
+
+	// sbcc exposure 
+	svy: tab stratum edu_exposure, row 
+	svy: tab stratum_num edu_exposure, row 
+	svy: tab NationalQuintile edu_exposure, row 
+
+	svy: tab wealth_quintile_ns hhitems_phone, row 
+	svy: tab wealth_quintile_ns prgexpo_pn, row 
+	svy: tab wealth_quintile_ns edu_exposure, row 
+
+	
 	
 	****************************************************************************
 	** WASH **
