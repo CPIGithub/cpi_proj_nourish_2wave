@@ -1097,6 +1097,8 @@ do "$do/00_dir_setting.do"
 	**********************
 	
 	// anc_yn
+	svy: tab anc_yn, ci 
+	
 	svy: tab resp_highedu anc_yn, row 
 	svy: tab mom_age_grp anc_yn, row 
 	svy: tab respd_chid_num_grp anc_yn, row 
@@ -1109,6 +1111,8 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab wealth_quintile_ns anc_yn, row 
 	svy: tab progressivenss anc_yn, row 
+	svy: tab wempo_category anc_yn, row 
+	
 
 	svy: tab org_name_num anc_yn, row 
 	svy: tab stratum anc_yn, row 
@@ -1124,10 +1128,12 @@ do "$do/00_dir_setting.do"
 								hfc_near_dist ///
 								i.org_name_num ///
 								stratum ///
-								progressivenss) ///
+								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 	
 	// anc_who_trained
+	svy: tab anc_who_trained, ci 
+	
 	svy: tab resp_highedu anc_who_trained, row 
 	svy: tab mom_age_grp anc_who_trained, row 
 	svy: tab respd_chid_num_grp anc_who_trained, row 
@@ -1140,6 +1146,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab wealth_quintile_ns anc_who_trained, row 
 	svy: tab progressivenss anc_who_trained, row 
+	svy: tab wempo_category anc_who_trained, row 
 
 	svy: tab org_name_num anc_who_trained, row 
 	svy: tab stratum anc_who_trained, row 	
@@ -1154,10 +1161,12 @@ do "$do/00_dir_setting.do"
 								hfc_near_dist ///
 								i.org_name_num ///
 								stratum ///
-								progressivenss) ///
+								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
 	// anc_visit_trained_4times
+	svy: tab anc_visit_trained_4times, ci 
+	
 	svy: tab resp_highedu anc_visit_trained_4times, row 
 	svy: tab mom_age_grp anc_visit_trained_4times, row 
 	svy: tab respd_chid_num_grp anc_visit_trained_4times, row 
@@ -1170,6 +1179,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab wealth_quintile_ns anc_visit_trained_4times, row 
 	svy: tab progressivenss anc_visit_trained_4times, row 
+	svy: tab wempo_category anc_visit_trained_4times, row 
 
 	svy: tab org_name_num anc_visit_trained_4times, row 
 	svy: tab stratum anc_visit_trained_4times, row 
@@ -1184,10 +1194,10 @@ do "$do/00_dir_setting.do"
 								hfc_near_dist ///
 								i.org_name_num ///
 								stratum ///
-								progressivenss) ///
+								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
-	// Logistic regression 					
+	// Logistic regression 	
 	local outcomes	anc_yn anc_who_trained anc_visit_trained_4times
 	
 	foreach outcome in `outcomes' {
@@ -1195,17 +1205,17 @@ do "$do/00_dir_setting.do"
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
 							anc_month_dry_2s anc_month_wet_2s ///
 							hfc_vill_yes hfc_near_dist ///
-							wealth_quintile_ns progressivenss org_name_num stratum  
+							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
 			
 			putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "anc_month_dry_2s" | "`v'" == "anc_month_wet_2s" | "`v'" == "hfc_near_dist" {
-				svy: reg `outcome' `v'
+				svy: logistic `outcome' `v'
 			}
 			else {
-				svy: reg `outcome' i.`v'
+				svy: logistic `outcome' i.`v'
 			}
 			
 			estimates store `v', title(`v')
@@ -1224,16 +1234,16 @@ do "$do/00_dir_setting.do"
 			
 		putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
 		
-		svy: reg `outcome' 	i.resp_highedu ///
-							i.mom_age_grp ///
-							i.respd_chid_num_grp ///
-							anc_month_dry_2s anc_month_wet_2s ///
-							hfc_vill_yes ///
-							hfc_near_dist ///
-							i.wealth_quintile_ns ///
-							i.org_name_num ///
-							stratum ///
-							progressivenss
+		svy: logistic `outcome' 	i.resp_highedu ///
+									i.mom_age_grp ///
+									i.respd_chid_num_grp ///
+									anc_month_dry_2s anc_month_wet_2s ///
+									hfc_vill_yes ///
+									hfc_near_dist ///
+									i.wealth_quintile_ns ///
+									i.wempo_category ///
+									i.org_name_num ///
+									stratum 
 	
 		putexcel (A1) = etable
 			
@@ -1385,6 +1395,8 @@ do "$do/00_dir_setting.do"
 	** FINAL MODEL TABLES **
 	**************************
 	// insti_birth
+	svy: tab insti_birth, ci 
+	
 	svy: tab resp_highedu insti_birth, row 
 	svy: tab mom_age_grp insti_birth, row 
 	svy: tab respd_chid_num_grp insti_birth, row 
@@ -1396,6 +1408,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab wealth_quintile_ns insti_birth, row 
 	svy: tab progressivenss insti_birth, row 
+	svy: tab wempo_category insti_birth, row 
 
 	svy: tab org_name_num insti_birth, row 
 	svy: tab stratum insti_birth, row 
@@ -1410,10 +1423,12 @@ do "$do/00_dir_setting.do"
 								hfc_near_dist ///
 								i.org_name_num ///
 								stratum ///
-								progressivenss) ///
+								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 
 	// skilled_battend
+	svy: tab skilled_battend, ci 
+	
 	svy: tab resp_highedu skilled_battend, row 
 	svy: tab mom_age_grp skilled_battend, row 
 	svy: tab respd_chid_num_grp skilled_battend, row 
@@ -1425,6 +1440,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab wealth_quintile_ns skilled_battend, row 
 	svy: tab progressivenss skilled_battend, row 
+	svy: tab wempo_category skilled_battend, row 
 
 	svy: tab org_name_num skilled_battend, row 
 	svy: tab stratum skilled_battend, row 
@@ -1439,7 +1455,7 @@ do "$do/00_dir_setting.do"
 								hfc_near_dist ///
 								i.org_name_num ///
 								stratum ///
-								progressivenss) ///
+								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 
 						
@@ -1451,17 +1467,17 @@ do "$do/00_dir_setting.do"
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
 							delivery_month_season ///
 							hfc_vill_yes hfc_near_dist ///
-							wealth_quintile_ns progressivenss org_name_num stratum  
+							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
 			
 			putexcel set "$out/reg_output/Delivery_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "hfc_near_dist" {
-				svy: reg `outcome' `v'
+				svy: logistic `outcome' `v'
 			}
 			else {
-				svy: reg `outcome' i.`v'
+				svy: logistic `outcome' i.`v'
 			}
 			
 			estimates store `v', title(`v')
@@ -1480,17 +1496,16 @@ do "$do/00_dir_setting.do"
 			
 		putexcel set "$out/reg_output/Delivery_`outcome'_logistic_models.xls", sheet("Final_model") modify 
 		
-		svy: reg `outcome' 	i.resp_highedu ///
+		svy: logistic `outcome' 	i.resp_highedu ///
 							i.mom_age_grp ///
 							i.respd_chid_num_grp ///
 							i.delivery_month_season ///
 							hfc_vill_yes ///
 							hfc_near_dist ///
 							i.wealth_quintile_ns ///
+							i.wempo_category ///
 							i.org_name_num ///
-							stratum ///
-							progressivenss
-	
+							stratum 	
 		putexcel (A1) = etable
 			
 	}
@@ -1509,7 +1524,7 @@ do "$do/00_dir_setting.do"
 		tab `var', m 
 	}
 	
-	&&
+	
 	// pnc_yn 
 	svy: mean  pnc_yn
 	svy: tab stratum_num pnc_yn, row 
@@ -1635,19 +1650,140 @@ do "$do/00_dir_setting.do"
 	svy: reg pnc_yn wempo_index 
 	svy: reg pnc_who_trained wempo_index 
 
+	**************************
+	** FINAL MODEL TABLES **
+	**************************
+	
+	// pnc_yn
+	svy: tab pnc_yn, ci 
+	
+	svy: tab resp_highedu pnc_yn, row 
+	svy: tab mom_age_grp pnc_yn, row 
+	svy: tab respd_chid_num_grp pnc_yn, row 
+
+	svy: tab delivery_month_season pnc_yn, row 
+	
+	svy: tab hfc_vill_yes pnc_yn, row 
+	svy: mean hfc_near_dist , over(pnc_yn) 
+	
+	svy: tab wealth_quintile_ns pnc_yn, row 
+	svy: tab progressivenss pnc_yn, row 
+	svy: tab wempo_category pnc_yn, row 
+
+	svy: tab org_name_num pnc_yn, row 
+	svy: tab stratum pnc_yn, row 
+	
+	conindex pnc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 pnc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								i.delivery_month_season ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)		
+		
+	// pnc_who_trained
+	svy: tab pnc_who_trained, ci 
+	
+	svy: tab resp_highedu pnc_who_trained, row 
+	svy: tab mom_age_grp pnc_who_trained, row 
+	svy: tab respd_chid_num_grp pnc_who_trained, row 
+
+	svy: tab delivery_month_season pnc_who_trained, row 
+	
+	svy: tab hfc_vill_yes pnc_who_trained, row 
+	svy: mean hfc_near_dist , over(pnc_who_trained) 
+	
+	svy: tab wealth_quintile_ns pnc_who_trained, row 
+	svy: tab progressivenss pnc_who_trained, row 
+	svy: tab wempo_category pnc_who_trained, row 
+
+	svy: tab org_name_num pnc_who_trained, row 
+	svy: tab stratum pnc_who_trained, row 
+	
+	conindex pnc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 pnc_who_trained, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								i.delivery_month_season ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+
+	
+	// Logistic regression 					
+	local outcomes	pnc_yn pnc_who_trained 
+	
+	foreach outcome in `outcomes' {
+	 
+		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
+							delivery_month_season ///
+							hfc_vill_yes hfc_near_dist ///
+							wealth_quintile_ns wempo_category org_name_num stratum  
+		
+		foreach v in `regressor' {
+			
+			putexcel set "$out/reg_output/PNC_`outcome'_logistic_models.xls", sheet("`v'") modify 
+		
+			if "`v'" == "hfc_near_dist" {
+				svy: logistic `outcome' `v'
+			}
+			else {
+				svy: logistic `outcome' i.`v'
+			}
+			
+			estimates store `v', title(`v')
+			
+			putexcel (A1) = etable
+			
+		}
+			
+	}
+	
+
+	local outcomes	pnc_yn pnc_who_trained
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/PNC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: logistic `outcome' 	i.resp_highedu ///
+							i.mom_age_grp ///
+							i.respd_chid_num_grp ///
+							i.delivery_month_season ///
+							hfc_vill_yes ///
+							hfc_near_dist ///
+							i.wealth_quintile_ns ///
+							i.wempo_category ///
+							i.org_name_num ///
+							stratum 	
+		putexcel (A1) = etable
+			
+	}
 	
 	****************************************************************************
 	** Mom NBC **
 	****************************************************************************
 	* adjustment - make 0 for those who did not get ANC
-	foreach var of varlist nbc_2days_yn nbc_who_trained {
+	foreach var of varlist  nbc_who_trained {
 	    
 	    tab `var', m 
 		replace `var' = 0 if nbc_yn == 0
 		tab `var', m 
 	}
 	
-	&&&
+	replace nbc_2days_yn = 0 if mi(nbc_2days_yn) & nbc_yn == 0
+	tab nbc_2days_yn, m 
+	
 	// nbc_yn 
 	svy: mean  nbc_yn
 	svy: tab stratum_num nbc_yn, row 
@@ -1790,6 +1926,158 @@ do "$do/00_dir_setting.do"
 	svy: reg nbc_who_trained wempo_index 
 	
 	
+	**************************
+	** FINAL MODEL TABLES **
+	**************************
+	
+	// nbc_yn 
+	svy: tab nbc_yn, ci 
+
+	svy: tab resp_highedu nbc_yn, row 
+	svy: tab mom_age_grp nbc_yn, row 
+	svy: tab respd_chid_num_grp nbc_yn, row 
+
+	svy: tab delivery_month_season nbc_yn, row 
+	
+	svy: tab hfc_vill_yes nbc_yn, row 
+	svy: mean hfc_near_dist , over(nbc_yn) 
+	
+	svy: tab wealth_quintile_ns nbc_yn, row 
+	svy: tab progressivenss nbc_yn, row 
+	svy: tab wempo_category nbc_yn, row 
+
+	svy: tab org_name_num nbc_yn, row 
+	svy: tab stratum nbc_yn, row 
+	
+	conindex nbc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 nbc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								i.delivery_month_season ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)		
+		
+	// nbc_2days_yn 
+	svy: tab nbc_2days_yn, ci 
+	
+	svy: tab resp_highedu nbc_2days_yn, row 
+	svy: tab mom_age_grp nbc_2days_yn, row 
+	svy: tab respd_chid_num_grp nbc_2days_yn, row 
+
+	svy: tab delivery_month_season nbc_2days_yn, row 
+	
+	svy: tab hfc_vill_yes nbc_2days_yn, row 
+	svy: mean hfc_near_dist , over(nbc_2days_yn) 
+	
+	svy: tab wealth_quintile_ns nbc_2days_yn, row 
+	svy: tab progressivenss nbc_2days_yn, row 
+	svy: tab wempo_category nbc_2days_yn, row 
+
+	svy: tab org_name_num nbc_2days_yn, row 
+	svy: tab stratum nbc_2days_yn, row 
+	
+	conindex nbc_2days_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 nbc_2days_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								i.delivery_month_season ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+
+	// nbc_who_trained
+	svy: tab nbc_who_trained, ci 
+
+	svy: tab resp_highedu nbc_who_trained, row 
+	svy: tab mom_age_grp nbc_who_trained, row 
+	svy: tab respd_chid_num_grp nbc_who_trained, row 
+
+	svy: tab delivery_month_season nbc_who_trained, row 
+	
+	svy: tab hfc_vill_yes nbc_who_trained, row 
+	svy: mean hfc_near_dist , over(nbc_who_trained) 
+	
+	svy: tab wealth_quintile_ns nbc_who_trained, row 
+	svy: tab progressivenss nbc_who_trained, row 
+	svy: tab wempo_category nbc_who_trained, row 
+
+	svy: tab org_name_num nbc_who_trained, row 
+	svy: tab stratum nbc_who_trained, row 
+	
+	conindex nbc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 nbc_who_trained, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								i.delivery_month_season ///
+								hfc_vill_yes ///
+								hfc_near_dist ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+	// Logistic regression 					
+	local outcomes	nbc_yn nbc_2days_yn nbc_who_trained
+	
+	foreach outcome in `outcomes' {
+	 
+		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
+							delivery_month_season ///
+							hfc_vill_yes hfc_near_dist ///
+							wealth_quintile_ns wempo_category org_name_num stratum  
+		
+		foreach v in `regressor' {
+			
+			putexcel set "$out/reg_output/NBC_`outcome'_logistic_models.xls", sheet("`v'") modify 
+		
+			if "`v'" == "hfc_near_dist" {
+				svy: logistic `outcome' `v'
+			}
+			else {
+				svy: logistic `outcome' i.`v'
+			}
+			
+			estimates store `v', title(`v')
+			
+			putexcel (A1) = etable
+			
+		}
+			
+	}
+	
+
+	local outcomes	nbc_yn nbc_2days_yn nbc_who_trained
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/NBC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: logistic `outcome' 	i.resp_highedu ///
+							i.mom_age_grp ///
+							i.respd_chid_num_grp ///
+							i.delivery_month_season ///
+							hfc_vill_yes ///
+							hfc_near_dist ///
+							i.wealth_quintile_ns ///
+							i.wempo_category ///
+							i.org_name_num ///
+							stratum 	
+		putexcel (A1) = etable
+			
+	}
+	
+	****************************************************************************
 	** ALL MOM HEALTH **
 	
 	local outcome	anc_yn anc_who_trained anc_visit_trained anc_visit_trained_4times ////
@@ -1865,6 +2153,38 @@ do "$do/00_dir_setting.do"
 		   legend label varlabels(_cons constant)              ///
 		   stats(r2 df_r bic) replace		
 	
+	** lowess curve: distance to hfc and mom health indicator 
+	lab var anc_yn "Received ANC with anyone"
+	lab var anc_who_trained "Received ANC with trained health personnel"
+	lab var anc_visit_trained_4times "At least four ANC visits"
+	lab var pnc_yn "Received PNC with anyone"
+	lab var pnc_who_trained "Received PNC with trained health personnel"
+	lab var nbc_yn "Received NBC with anyone"
+	lab var nbc_who_trained "Received NBC with trained health personnel"
+
+	local outcome anc_yn anc_who_trained anc_visit_trained_4times ///
+					insti_birth skilled_battend ///
+					pnc_yn pnc_who_trained ///
+					nbc_yn nbc_who_trained
+					
+	
+	foreach var in `outcome' {
+		
+		* Create a scatter plot with lowess curves 
+		twoway scatter `var' hfc_near_dist, ///
+			mcolor(blue) msize(small) ///
+			legend(off)
+
+		* Add lowess curves
+		lowess `var' hfc_near_dist, ///
+			lcolor(red) lwidth(medium) ///
+			legend(label(1 "Lowess Curve"))
+			
+		graph export "$plots/lowess_`var'_hfc_distance.png", replace
+	
+	}
+	
+
 	
 	
 	****************************************************************************
