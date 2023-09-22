@@ -27,6 +27,19 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2 
 	drop _merge 
 	
+	
+	* Add Village Survey Info 
+	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
+						mkt_near_dist_dry mkt_near_dist_rain ///
+						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
+	
+	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+								keepusing($villinfo) 
+	
+	drop if _merge == 2
+	drop _merge 
+	
+	
 	* treated other and monestic education as missing
 	gen resp_highedu_ci = resp_highedu
 	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
@@ -498,11 +511,16 @@ do "$do/00_dir_setting.do"
 						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
 	
 	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
-								keepusing($villinfo)
+								keepusing($villinfo) 
 	
 	drop if _merge == 2
 	drop _merge 
 	
+	// detach value label - resulted from merging 
+	foreach var of varlist hfc_near_dist_dry hfc_near_dist_rain mkt_near_dist_dry mkt_near_dist_rain {
+		
+		lab val `var'
+	}
 	
 	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
 	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
@@ -652,6 +670,24 @@ do "$do/00_dir_setting.do"
 	replace anc_month_dry_2s = 1 if child_dob_month == 12
 	tab anc_month_dry_2s, m 
 
+	gen anc_month_2s_season = (anc_month_dry_2s == anc_month_wet_2s)
+	replace anc_month_2s_season = 2 if anc_month_dry_2s > anc_month_wet_2s
+	replace anc_month_2s_season = 3 if anc_month_dry_2s < anc_month_wet_2s
+	replace anc_month_2s_season = .m if mi(anc_month_dry_2s) | mi(anc_month_wet_2s)
+	lab def anc_month_2s_season 1"Same months for Dry and Wet season" ///
+								2"Dry > Wet (# of months)" ///
+								3"Dry < Wet (# of months)"
+	lab val anc_month_2s_season anc_month_2s_season
+	lab var anc_month_2s_season "Number of Gestation month by season (in 2 and 3 trimasters)"
+	tab anc_month_2s_season, m 
+	
+	gen anc_month_season = (anc_month_dry > anc_month_wet)
+	replace anc_month_season = .m if mi(anc_month_dry) | mi(anc_month_wet)
+	lab def anc_month_season 1"Dry > Wet (# of months)" 0"Dry < Wet (# of months)"
+	lab val anc_month_season anc_month_season
+	lab var anc_month_season "Number of Gestation month by season (in all 3 trimasters)"
+	tab anc_month_season, m 
+	
 	* NationalQuintile - adjustment 
 	gen NationalQuintile_recod = NationalQuintile
 	replace NationalQuintile_recod = 4 if NationalQuintile > 4 & !mi(NationalQuintile)

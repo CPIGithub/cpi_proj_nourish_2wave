@@ -93,6 +93,18 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2 
 	drop _merge 
 	
+	* Add Village Survey Info 
+	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
+						mkt_near_dist_dry mkt_near_dist_rain ///
+						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
+	
+	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+								keepusing($villinfo) 
+	
+	drop if _merge == 2
+	drop _merge 
+	
+	
 	* treated other and monestic education as missing
 	gen resp_highedu_ci = resp_highedu
 	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
