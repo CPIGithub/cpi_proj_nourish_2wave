@@ -105,6 +105,54 @@ do "$do/00_dir_setting.do"
 	drop _merge 
 	
 	
+	egen mkt_near_dist = rowmean(mkt_near_dist_dry mkt_near_dist_rain)
+	replace mkt_near_dist = .m if mi(mkt_near_dist_dry) & mi(mkt_near_dist_rain)
+	lab var mkt_near_dist "Nearest Market - hours for round trip"
+	tab mkt_near_dist, m 
+	
+	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
+	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
+	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
+	tab hfc_near_dist, m 
+	
+	local outcome 	dietary_tot mdd mmf mad
+					
+	
+	foreach var in `outcome' {
+		
+		* Create a scatter plot with lowess curves 
+		twoway scatter `var' mkt_near_dist, ///
+			mcolor(blue) msize(small) ///
+			legend(off)
+
+		* Add lowess curves
+		lowess `var' mkt_near_dist, ///
+			lcolor(red) lwidth(medium) ///
+			legend(label(1 "Lowess Curve"))
+			
+		graph export "$plots/nutrition/lowess_`var'_market_distance.png", replace
+	
+	}
+	
+	local outcome 	ebf eibf cbf
+
+	
+	foreach var in `outcome' {
+		
+		* Create a scatter plot with lowess curves 
+		twoway scatter `var' hfc_near_dist, ///
+			mcolor(blue) msize(small) ///
+			legend(off)
+
+		* Add lowess curves
+		lowess `var' hfc_near_dist, ///
+			lcolor(red) lwidth(medium) ///
+			legend(label(1 "Lowess Curve"))
+			
+		graph export "$plots/nutrition/lowess_`var'_health_Facility_distance.png", replace
+	
+	}
+	
 	* treated other and monestic education as missing
 	gen resp_highedu_ci = resp_highedu
 	replace resp_highedu_ci = .m if resp_highedu_ci > 7 

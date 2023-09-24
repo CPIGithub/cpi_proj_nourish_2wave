@@ -533,7 +533,18 @@ do "$do/00_dir_setting.do"
 	lab val hfc_vill_yes yesno 
 	tab hfc_vill_yes, m 
 	
+	* distance HFC category 
+	gen hfc_distance = .m 
+	replace hfc_distance = 0 if hfc_near_dist_rain == 0
+	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
+	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
+	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
+	lab val hfc_distance hfc_distance
+	lab var hfc_distance "Nearest Health Facility - hours for round trip"
+	tab hfc_distance, mis
 
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
@@ -1144,6 +1155,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes anc_yn, row 
 	svy: mean hfc_near_dist , over(anc_yn) 
+	svy: tab hfc_distance anc_yn, row 
 	
 	svy: tab wealth_quintile_ns anc_yn, row 
 	svy: tab progressivenss anc_yn, row 
@@ -1159,9 +1171,8 @@ do "$do/00_dir_setting.do"
 						covars(	i.resp_highedu ///
 								i.mom_age_grp ///
 								i.respd_chid_num_grp ///
-								anc_month_dry_2s anc_month_wet_2s ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -1179,6 +1190,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes anc_who_trained, row 
 	svy: mean hfc_near_dist , over(anc_who_trained) 
+	svy: tab hfc_distance anc_who_trained, row 
 	
 	svy: tab wealth_quintile_ns anc_who_trained, row 
 	svy: tab progressivenss anc_who_trained, row 
@@ -1192,9 +1204,8 @@ do "$do/00_dir_setting.do"
 						covars(	i.resp_highedu ///
 								i.mom_age_grp ///
 								i.respd_chid_num_grp ///
-								anc_month_dry_2s anc_month_wet_2s ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -1212,6 +1223,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes anc_visit_trained_4times, row 
 	svy: mean hfc_near_dist , over(anc_visit_trained_4times) 
+	svy: tab hfc_distance anc_visit_trained_4times, row 
 	
 	svy: tab wealth_quintile_ns anc_visit_trained_4times, row 
 	svy: tab progressivenss anc_visit_trained_4times, row 
@@ -1225,9 +1237,8 @@ do "$do/00_dir_setting.do"
 						covars(	i.resp_highedu ///
 								i.mom_age_grp ///
 								i.respd_chid_num_grp ///
-								anc_month_dry_2s anc_month_wet_2s ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -1240,7 +1251,7 @@ do "$do/00_dir_setting.do"
 	 
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
 							anc_month_dry_2s anc_month_wet_2s ///
-							hfc_vill_yes hfc_near_dist ///
+							hfc_vill_yes hfc_distance ///
 							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
@@ -1273,9 +1284,8 @@ do "$do/00_dir_setting.do"
 		svy: logistic `outcome' 	i.resp_highedu ///
 									i.mom_age_grp ///
 									i.respd_chid_num_grp ///
-									anc_month_dry_2s anc_month_wet_2s ///
 									hfc_vill_yes ///
-									hfc_near_dist ///
+									i.hfc_distance ///
 									i.wealth_quintile_ns ///
 									i.wempo_category ///
 									i.org_name_num ///
@@ -1441,6 +1451,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes insti_birth, row 
 	svy: mean hfc_near_dist , over(insti_birth) 
+	svy: tab hfc_distance insti_birth, row 
 	
 	svy: tab wealth_quintile_ns insti_birth, row 
 	svy: tab progressivenss insti_birth, row 
@@ -1456,7 +1467,7 @@ do "$do/00_dir_setting.do"
 								i.respd_chid_num_grp ///
 								i.delivery_month_season ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -1473,6 +1484,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes skilled_battend, row 
 	svy: mean hfc_near_dist , over(skilled_battend) 
+	svy: tab hfc_distance skilled_battend, row 
 	
 	svy: tab wealth_quintile_ns skilled_battend, row 
 	svy: tab progressivenss skilled_battend, row 
@@ -1488,7 +1500,7 @@ do "$do/00_dir_setting.do"
 								i.respd_chid_num_grp ///
 								i.delivery_month_season ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -1502,7 +1514,7 @@ do "$do/00_dir_setting.do"
 	 
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
 							delivery_month_season ///
-							hfc_vill_yes hfc_near_dist ///
+							hfc_vill_yes hfc_distance ///
 							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
@@ -1537,7 +1549,7 @@ do "$do/00_dir_setting.do"
 							i.respd_chid_num_grp ///
 							i.delivery_month_season ///
 							hfc_vill_yes ///
-							hfc_near_dist ///
+							i.hfc_distance ///
 							i.wealth_quintile_ns ///
 							i.wempo_category ///
 							i.org_name_num ///
@@ -1701,6 +1713,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes pnc_yn, row 
 	svy: mean hfc_near_dist , over(pnc_yn) 
+	svy: tab hfc_distance pnc_yn, row 
 	
 	svy: tab wealth_quintile_ns pnc_yn, row 
 	svy: tab progressivenss pnc_yn, row 
@@ -1716,7 +1729,7 @@ do "$do/00_dir_setting.do"
 								i.respd_chid_num_grp ///
 								i.delivery_month_season ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -1733,6 +1746,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes pnc_who_trained, row 
 	svy: mean hfc_near_dist , over(pnc_who_trained) 
+	svy: tab hfc_distance pnc_who_trained, row 
 	
 	svy: tab wealth_quintile_ns pnc_who_trained, row 
 	svy: tab progressivenss pnc_who_trained, row 
@@ -1748,7 +1762,7 @@ do "$do/00_dir_setting.do"
 								i.respd_chid_num_grp ///
 								i.delivery_month_season ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -1762,7 +1776,7 @@ do "$do/00_dir_setting.do"
 	 
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
 							delivery_month_season ///
-							hfc_vill_yes hfc_near_dist ///
+							hfc_vill_yes hfc_distance ///
 							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
@@ -1797,7 +1811,7 @@ do "$do/00_dir_setting.do"
 							i.respd_chid_num_grp ///
 							i.delivery_month_season ///
 							hfc_vill_yes ///
-							hfc_near_dist ///
+							i.hfc_distance ///
 							i.wealth_quintile_ns ///
 							i.wempo_category ///
 							i.org_name_num ///
@@ -1977,6 +1991,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes nbc_yn, row 
 	svy: mean hfc_near_dist , over(nbc_yn) 
+	svy: tab hfc_distance nbc_yn, row 
 	
 	svy: tab wealth_quintile_ns nbc_yn, row 
 	svy: tab progressivenss nbc_yn, row 
@@ -1992,7 +2007,7 @@ do "$do/00_dir_setting.do"
 								i.respd_chid_num_grp ///
 								i.delivery_month_season ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -2009,6 +2024,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes nbc_2days_yn, row 
 	svy: mean hfc_near_dist , over(nbc_2days_yn) 
+	svy: tab hfc_distance nbc_2days_yn, row 
 	
 	svy: tab wealth_quintile_ns nbc_2days_yn, row 
 	svy: tab progressivenss nbc_2days_yn, row 
@@ -2024,7 +2040,7 @@ do "$do/00_dir_setting.do"
 								i.respd_chid_num_grp ///
 								i.delivery_month_season ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -2041,6 +2057,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: tab hfc_vill_yes nbc_who_trained, row 
 	svy: mean hfc_near_dist , over(nbc_who_trained) 
+	svy: tab hfc_distance nbc_who_trained, row 
 	
 	svy: tab wealth_quintile_ns nbc_who_trained, row 
 	svy: tab progressivenss nbc_who_trained, row 
@@ -2056,7 +2073,7 @@ do "$do/00_dir_setting.do"
 								i.respd_chid_num_grp ///
 								i.delivery_month_season ///
 								hfc_vill_yes ///
-								hfc_near_dist ///
+								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
 								i.wempo_category) ///
@@ -2069,7 +2086,7 @@ do "$do/00_dir_setting.do"
 	 
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
 							delivery_month_season ///
-							hfc_vill_yes hfc_near_dist ///
+							hfc_vill_yes hfc_distance ///
 							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
@@ -2104,7 +2121,7 @@ do "$do/00_dir_setting.do"
 							i.respd_chid_num_grp ///
 							i.delivery_month_season ///
 							hfc_vill_yes ///
-							hfc_near_dist ///
+							i.hfc_distance ///
 							i.wealth_quintile_ns ///
 							i.wempo_category ///
 							i.org_name_num ///
