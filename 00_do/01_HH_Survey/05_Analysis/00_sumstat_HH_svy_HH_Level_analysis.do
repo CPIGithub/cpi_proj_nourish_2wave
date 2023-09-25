@@ -523,9 +523,54 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_FIES_final.dta", clear   
 
-	// get the women empowerment index 
-	merge 1:1 uuid using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index progressivenss)  
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
+	
+	drop if _merge == 2 
 	drop _merge 
+	
+	
+	* Add Village Survey Info 
+	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
+						mkt_near_dist_dry mkt_near_dist_rain ///
+						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
+	
+	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+								keepusing($villinfo) 
+	
+	drop if _merge == 2
+	drop _merge 
+	
+	
+	egen mkt_near_dist = rowmean(mkt_near_dist_dry mkt_near_dist_rain)
+	replace mkt_near_dist = .m if mi(mkt_near_dist_dry) & mi(mkt_near_dist_rain)
+	lab var mkt_near_dist "Nearest Market - hours for round trip"
+	tab mkt_near_dist, m 
+	
+	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
+	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
+	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
+	tab hfc_near_dist, m 
+	
+	gen mkt_distance = .m 
+	replace mkt_distance = 0 if mkt_near_dist_rain == 0
+	replace mkt_distance = 1 if mkt_near_dist_rain > 0 & mkt_near_dist_rain <= 1.5
+	replace mkt_distance = 2 if mkt_near_dist_rain > 1.5 & mkt_near_dist_rain <= 5
+	replace mkt_distance = 3 if mkt_near_dist_rain > 5 & !mi(mkt_near_dist_rain)
+	lab var mkt_distance "Nearest Market - hours for round trip"
+	lab def mkt_distance 0"Market at village" 1"< 1.5 hrs" 2"1.5 - 5 hrs" 3"> 5 hrs"
+	lab val mkt_distance mkt_distance
+	tab mkt_distance, mis
+
+	gen hfc_distance = .m 
+	replace hfc_distance = 0 if hfc_near_dist_rain == 0
+	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
+	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
+	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
+	lab val hfc_distance hfc_distance
+	lab var hfc_distance "Nearest Health Facility - hours for round trip"
+	tab hfc_distance, mis
+
 	
 	* FIES - food insecurity dummy outcome * 
 	* cutoffs for the raw score of 4+ = food insecurity 
@@ -561,6 +606,9 @@ do "$do/00_dir_setting.do"
 	svy: tab NationalQuintile fies_category, row
 	svy: tab wealth_quintile_modify fies_category, row
 
+	// stratum_num
+	svy: tab stratum fies_insecurity, row
+	
 	// fies_rawscore
 	svy: mean  fies_rawscore
 
@@ -631,14 +679,16 @@ do "$do/00_dir_setting.do"
 	svy: tab progressivenss fies_insecurity, row 
 		
 		
-	svy: mean income_lastmonth, over(fies_insecurity)
-	svy: mean wempo_index, over(fies_insecurity)
-
+	svy: tab wempo_category fies_insecurity , row 
+	svy: tab hfc_distance fies_insecurity , row  
+	svy: tab mkt_distance fies_insecurity , row 
+	
 	
 	conindex fies_insecurity, rank(NationalQuintile) svy wagstaff bounded limits(0 1)
 	
 	
-	local regressor  hhitems_phone resp_highedu org_name_num stratum NationalQuintile hh_mem_highedu_all resp_hhhead income_lastmonth wempo_index progressivenss
+	local regressor  	hhitems_phone resp_highedu org_name_num stratum NationalQuintile hh_mem_highedu_all ///
+						resp_hhhead income_lastmonth wempo_index progressivenss wempo_category mkt_distance hfc_distance
 	
 	foreach v in `regressor' {
 		
@@ -714,33 +764,39 @@ do "$do/00_dir_setting.do"
 	
 	putexcel set "$out/reg_output/FIES_logistic_models.xls", sheet("final model") modify
 
-	svy: logistic fies_insecurity i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+	svy: logistic fies_insecurity i.resp_highedu i.NationalQuintile /*i.wempo_category*/ i.mkt_distance i.org_name_num /*stratum*/ 
 
 	estimates store model4, title(model4)
 	
 	putexcel (A1) = etable
 	
 	// health equitytools national score as rank 
-	conindex fies_insecurity, rank(NationalScore) svy wagstaff bounded limits(0 1)
-	conindex2 fies_insecurity, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
-
 	conindex fies_rawscore, rank(NationalScore) svy wagstaff bounded limits(0 8)
-	conindex2 fies_rawscore, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 8)	
+	conindex2 fies_rawscore, rank(NationalScore) ///
+							covars(i.resp_highedu i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance) svy wagstaff bounded limits(0 8)	
+	
+	conindex fies_insecurity, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 fies_insecurity, rank(NationalScore) ///
+								covars(i.resp_highedu i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance) svy wagstaff bounded limits(0 1)
 	
 	// resp edu as rank 
 	conindex fies_rawscore, rank(resp_highedu_ci) svy wagstaff bounded limits(0 8)
-	conindex2 fies_rawscore, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 8)	
+	conindex2 fies_rawscore, rank(resp_highedu_ci) ///
+							covars(NationalScore i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance) svy wagstaff bounded limits(0 8)	
 	
 	conindex fies_insecurity, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
-	conindex2 fies_insecurity, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+	conindex2 fies_insecurity, rank(resp_highedu_ci) ///
+								covars(NationalScore i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance) svy wagstaff bounded limits(0 1)	
 
 	
 	// Women empowerment as rank 
 	conindex fies_rawscore, rank(wempo_index) svy wagstaff bounded limits(0 8)
-	conindex2 fies_rawscore, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 8)	
+	conindex2 fies_rawscore, rank(wempo_index) ///
+							covars(NationalScore i.resp_highedu i.org_name_num /*stratum*/ i.mkt_distance) svy wagstaff bounded limits(0 8)	
 	
 	conindex fies_insecurity, rank(wempo_index) svy wagstaff bounded limits(0 1)
-	conindex2 fies_insecurity, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 fies_insecurity, rank(wempo_index) ///
+								covars(NationalScore i.resp_highedu i.org_name_num /*stratum*/ i.mkt_distance) svy wagstaff bounded limits(0 1)	
 
 	
 	
@@ -755,6 +811,9 @@ do "$do/00_dir_setting.do"
 	resp_highedu
 	NationalQuintile
 	*/
+	
+	
+	
 	
 	****************************************************************************
 	** Program Exposure **

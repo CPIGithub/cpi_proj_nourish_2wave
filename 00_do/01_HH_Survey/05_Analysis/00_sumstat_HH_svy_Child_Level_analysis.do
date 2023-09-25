@@ -88,7 +88,7 @@ do "$do/00_dir_setting.do"
 	
 	use "$dta/pnourish_child_iycf_final.dta", clear 
 	
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index progressivenss)
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
 	
 	drop if _merge == 2 
 	drop _merge 
@@ -115,8 +115,45 @@ do "$do/00_dir_setting.do"
 	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
 	tab hfc_near_dist, m 
 	
-	local outcome 	dietary_tot mdd mmf mad
-					
+	gen mkt_distance = .m 
+	replace mkt_distance = 0 if mkt_near_dist_rain == 0
+	replace mkt_distance = 1 if mkt_near_dist_rain > 0 & mkt_near_dist_rain <= 1.5
+	replace mkt_distance = 2 if mkt_near_dist_rain > 1.5 & mkt_near_dist_rain <= 5
+	replace mkt_distance = 3 if mkt_near_dist_rain > 5 & !mi(mkt_near_dist_rain)
+	lab var mkt_distance "Nearest Market - hours for round trip"
+	lab def mkt_distance 0"Market at village" 1"< 1.5 hrs" 2"1.5 - 5 hrs" 3"> 5 hrs"
+	lab val mkt_distance mkt_distance
+	tab mkt_distance, mis
+
+	gen hfc_distance = .m 
+	replace hfc_distance = 0 if hfc_near_dist_rain == 0
+	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
+	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
+	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
+	lab val hfc_distance hfc_distance
+	lab var hfc_distance "Nearest Health Facility - hours for round trip"
+	tab hfc_distance, mis
+
+
+	local outcomes mdd  mmf mad
+
+	foreach outcome in `outcomes' {
+
+		svy: logistic `outcome' i.mkt_distance
+
+	}
+	
+	local outcomes ebf eibf cbf
+
+	foreach outcome in `outcomes' {
+
+		svy: logistic `outcome' i.hfc_distance
+
+	}
+	
+	
+	local outcome 	dietary_tot mdd mmf mad			
 	
 	foreach var in `outcome' {
 		
@@ -774,13 +811,13 @@ do "$do/00_dir_setting.do"
 	
 	foreach outcome in `outcomes' {
 	 
-		local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss
+		local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss wempo_category mkt_distance hfc_distance
 		
 		foreach v in `regressor' {
 			
 			putexcel set "$out/reg_output/IYCF_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
-			if "`v'" != "income_lastmonth" & "`v'" != "wempo_index" {
+			if "`v'" != "wempo_index" {
 				svy: logistic `outcome' i.`v'
 			}
 			else {
@@ -803,20 +840,20 @@ do "$do/00_dir_setting.do"
 			
 		putexcel set "$out/reg_output/IYCF_`outcome'_logistic_models.xls", sheet("Final_model") modify 
 		
-		svy: logistic `outcome' i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+		svy: logistic `outcome' i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance i.org_name_num stratum  
 	
 		putexcel (A1) = etable
 			
 	}
 	
 	
-	local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss
+	local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss wempo_category mkt_distance hfc_distance
 	
 	foreach v in `regressor' {
 		
 		putexcel set "$out/reg_output/IYCF_dietary_tot_logistic_models.xls", sheet("`v'") modify 
 	
-		if "`v'" != "income_lastmonth" & "`v'" != "wempo_index" {
+		if "`v'" != "wempo_index" {
 		    svy: reg dietary_tot i.`v'
 		}
 		else {
@@ -831,7 +868,7 @@ do "$do/00_dir_setting.do"
 	
 	putexcel set "$out/reg_output/IYCF_dietary_tot_logistic_models.xls", sheet("Final_model") modify 
 	
-	svy: reg dietary_tot i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+	svy: reg dietary_tot i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance i.org_name_num stratum 
 	
 	putexcel (A1) = etable
 	
@@ -843,6 +880,22 @@ do "$do/00_dir_setting.do"
 	svy: tab progressivenss mad , row 
 	svy: mean dietary_tot , over(progressivenss) 
 	
+	svy: tab wempo_category ebf , row 
+	svy: tab wempo_category mdd , row 
+	svy: tab wempo_category mmf , row 
+	svy: tab wempo_category mad , row 
+	svy: mean dietary_tot , over(wempo_category) 
+	
+	svy: tab hfc_distance ebf , row 
+	svy: tab hfc_distance mdd , row 
+	svy: tab hfc_distance mmf , row 
+	svy: tab hfc_distance mad , row 
+	svy: mean dietary_tot , over(hfc_distance) 
+	
+	svy: tab mkt_distance mdd , row 
+	svy: tab mkt_distance mmf , row 
+	svy: tab mkt_distance mad , row 
+	svy: mean dietary_tot , over(mkt_distance) 
 	
 	svy: tab resp_highedu ebf , row 
 	svy: tab resp_highedu mdd , row 
@@ -858,55 +911,87 @@ do "$do/00_dir_setting.do"
 	
 	
 	// EBF 
+	putexcel set "$out/reg_output/IYCF_ebf_logistic_models.xls", sheet("Final_model") modify 
+	svy: logistic ebf i.resp_highedu i.hfc_distance 
+	putexcel (A1) = etable
+	
 	conindex ebf, rank(NationalScore) svy wagstaff bounded limits(0 1)
-	conindex2 ebf, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)
+	conindex2 ebf, rank(NationalScore) covars(i.resp_highedu i.hfc_distance) svy wagstaff bounded limits(0 1)
 
 	conindex ebf, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
-	conindex2 ebf, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+	conindex2 ebf, rank(resp_highedu_ci) covars(i.hfc_distance) svy wagstaff bounded limits(0 1)	
+
+	conindex ebf, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 ebf, rank(wempo_index) covars(i.resp_highedu i.hfc_distance) svy wagstaff bounded limits(0 1)	
+
 
 	// MDD
+	putexcel set "$out/reg_output/IYCF_mdd_logistic_models.xls", sheet("Final_model") modify 
+	svy: logistic mdd i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance stratum
+	putexcel (A1) = etable
+	
 	conindex mdd, rank(NationalScore) svy wagstaff bounded limits(0 1)
-	conindex2 mdd, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+	conindex2 mdd, rank(NationalScore) covars(i.resp_highedu i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 
 	conindex mdd, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
-	conindex2 mdd, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
-
-	// MMF
-	conindex mmf, rank(NationalScore) svy wagstaff bounded limits(0 1)
-	conindex2 mmf, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
-	
-	conindex mmf, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
-	conindex2 mmf, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
-
-	// MAD
-	conindex mad, rank(NationalScore) svy wagstaff bounded limits(0 1)
-	conindex2 mad, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
-	
-	conindex mad, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
-	conindex2 mad, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
-
-	// Food Groups 
-	conindex dietary_tot, rank(NationalScore) svy truezero generalized
-	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy truezero generalized
-
-	conindex dietary_tot, rank(resp_highedu_ci) svy truezero generalized
-	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy truezero generalized	
-
-	// Women empowerment as rank 
-	conindex ebf, rank(wempo_index) svy wagstaff bounded limits(0 1)
-	conindex2 ebf, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mdd, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 
 	conindex mdd, rank(wempo_index) svy wagstaff bounded limits(0 1)
-	conindex2 mdd, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mdd, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+
+
+	// MMF
+	putexcel set "$out/reg_output/IYCF_mmf_logistic_models.xls", sheet("Final_model") modify 
+	svy: logistic mmf i.resp_highedu i.hfc_distance i.mkt_distance 
+	putexcel (A1) = etable
+
+	conindex mmf, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 mmf, rank(NationalScore) covars(i.resp_highedu i.hfc_distance i.mkt_distance) svy wagstaff bounded limits(0 1)	
+	
+	conindex mmf, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 mmf, rank(resp_highedu_ci) covars(i.hfc_distance i.mkt_distance) svy wagstaff bounded limits(0 1)	
 
 	conindex mmf, rank(wempo_index) svy wagstaff bounded limits(0 1)
-	conindex2 mmf, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mmf, rank(wempo_index) covars(i.resp_highedu i.hfc_distance i.mkt_distance) svy wagstaff bounded limits(0 1)	
+
+	
+	// MAD
+	putexcel set "$out/reg_output/IYCF_mad_logistic_models.xls", sheet("Final_model") modify 
+	svy: logistic mad i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance stratum
+	putexcel (A1) = etable
+
+	conindex mad, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 mad, rank(NationalScore) covars(i.resp_highedu i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	
+	conindex mad, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 mad, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 
 	conindex dietary_tot, rank(wempo_index) svy truezero generalized
-	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy truezero generalized	
+	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy truezero generalized	
 
 	
+	// Food Groups 
+	putexcel set "$out/reg_output/IYCF_dietary_tot_logistic_models.xls", sheet("Final_model") modify 
+	svy: reg dietary_tot i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance stratum
+	putexcel (A1) = etable
+
+	conindex dietary_tot, rank(NationalScore) svy truezero generalized
+	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.wempo_category i.hfc_distance stratum) svy truezero generalized
+
+	conindex dietary_tot, rank(resp_highedu_ci) svy truezero generalized
+	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy truezero generalized	
 	
+	conindex dietary_tot, rank(wempo_index) svy truezero generalized
+	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy truezero generalized	
+
+
+	// stratum_num
+	svy: tab stratum ebf, row
+	svy: tab stratum mdd, row
+	svy: tab stratum mmf, row
+	svy: tab stratum mad, row
+
+	svy: mean dietary_tot, over(stratum)
 	
 	
 	****************************************************************************

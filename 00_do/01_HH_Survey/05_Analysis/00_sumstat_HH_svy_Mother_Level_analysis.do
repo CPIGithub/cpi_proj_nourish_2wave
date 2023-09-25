@@ -22,7 +22,7 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_mom_diet_final.dta", clear 
 	
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index progressivenss)
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
 	
 	drop if _merge == 2 
 	drop _merge 
@@ -40,6 +40,38 @@ do "$do/00_dir_setting.do"
 	drop _merge 
 	
 	
+	egen mkt_near_dist = rowmean(mkt_near_dist_dry mkt_near_dist_rain)
+	replace mkt_near_dist = .m if mi(mkt_near_dist_dry) & mi(mkt_near_dist_rain)
+	lab var mkt_near_dist "Nearest Market - hours for round trip"
+	tab mkt_near_dist, m 
+	
+	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
+	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
+	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
+	tab hfc_near_dist, m 
+	
+	gen mkt_distance = .m 
+	replace mkt_distance = 0 if mkt_near_dist_rain == 0
+	replace mkt_distance = 1 if mkt_near_dist_rain > 0 & mkt_near_dist_rain <= 1.5
+	replace mkt_distance = 2 if mkt_near_dist_rain > 1.5 & mkt_near_dist_rain <= 5
+	replace mkt_distance = 3 if mkt_near_dist_rain > 5 & !mi(mkt_near_dist_rain)
+	lab var mkt_distance "Nearest Market - hours for round trip"
+	lab def mkt_distance 0"Market at village" 1"< 1.5 hrs" 2"1.5 - 5 hrs" 3"> 5 hrs"
+	lab val mkt_distance mkt_distance
+	tab mkt_distance, mis
+
+	gen hfc_distance = .m 
+	replace hfc_distance = 0 if hfc_near_dist_rain == 0
+	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
+	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
+	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
+	lab val hfc_distance hfc_distance
+	lab var hfc_distance "Nearest Health Facility - hours for round trip"
+	tab hfc_distance, mis
+
+	
+	
 	* treated other and monestic education as missing
 	gen resp_highedu_ci = resp_highedu
 	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
@@ -55,6 +87,11 @@ do "$do/00_dir_setting.do"
 
 	* generate the interaction variable - stratum Vs quantile 
 	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
+	
+	
+	// stratum_num
+	svy: tab stratum mddw_yes, row
+	svy: mean mddw_score, over(stratum)
 	
 	// mom_meal_freq
 	svy: mean mom_meal_freq
@@ -365,7 +402,7 @@ do "$do/00_dir_setting.do"
 	
 	foreach outcome in `outcomes' {
 	 
-		local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss
+		local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss wempo_category mkt_distance hfc_distance
 		
 		foreach v in `regressor' {
 			
@@ -394,7 +431,7 @@ do "$do/00_dir_setting.do"
 			
 		putexcel set "$out/reg_output/MDDW_`outcome'_logistic_models.xls", sheet("Final_model") modify 
 		
-		svy: reg `outcome' i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+		svy: reg `outcome' i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum 
 	
 		putexcel (A1) = etable
 			
@@ -402,13 +439,13 @@ do "$do/00_dir_setting.do"
 	
 	
 	// mddw_yes
-	local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss
+	local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss wempo_category mkt_distance hfc_distance
 	
 	foreach v in `regressor' {
 		
 		putexcel set "$out/reg_output/MDDW_mddw_yes_logistic_models.xls", sheet("`v'") modify 
 	
-		if "`v'" != "income_lastmonth" & "`v'" != "wempo_index" {
+		if "`v'" != "wempo_index" {
 		    svy: logistic mddw_yes i.`v'
 		}
 		else {
@@ -423,7 +460,7 @@ do "$do/00_dir_setting.do"
 	
 	putexcel set "$out/reg_output/MDDW_mddw_yes_logistic_models.xls", sheet("Final_model") modify 
 	
-	svy: logistic mddw_yes i.NationalQuintile i.resp_highedu i.org_name_num stratum progressivenss
+	svy: logistic mddw_yes /*i.resp_highedu*/ i.NationalQuintile i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum 
 	
 	putexcel (A1) = etable
 	
@@ -440,27 +477,41 @@ do "$do/00_dir_setting.do"
 	
 	// mddw_yes 
 	conindex mddw_yes, rank(NationalScore) svy wagstaff bounded limits(0 1)
-	conindex2 mddw_yes, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)
+	conindex2 mddw_yes, rank(NationalScore) ///
+						covars(/*i.resp_highedu*/ i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)
 	
 	conindex mddw_yes, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
-	conindex2 mddw_yes, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy wagstaff bounded limits(0 1)	
+	conindex2 mddw_yes, rank(resp_highedu_ci) ///
+						covars(NationalScore i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
+
+	conindex mddw_yes, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 mddw_yes, rank(wempo_index) ///
+						covars(NationalScore /*i.resp_highedu*/ i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
 
 	// Food Groups 
 	conindex mddw_score, rank(NationalScore) svy truezero generalized
-	conindex2 mddw_score, rank(NationalScore) covars(i.resp_highedu i.org_name_num stratum progressivenss) svy truezero generalized
+	conindex2 mddw_score, rank(NationalScore) ///
+							covars(i.resp_highedu i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy truezero generalized
 
 	conindex mddw_score, rank(resp_highedu_ci) svy truezero generalized
-	conindex2 mddw_score, rank(resp_highedu_ci) covars(NationalScore i.org_name_num stratum progressivenss) svy truezero generalized	
-
-
-	// Women empowerment as rank 
-	conindex mddw_yes, rank(wempo_index) svy wagstaff bounded limits(0 1)
-	conindex2 mddw_yes, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mddw_score, rank(resp_highedu_ci) ///
+							covars(NationalScore i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy truezero generalized	
 
 	conindex mddw_score, rank(wempo_index) svy truezero generalized
-	conindex2 mddw_score, rank(wempo_index) covars(NationalScore i.resp_highedu i.org_name_num stratum) svy truezero generalized	
+	conindex2 mddw_score, rank(wempo_index) ///
+							covars(NationalScore i.resp_highedu i.hfc_distance /*i.org_name_num*/ stratum) svy truezero generalized	
 	
+				
 
+	svy: tab wempo_category mddw_yes , row 
+	svy: mean mddw_score , over(wempo_category) 
+	
+	svy: tab hfc_distance mddw_yes , row 
+	svy: mean mddw_score , over(hfc_distance) 
+ 
+	svy: tab mkt_distance mddw_yes , row 
+	svy: mean mddw_score , over(mkt_distance) 
+	
 	
 	****************************************************************************
 	* Mom Health Module *
@@ -1295,6 +1346,91 @@ do "$do/00_dir_setting.do"
 			
 	}
 	
+	** anc_yn
+	// Education as rank
+	conindex anc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 anc_yn, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+						
+	// Women empowerment as rank 
+	conindex anc_yn, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 anc_yn, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy wagstaff bounded limits(0 1)
+
+						
+	** anc_who_trained 
+	// Education as rank
+	conindex anc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 anc_who_trained, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+						
+	// Women empowerment as rank 
+	conindex anc_who_trained, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 anc_who_trained, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy wagstaff bounded limits(0 1)
+	
+	** anc_visit_trained_4times 
+	// Education as rank
+	conindex anc_visit_trained_4times, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 anc_visit_trained_4times, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+						
+	// Women empowerment as rank 
+	conindex anc_visit_trained_4times, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 anc_visit_trained_4times, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy wagstaff bounded limits(0 1)
+						
 	****************************************************************************
 	** Mom Deliverty **
 	****************************************************************************
@@ -1558,7 +1694,62 @@ do "$do/00_dir_setting.do"
 			
 	}
 	
-							
+	
+	** insti_birth   
+	// Education as rank
+	conindex insti_birth, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 insti_birth, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+						
+	// Women empowerment as rank 
+	conindex insti_birth, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 insti_birth, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy wagstaff bounded limits(0 1)
+						
+	** skilled_battend  
+	// Education as rank
+	conindex skilled_battend, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 skilled_battend, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+						
+	// Women empowerment as rank 
+	conindex skilled_battend, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 skilled_battend, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy wagstaff bounded limits(0 1)
 							
 	****************************************************************************
 	** Mom PNC **
@@ -1820,6 +2011,65 @@ do "$do/00_dir_setting.do"
 			
 	}
 	
+	
+	** pnc_yn   
+	// Education as rank
+	conindex pnc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 pnc_yn, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+						
+	// Women empowerment as rank 
+	conindex pnc_yn, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 pnc_yn, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy wagstaff bounded limits(0 1)
+							
+							
+	** pnc_who_trained  
+	// Education as rank
+	conindex pnc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 pnc_who_trained, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+						
+	// Women empowerment as rank 
+	conindex pnc_who_trained, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 pnc_who_trained, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy wagstaff bounded limits(0 1)
+							
+							
 	****************************************************************************
 	** Mom NBC **
 	****************************************************************************
@@ -2130,6 +2380,63 @@ do "$do/00_dir_setting.do"
 			
 	}
 	
+	
+	** nbc_yn   
+	// Education as rank
+	conindex nbc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 nbc_yn, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+						
+	// Women empowerment as rank 
+	conindex nbc_yn, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 nbc_yn, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy wagstaff bounded limits(0 1)
+	
+	** nbc_who_trained  
+	// Education as rank
+	conindex nbc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 nbc_who_trained, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+						
+	// Women empowerment as rank 
+	conindex nbc_who_trained, rank(wempo_index) svy wagstaff bounded limits(0 1)
+	conindex2 nbc_who_trained, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy wagstaff bounded limits(0 1)
+						
 	****************************************************************************
 	** ALL MOM HEALTH **
 	
