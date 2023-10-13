@@ -493,13 +493,27 @@ do "$do/00_dir_setting.do"
 	conindex2 mddw_score, rank(NationalScore) ///
 							covars(i.resp_highedu i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy truezero generalized
 
+	conindex mddw_score, rank(NationalScore) svy wagstaff bounded limits(0 10)
+	conindex2 mddw_score, rank(NationalScore) ///
+							covars(i.resp_highedu i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
+
+							
 	conindex mddw_score, rank(resp_highedu_ci) svy truezero generalized
 	conindex2 mddw_score, rank(resp_highedu_ci) ///
 							covars(NationalScore i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy truezero generalized	
+	
+	conindex mddw_score, rank(resp_highedu_ci) svy wagstaff bounded limits(0 10)
+	conindex2 mddw_score, rank(resp_highedu_ci) ///
+							covars(NationalScore i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
 
+							
 	conindex mddw_score, rank(wempo_index) svy truezero generalized
 	conindex2 mddw_score, rank(wempo_index) ///
 							covars(NationalScore i.resp_highedu i.hfc_distance /*i.org_name_num*/ stratum) svy truezero generalized	
+	
+	conindex mddw_score, rank(wempo_index) svy wagstaff bounded limits(0 10)
+	conindex2 mddw_score, rank(wempo_index) ///
+							covars(NationalScore i.resp_highedu i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
 	
 				
 
@@ -2740,6 +2754,14 @@ do "$do/00_dir_setting.do"
 	
 	conindex progressivenss, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex wempo_index, rank(NationalScore) svy truezero generalized
+	
+	
+	sum wempo_index
+	gen wempo_index_rescale = wempo_index + abs(r(min))
+	sum wempo_index wempo_index_rescale
+	
+	conindex wempo_index_rescale, rank(NationalScore) svy wagstaff bounded limits(0 2.500905)
+	
 	
 	svy: mean progressivenss
 	svy: mean progressivenss, over(NationalQuintile)

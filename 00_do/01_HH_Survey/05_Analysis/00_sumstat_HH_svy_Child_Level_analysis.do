@@ -978,12 +978,23 @@ do "$do/00_dir_setting.do"
 	conindex dietary_tot, rank(NationalScore) svy truezero generalized
 	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.wempo_category i.hfc_distance stratum) svy truezero generalized
 
+	conindex dietary_tot, rank(NationalScore)  svy wagstaff bounded limits(0 8)
+	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 8)
+
+	
 	conindex dietary_tot, rank(resp_highedu_ci) svy truezero generalized
 	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy truezero generalized	
+
+	conindex dietary_tot, rank(resp_highedu_ci) svy wagstaff bounded limits(0 8)
+	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 8)	
+
+	
 	
 	conindex dietary_tot, rank(wempo_index) svy truezero generalized
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy truezero generalized	
 
+	conindex dietary_tot, rank(wempo_index) svy wagstaff bounded limits(0 8)
+	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy wagstaff bounded limits(0 8)	
 
 	// stratum_num
 	svy: tab stratum ebf, row
