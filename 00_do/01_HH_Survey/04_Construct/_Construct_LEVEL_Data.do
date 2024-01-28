@@ -60,6 +60,14 @@ do "$do/00_dir_setting.do"
 	* create codebook 
 	iecodebook template using "$dta/02_Deidentified/Pnourish_HH_Level_DEID_Dataset.xlsx", replace 
 
+	* KEHOC
+	iecodebook template using "$dta/02_Deidentified/KEHOC/PN_HH_Level_Dataset_CODEBOOK.xlsx", replace 
+
+	export excel using 	"$dta/02_Deidentified/KEHOC/PN_HH_Level_Dataset_KEHOC.xlsx", ///
+						sheet("KEHOC") ///
+						firstrow(variables) ///
+						replace 
+
 
 	
 	****************************************************************************
@@ -91,6 +99,14 @@ do "$do/00_dir_setting.do"
 	* create codebook 
 	iecodebook template using "$dta/02_Deidentified/Pnourish_CHILD_Level_DEID_Dataset.xlsx", replace 
 
+	* KEHOC
+	iecodebook template using "$dta/02_Deidentified/KEHOC/PN_Child_Level_Dataset_CODEBOOK.xlsx", replace 
+
+	export excel using 	"$dta/02_Deidentified/KEHOC/PN_CHILD_Level_Dataset_KEHOC.xlsx", ///
+						sheet("KEHOC") ///
+						firstrow(variables) ///
+						replace 
+
 
 
 	****************************************************************************
@@ -119,6 +135,13 @@ do "$do/00_dir_setting.do"
 	* create codebook 
 	iecodebook template using "$dta/02_Deidentified/Pnourish_MOTHER_Level_DEID_Dataset.xlsx", replace 
 
+	* KEHOC
+	iecodebook template using "$dta/02_Deidentified/KEHOC/PN_Mother_Level_Dataset_CODEBOOK.xlsx", replace 
+
+	export excel using 	"$dta/02_Deidentified/KEHOC/PN_MOTHER_Level_Dataset_KEHOC.xlsx", ///
+						sheet("KEHOC") ///
+						firstrow(variables) ///
+						replace 
 
 
 // END HERE 

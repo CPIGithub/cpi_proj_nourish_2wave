@@ -376,6 +376,7 @@ do "$do/00_dir_setting.do"
 	save "$dta/01_final/PN_Village_Survey_FINAL_Constructed.dta", replace  
 
 	* create codebook 
+
 	iecodebook template using "$dta/01_Final/PN_Village_Survey_FINAL_Constructed.xlsx", replace 
 
 	
@@ -384,12 +385,23 @@ do "$do/00_dir_setting.do"
 			
 	label drop org_team_lbl
 	
-	save "$dta/02_Deidentified/PN_Village_Survey_FINAL_Constructed_DEID_Dataset.dta", replace  
-	
 	* create codebook 
+	iecodebook apply using "$dta/02_Deidentified/PN_Village_Survey_FINAL_Constructed_DEID_Dataset_prepared.xlsx" 
+
 	iecodebook template using "$dta/02_Deidentified/PN_Village_Survey_FINAL_Constructed_DEID_Dataset.xlsx", replace 
 
+	save "$dta/02_Deidentified/PN_Village_Survey_FINAL_Constructed_DEID_Dataset.dta", replace  
+	
 
+	* KEHOC
+	iecodebook template using "$dta/02_Deidentified/KEHOC/PN_Village_Survey_CODEBOOK.xlsx", replace 
+
+	export excel using 	"$dta/02_Deidentified/KEHOC/PN_Village_Survey_Dataset_KEHOC.xlsx", ///
+						sheet("KEHOC") ///
+						firstrow(variables) ///
+						replace 
+	
+	
 
 // END HERE 
 
