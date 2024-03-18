@@ -221,7 +221,8 @@ do "$do/00_dir_setting.do"
 	local regressor  	caregiver_edu caregiver_age_grp caregiver_chidnum_grp caregiver_u5_num ///
 						caregiver_biochild first_born_child ///
 						child_ill_episode hfc_vill_yes hfc_distance ///
-						wealth_quintile_ns wempo_category org_name_num stratum  
+						wealth_quintile_ns wempo_category org_name_num stratum ///
+						child_ill1 child_ill2 child_ill3 
 	
 	foreach var of global outcomes {
 	
@@ -275,9 +276,10 @@ If the prevalence ratio for households with three or more children compared to h
 	 
 		local regressor  	caregiver_edu caregiver_age_grp caregiver_chidnum_grp caregiver_u5_num ///
 							caregiver_biochild first_born_child ///
-							child_ill1 child_ill2 child_ill3 child_ill_episode ///
+							child_ill_episode ///
 							hfc_vill_yes hfc_distance ///
-							wealth_quintile_ns wempo_category org_name_num stratum  
+							wealth_quintile_ns wempo_category org_name_num stratum ///
+							child_ill1 child_ill2 child_ill3 
 			
 		if "`outcome'" == "child_ill_yes" | "`outcome'" == "child_vaccin_yes" {
 			
@@ -316,51 +318,73 @@ If the prevalence ratio for households with three or more children compared to h
 							
 	local outcomes	child_vaccin_yes child_ill_yes child_ill_yes child_ill_treat child_ill_trained
 	
-	foreach outcome in `outcomes' {
-	 
-			
-		putexcel set "$out/reg_output/Childhood_illness_`outcome'_glm_models.xlsx", sheet("Final_model") modify 
-		
-		if "`outcome'" == "child_ill_yes" | "`outcome'" == "child_vaccin_yes" {
-			svy: glm	 	`outcome' 	i.caregiver_edu /// 
-										i.caregiver_age_grp ///
-										i.caregiver_chidnum_grp ///
-										i.caregiver_u5_num ///
-										caregiver_biochild ///
-										first_born_child ///
-										hfc_vill_yes ///
-										i.hfc_distance ///
-										i.wealth_quintile_ns ///
-										i.wempo_category ///
-										i.org_name_num ///
-										stratum, ///
-										family(binomial) link(log) nolog eform
-		}
-		else {
-			svy: glm	 	`outcome' 	i.caregiver_edu /// 
-										i.caregiver_age_grp ///
-										i.caregiver_chidnum_grp ///
-										i.caregiver_u5_num ///
-										caregiver_biochild ///
-										first_born_child ///
-										child_ill_episode ///
-										hfc_vill_yes ///
-										i.hfc_distance ///
-										i.wealth_quintile_ns ///
-										i.wempo_category ///
-										i.org_name_num ///
-										stratum, ///
-										family(binomial) link(log) nolog eform
-		}
-
+	* final model 
+	// child_vaccin_yes
+	putexcel set "$out/reg_output/Childhood_illness_child_vaccin_yes_glm_models.xlsx", sheet("Final_model") modify 
 	
-		putexcel (A1) = etable
-			
-	}
+	svy: glm child_vaccin_yes 	i.caregiver_edu /// 
+								i.caregiver_chidnum_grp ///
+								i.caregiver_u5_num ///
+								caregiver_biochild ///
+								first_born_child ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.wealth_quintile_ns ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum, ///
+								family(binomial) link(log) nolog eform	
+	putexcel (A1) = etable
 	
 
+	// child_ill_yes
+	putexcel set "$out/reg_output/Childhood_illness_child_ill_yes_glm_models.xlsx", sheet("Final_model") modify 
+	
+	svy: glm child_ill_yes	 	hfc_vill_yes ///
+								i.hfc_distance ///
+								i.wealth_quintile_ns ///
+								i.wempo_category ///
+								i.org_name_num, ///
+								family(binomial) link(log) nolog eform	
+	putexcel (A1) = etable
 	
 	
+	
+	// child_ill_treat
+	putexcel set "$out/reg_output/Childhood_illness_child_ill_treat_glm_models.xlsx", sheet("Final_model") modify 
+	
+	svy: glm child_ill_treat 	i.caregiver_edu /// 
+								i.caregiver_u5_num ///
+								caregiver_biochild ///
+								child_ill1 child_ill3  ///
+								i.child_ill_episode ///
+								i.hfc_distance ///
+								i.wealth_quintile_ns ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum, ///
+								family(binomial) link(log) nolog eform
+
+	putexcel (A1) = etable
+	
+
+	// child_ill_trained
+	putexcel set "$out/reg_output/Childhood_illness_child_ill_trained_glm_models.xlsx", sheet("Final_model") modify 
+	
+	svy: glm child_ill_trained 	i.caregiver_u5_num ///
+								caregiver_biochild ///
+								child_ill3  ///
+								i.child_ill_episode ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.wealth_quintile_ns ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum, ///
+								family(binomial) link(log) nolog eform
+	putexcel (A1) = etable
+	
+
 	** Concentration Index 		
 	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
 	putexcel A2 = "variable name"
@@ -376,51 +400,84 @@ If the prevalence ratio for households with three or more children compared to h
 		
 		putexcel A`i' = "`var'"
 		putexcel B`i' = `r(CI)'
-		//putexcel C`i' = `e(p)'
-		
-		if "`var'" == "child_ill_yes" {
-			conindex2 `var', 	rank(NationalScore) ///
-						covars(	i.caregiver_edu /// 
-								i.caregiver_age_grp ///
-								i.caregiver_chidnum_grp ///
-								i.caregiver_u5_num ///
-								caregiver_biochild ///
-								first_born_child ///
-								hfc_vill_yes ///
-								i.hfc_distance ///
-								i.wealth_quintile_ns ///
-								i.wempo_category ///
-								i.org_name_num ///
-								stratum) ///
-						svy wagstaff bounded limits(0 1)
-		}
-		else {
-			
-				conindex2 `var', 	rank(NationalScore) ///
-				covars(	i.caregiver_edu /// 
-						i.caregiver_age_grp ///
-						i.caregiver_chidnum_grp ///
-						i.caregiver_u5_num ///
-						caregiver_biochild ///
-						first_born_child ///
-						child_ill_episode ///
-						hfc_vill_yes ///
-						i.hfc_distance ///
-						i.wealth_quintile_ns ///
-						i.wempo_category ///
-						i.org_name_num ///
-						stratum) ///
-				svy wagstaff bounded limits(0 1) 
-			
-		}
-						
-		putexcel D`i' = `r(CI)'
-		//putexcel E`i' = `e(p)'
 		
 		putexcel close
 		
 		local i = `i' + 2
 	}
+	
+	
+	* CI adjusted model 
+	// child_vaccin_yes
+	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
+	
+	conindex2 child_vaccin_yes, rank(NationalScore) ///
+								covars(	i.caregiver_edu /// 
+										i.caregiver_chidnum_grp ///
+										i.caregiver_u5_num ///
+										caregiver_biochild ///
+										first_born_child ///
+										hfc_vill_yes ///
+										i.hfc_distance ///
+										i.wealth_quintile_ns ///
+										i.wempo_category ///
+										i.org_name_num ///
+										stratum) ///
+								svy wagstaff bounded limits(0 1)
+	putexcel D3 = `r(CI)'
+	putexcel close
+	
+
+	// child_ill_yes
+	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
+	
+	conindex2 child_ill_yes, 	rank(NationalScore) ///
+								covars(	hfc_vill_yes ///
+										i.hfc_distance ///
+										i.wealth_quintile_ns ///
+										i.wempo_category ///
+										i.org_name_num) ///
+								svy wagstaff bounded limits(0 1)
+	putexcel D5 = `r(CI)'
+	putexcel close
+	
+	
+	// child_ill_treat
+	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
+	
+	conindex2 child_ill_treat, 	rank(NationalScore) ///
+								covars(	i.caregiver_edu /// 
+										i.caregiver_u5_num ///
+										caregiver_biochild ///
+										child_ill1 child_ill3  ///
+										i.child_ill_episode ///
+										i.hfc_distance ///
+										i.wealth_quintile_ns ///
+										i.wempo_category ///
+										i.org_name_num ///
+										stratum) ///
+								svy wagstaff bounded limits(0 1)
+
+	putexcel D7 = `r(CI)'
+	putexcel close
+
+	// child_ill_trained
+	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
+	
+	conindex2 child_ill_trained, rank(NationalScore) ///
+								covars(	i.caregiver_u5_num ///
+										caregiver_biochild ///
+										child_ill3  ///
+										i.child_ill_episode ///
+										hfc_vill_yes ///
+										i.hfc_distance ///
+										i.wealth_quintile_ns ///
+										i.wempo_category ///
+										i.org_name_num ///
+										stratum) ///
+								svy wagstaff bounded limits(0 1)
+	putexcel D9 = `r(CI)'
+	putexcel close
 	
 // END HERE 
 
