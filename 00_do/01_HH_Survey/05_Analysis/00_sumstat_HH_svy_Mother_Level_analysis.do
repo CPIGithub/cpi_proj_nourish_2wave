@@ -1324,10 +1324,10 @@ do "$do/00_dir_setting.do"
 			putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "anc_month_dry_2s" | "`v'" == "anc_month_wet_2s" | "`v'" == "hfc_near_dist" {
-				svy: logistic `outcome' `v'
+				svy: glm `outcome' `v', family(binomial) link(log) nolog eform // svy: logistic 
 			}
 			else {
-				svy: logistic `outcome' i.`v'
+				svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform // svy: logistic 
 			}
 			
 			estimates store `v', title(`v')
@@ -1346,7 +1346,7 @@ do "$do/00_dir_setting.do"
 			
 		putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
 		
-		svy: logistic `outcome' 	i.resp_highedu ///
+		svy: glm 		`outcome' 	i.resp_highedu /// // svy: logistic 
 									i.mom_age_grp ///
 									i.respd_chid_num_grp ///
 									hfc_vill_yes ///
@@ -1354,7 +1354,8 @@ do "$do/00_dir_setting.do"
 									i.wealth_quintile_ns ///
 									i.wempo_category ///
 									i.org_name_num ///
-									stratum 
+									stratum, ///
+									family(binomial) link(log) nolog eform
 	
 		putexcel (A1) = etable
 			
@@ -1672,10 +1673,10 @@ do "$do/00_dir_setting.do"
 			putexcel set "$out/reg_output/Delivery_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "hfc_near_dist" {
-				svy: logistic `outcome' `v'
+				svy: glm `outcome' `v', family(binomial) link(log) nolog eform // svy: logistic
 			}
 			else {
-				svy: logistic `outcome' i.`v'
+				svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform // svy: logistic
 			}
 			
 			estimates store `v', title(`v')
@@ -1694,7 +1695,7 @@ do "$do/00_dir_setting.do"
 			
 		putexcel set "$out/reg_output/Delivery_`outcome'_logistic_models.xls", sheet("Final_model") modify 
 		
-		svy: logistic `outcome' 	i.resp_highedu ///
+		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							i.mom_age_grp ///
 							i.respd_chid_num_grp ///
 							i.delivery_month_season ///
@@ -1703,7 +1704,8 @@ do "$do/00_dir_setting.do"
 							i.wealth_quintile_ns ///
 							i.wempo_category ///
 							i.org_name_num ///
-							stratum 	
+							stratum, ///
+							family(binomial) link(log) nolog eform
 		putexcel (A1) = etable
 			
 	}
@@ -1989,10 +1991,10 @@ do "$do/00_dir_setting.do"
 			putexcel set "$out/reg_output/PNC_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "hfc_near_dist" {
-				svy: logistic `outcome' `v'
+				svy: glm `outcome' `v', family(binomial) link(log) nolog eform // svy: logistic
 			}
 			else {
-				svy: logistic `outcome' i.`v'
+				svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform // svy: logistic
 			}
 			
 			estimates store `v', title(`v')
@@ -2011,7 +2013,7 @@ do "$do/00_dir_setting.do"
 			
 		putexcel set "$out/reg_output/PNC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
 		
-		svy: logistic `outcome' 	i.resp_highedu ///
+		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							i.mom_age_grp ///
 							i.respd_chid_num_grp ///
 							i.delivery_month_season ///
@@ -2020,7 +2022,8 @@ do "$do/00_dir_setting.do"
 							i.wealth_quintile_ns ///
 							i.wempo_category ///
 							i.org_name_num ///
-							stratum 	
+							stratum, ///
+							family(binomial) link(log) nolog eform
 		putexcel (A1) = etable
 			
 	}
@@ -2358,10 +2361,10 @@ do "$do/00_dir_setting.do"
 			putexcel set "$out/reg_output/NBC_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "hfc_near_dist" {
-				svy: logistic `outcome' `v'
+				svy: glm `outcome' `v', family(binomial) link(log) nolog eform // svy: logistic 
 			}
 			else {
-				svy: logistic `outcome' i.`v'
+				svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform // svy: logistic 
 			}
 			
 			estimates store `v', title(`v')
@@ -2380,7 +2383,7 @@ do "$do/00_dir_setting.do"
 			
 		putexcel set "$out/reg_output/NBC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
 		
-		svy: logistic `outcome' 	i.resp_highedu ///
+		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							i.mom_age_grp ///
 							i.respd_chid_num_grp ///
 							i.delivery_month_season ///
@@ -2389,7 +2392,8 @@ do "$do/00_dir_setting.do"
 							i.wealth_quintile_ns ///
 							i.wempo_category ///
 							i.org_name_num ///
-							stratum 	
+							stratum, ///
+							family(binomial) link(log) nolog eform
 		putexcel (A1) = etable
 			
 	}
