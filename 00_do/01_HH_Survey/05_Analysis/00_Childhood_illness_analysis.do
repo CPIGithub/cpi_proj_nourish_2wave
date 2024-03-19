@@ -212,7 +212,6 @@ do "$do/00_dir_setting.do"
 	lab var child_ill_episode "Episode of Illness"
 	tab child_ill_episode, m 
 	
-
 	
 	//Childhood_illness_healthseeking
 	
