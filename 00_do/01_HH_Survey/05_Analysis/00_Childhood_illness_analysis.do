@@ -17,9 +17,9 @@ do "$do/00_dir_setting.do"
 
 	
 	****************************************************************************
-	* Child Health Data *
+	* Prepare the dataset *
 	****************************************************************************
-
+	* Child Health Data *
 	use "$dta/pnourish_child_health_final.dta", clear 
 	
 	
@@ -62,9 +62,54 @@ do "$do/00_dir_setting.do"
 	
 	drop if _merge == 2 
 	drop _merge 
-
 	
-	* Caregiver information 
+	
+	* Add Village Survey Info 
+	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
+						mkt_near_dist_dry mkt_near_dist_rain ///
+						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
+	
+	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+								keepusing($villinfo) 
+	
+	drop if _merge == 2
+	drop _merge 
+	
+	// detach value label - resulted from merging 
+	foreach var of varlist hfc_near_dist_dry hfc_near_dist_rain mkt_near_dist_dry mkt_near_dist_rain {
+		
+		lab val `var'
+	}
+	
+
+	****************************************************************************
+	** Construct the required varaibles for analysis 
+	****************************************************************************
+	* Village level info
+	* proximity to health facility 
+	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
+	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
+	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
+	tab hfc_near_dist, m 
+	
+	tab hfc_vill0, m 
+	gen hfc_vill_yes = (hfc_vill0 == 0)
+	replace hfc_vill_yes = .m if mi(hfc_vill0)
+	lab val hfc_vill_yes yesno 
+	tab hfc_vill_yes, m 
+	
+	* distance HFC category 
+	gen hfc_distance = .m 
+	replace hfc_distance = 0 if hfc_near_dist_rain == 0
+	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
+	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
+	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
+	lab val hfc_distance hfc_distance
+	lab var hfc_distance "Nearest Health Facility - hours for round trip"
+	tab hfc_distance, mis
+	
+	* Caregiver/Mother information 
 	// age 
 	rename hh_mem_age caregiver_age 
 	replace caregiver_age = respd_age if !mi(respd_age) & mi(caregiver_age)
@@ -102,9 +147,14 @@ do "$do/00_dir_setting.do"
 	tab caregiver_u5_num, m 
 	
 
+	* Child information 
+	* gender 
+	gen child_sex = hh_mem_sex
+	lab var child_sex "child sex (1 male, 0 female)"
+	
+	
 	* first born child or first adopted child 
 	* child position age * 
-	
 	bysort respd_id: gen u5_indata = _N
 	
 	gsort +respd_id -child_age_month
@@ -130,49 +180,6 @@ do "$do/00_dir_setting.do"
 														respd_chid_num <= u5_indata & ///
 														child_birth_order == child_birth_oldest	
 	tab first_born_child, m 
-	
-	
-	* Add Village Survey Info 
-	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
-						mkt_near_dist_dry mkt_near_dist_rain ///
-						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
-	
-	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
-								keepusing($villinfo) 
-	
-	drop if _merge == 2
-	drop _merge 
-	
-	// detach value label - resulted from merging 
-	foreach var of varlist hfc_near_dist_dry hfc_near_dist_rain mkt_near_dist_dry mkt_near_dist_rain {
-		
-		lab val `var'
-	}
-	
-	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
-	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
-	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
-	tab hfc_near_dist, m 
-	
-	tab hfc_vill0, m 
-	gen hfc_vill_yes = (hfc_vill0 == 0)
-	replace hfc_vill_yes = .m if mi(hfc_vill0)
-	lab val hfc_vill_yes yesno 
-	tab hfc_vill_yes, m 
-	
-	* distance HFC category 
-	gen hfc_distance = .m 
-	replace hfc_distance = 0 if hfc_near_dist_rain == 0
-	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
-	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
-	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
-	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
-	lab val hfc_distance hfc_distance
-	lab var hfc_distance "Nearest Health Facility - hours for round trip"
-	tab hfc_distance, mis
-
-	* svy weight apply 
-	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
 	* generate the interaction variable - stratum Vs quantile 
 	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
@@ -186,6 +193,7 @@ do "$do/00_dir_setting.do"
 	tab child_age_yrs, m 
   
 	   
+	* Outcomes varaibles 
 	* illness - any illness*
 	gen child_ill_yes = (child_ill0 == 0)
 	replace child_ill_yes = .m if mi(child_ill0) | child_ill888 == 1
@@ -212,16 +220,110 @@ do "$do/00_dir_setting.do"
 	lab var child_ill_episode "Episode of Illness"
 	tab child_ill_episode, m 
 	
+
+	* Payment and Coping Mechanism * 
+	egen treat_pay = rowtotal(child_*_pay)
+	replace treat_pay = 1 if treat_pay > 0 
+	replace treat_pay = .m if child_ill_treat != 1
+	lab var treat_pay "Treatment payment (yes)"
+	tab treat_pay, m 
+	
+	* Coping mechanism 
+	egen cope_food_consumption = rowtotal(child_*_cope4)
+	replace cope_food_consumption = 1 if cope_food_consumption > 0 
+	replace cope_food_consumption = .m if child_ill_treat != 1
+	lab var cope_food_consumption "Reduced food consumption"
+	tab cope_food_consumption, m 
+	
+	egen cope_financial = rowtotal(	child_*_cope1 child_*_cope2 child_*_cope5 child_*_cope6 ///
+									child_*_cope10 child_*_cope11 child_*_cope12 child_*_cope13 child_*_cope14)
+	replace cope_financial = 1 if cope_financial > 0 
+	replace cope_financial = .m if child_ill_treat != 1
+	lab var cope_financial "Financial coping"
+	tab cope_financial, m 
+	
+	egen cope_nonfood = rowtotal(	child_*_cope3 child_*_cope9)
+	replace cope_nonfood = 1 if cope_nonfood > 0 
+	replace cope_nonfood = .m if child_ill_treat != 1
+	lab var cope_nonfood "Reduced Non-food consumption"
+	tab cope_nonfood, m 	
+	
+	egen cope_adverse_treatcost = rowtotal(cope_food_consumption cope_financial cope_nonfood)
+	replace cope_adverse_treatcost = 1 if cope_adverse_treatcost > 0 
+	replace cope_adverse_treatcost = .m if child_ill_treat != 1
+	lab var cope_adverse_treatcost "Any adverse coping mechanism (to pay for treatment)"
+	tab cope_adverse_treatcost, m 	
+
+	* Reason for not taking treatment * 
+	egen notreat_transport = rowtotal(child_*_notreat1 child_*_notreat2 child_*_notreat3 child_*_notreat9)
+	replace notreat_transport = 1 if notreat_transport > 0 
+	replace notreat_transport = .m if child_ill_treat != 0
+	lab var notreat_transport "Transportation distance/cost"
+	tab notreat_transport, m 	
+	
+	egen notreat_treatcost = rowtotal(child_*_notreat4)
+	replace notreat_treatcost = 1 if notreat_treatcost > 0 
+	replace notreat_treatcost = .m if child_ill_treat != 0
+	lab var notreat_treatcost "Treatment cost"
+	tab notreat_treatcost, m 	
+	
+	egen notreat_conflict = rowtotal(child_*_notreat12)
+	replace notreat_conflict = 1 if notreat_conflict > 0 
+	replace notreat_conflict = .m if child_ill_treat != 0
+	lab var notreat_conflict "Insecurity due to conflict"
+	tab notreat_conflict, m 
+	
+	egen notreat_disability = rowtotal(child_*_notreat13)
+	replace notreat_disability = 1 if notreat_disability > 0 
+	replace notreat_disability = .m if child_ill_treat != 0
+	lab var notreat_disability "Disability"
+	tab notreat_disability, m 
+	
+	egen notreat_covid = rowtotal(child_*_notreat10)
+	replace notreat_covid = 1 if notreat_covid > 0 
+	replace notreat_covid = .m if child_ill_treat != 0
+	lab var notreat_covid "Feat of Covid-19"
+	tab notreat_covid, m 
+
+	egen notreat_advise = rowtotal(child_*_notreat5 child_*_notreat6 child_*_notreat15 )
+	replace notreat_advise = 1 if notreat_advise > 0 
+	replace notreat_advise = .m if child_ill_treat != 0
+	lab var notreat_advise "Advise not to/think it is not require take the treatment"
+	tab notreat_advise, m 	
+	
+	egen notreat_notpresent = rowtotal(child_*_notreat14)
+	replace notreat_notpresent = 1 if notreat_notpresent > 0 
+	replace notreat_notpresent = .m if child_ill_treat != 0
+	lab var notreat_notpresent "Health personnel not present at the health facility"
+	tab notreat_notpresent, m 	
+	
+	egen notreat_hhwork = rowtotal(child_*_notreat11)
+	replace notreat_hhwork = 1 if notreat_hhwork > 0 
+	replace notreat_hhwork = .m if child_ill_treat != 0
+	lab var notreat_hhwork "household chores burden"
+	tab notreat_hhwork, m 	
+	
+	
+	// notreat_transport notreat_treatcost notreat_conflict notreat_disability notreat_covid notreat_advise notreat_notpresent notreat_hhwork
+	tab1 notreat_transport notreat_advise  
+	
+	****************************************************************************
+	** Analysis 
+	****************************************************************************
+	* svy weight apply 
+	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+
 	
 	//Childhood_illness_healthseeking
 	
-	global outcomes		child_vaccin_yes child_ill_yes child_ill_treat child_ill_trained
+	global outcomes		child_vaccin_yes child_ill_yes child_ill_treat child_ill_trained treat_pay cope_adverse_treatcost 
 	
 	local regressor  	caregiver_edu caregiver_age_grp caregiver_chidnum_grp caregiver_u5_num ///
 						caregiver_biochild first_born_child ///
 						child_ill_episode hfc_vill_yes hfc_distance ///
 						wealth_quintile_ns wempo_category org_name_num stratum ///
-						child_ill1 child_ill2 child_ill3 
+						child_ill1 child_ill2 child_ill3 ///
+						child_sex 
 	
 	foreach var of global outcomes {
 	
@@ -269,7 +371,7 @@ If the prevalence ratio for households with three or more children compared to h
 	*/
 
 	
-	local outcomes	child_vaccin_yes child_ill_yes child_ill_treat child_ill_trained
+	local outcomes	child_vaccin_yes child_ill_yes child_ill_treat child_ill_trained treat_pay cope_adverse_treatcost 
 	
 	foreach outcome in `outcomes' {
 	 
@@ -278,14 +380,16 @@ If the prevalence ratio for households with three or more children compared to h
 							child_ill_episode ///
 							hfc_vill_yes hfc_distance ///
 							wealth_quintile_ns wempo_category org_name_num stratum ///
-							child_ill1 child_ill2 child_ill3 
+							child_ill1 child_ill2 child_ill3 ///
+							child_sex 
 			
 		if "`outcome'" == "child_ill_yes" | "`outcome'" == "child_vaccin_yes" {
 			
 		local regressor  	caregiver_edu caregiver_age_grp caregiver_chidnum_grp caregiver_u5_num ///
 							caregiver_biochild first_born_child ///
 							hfc_vill_yes hfc_distance ///
-							wealth_quintile_ns wempo_category org_name_num stratum 			
+							wealth_quintile_ns wempo_category org_name_num stratum ///
+							child_sex 
 		}
 
 		
@@ -314,8 +418,8 @@ If the prevalence ratio for households with three or more children compared to h
 	   
 
 							
-							
-	local outcomes	child_vaccin_yes child_ill_yes child_ill_yes child_ill_treat child_ill_trained
+						
+	local outcomes	child_vaccin_yes child_ill_yes child_ill_yes child_ill_treat child_ill_trained treat_pay cope_adverse_treatcost 
 	
 	* final model 
 	// child_vaccin_yes
@@ -326,7 +430,6 @@ If the prevalence ratio for households with three or more children compared to h
 								i.caregiver_u5_num ///
 								caregiver_biochild ///
 								first_born_child ///
-								hfc_vill_yes ///
 								i.hfc_distance ///
 								i.wealth_quintile_ns ///
 								i.wempo_category ///
@@ -339,7 +442,7 @@ If the prevalence ratio for households with three or more children compared to h
 	// child_ill_yes
 	putexcel set "$out/reg_output/Childhood_illness_child_ill_yes_glm_models.xlsx", sheet("Final_model") modify 
 	
-	svy: glm child_ill_yes	 	hfc_vill_yes ///
+	svy: glm child_ill_yes	 	child_sex ///
 								i.hfc_distance ///
 								i.wealth_quintile_ns ///
 								i.wempo_category ///
@@ -374,7 +477,6 @@ If the prevalence ratio for households with three or more children compared to h
 								caregiver_biochild ///
 								child_ill3  ///
 								i.child_ill_episode ///
-								hfc_vill_yes ///
 								i.hfc_distance ///
 								i.wealth_quintile_ns ///
 								i.wempo_category ///
@@ -383,7 +485,26 @@ If the prevalence ratio for households with three or more children compared to h
 								family(binomial) link(log) nolog eform
 	putexcel (A1) = etable
 	
-
+	
+	// treat_pay 
+	putexcel set "$out/reg_output/Childhood_illness_treat_pay_glm_models.xlsx", sheet("Final_model") modify 
+	
+	svy: glm treat_pay 	i.org_name_num ///
+						stratum, ///
+						family(binomial) link(log) nolog eform
+	putexcel (A1) = etable	
+	
+	// cope_adverse_treatcost 
+	putexcel set "$out/reg_output/Childhood_illness_cope_adverse_treatcost_glm_models.xlsx", sheet("Final_model") modify 
+	
+	svy: glm cope_adverse_treatcost 	i.wempo_category ///
+										i.org_name_num ///
+										stratum, ///
+										family(binomial) link(log) nolog eform
+	putexcel (A1) = etable	
+	
+	
+	
 	** Concentration Index 		
 	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
 	putexcel A2 = "variable name"
@@ -416,7 +537,6 @@ If the prevalence ratio for households with three or more children compared to h
 										i.caregiver_u5_num ///
 										caregiver_biochild ///
 										first_born_child ///
-										hfc_vill_yes ///
 										i.hfc_distance ///
 										i.wealth_quintile_ns ///
 										i.wempo_category ///
@@ -431,7 +551,7 @@ If the prevalence ratio for households with three or more children compared to h
 	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
 	
 	conindex2 child_ill_yes, 	rank(NationalScore) ///
-								covars(	hfc_vill_yes ///
+								covars(	child_sex ///
 										i.hfc_distance ///
 										i.wealth_quintile_ns ///
 										i.wempo_category ///
@@ -468,7 +588,6 @@ If the prevalence ratio for households with three or more children compared to h
 										caregiver_biochild ///
 										child_ill3  ///
 										i.child_ill_episode ///
-										hfc_vill_yes ///
 										i.hfc_distance ///
 										i.wealth_quintile_ns ///
 										i.wempo_category ///
@@ -477,6 +596,51 @@ If the prevalence ratio for households with three or more children compared to h
 								svy wagstaff bounded limits(0 1)
 	putexcel D9 = `r(CI)'
 	putexcel close
+	
+	// treat_pay
+	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
+	
+	conindex2 treat_pay, rank(NationalScore) ///
+						covars(	i.org_name_num ///
+								stratum) ///
+						svy wagstaff bounded limits(0 1)
+	putexcel D11 = `r(CI)'
+	putexcel close
+	
+	
+	// cope_adverse_treatcost
+	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
+	
+	conindex2 cope_adverse_treatcost, rank(NationalScore) ///
+									covars(	i.wempo_category ///
+											i.org_name_num ///
+											stratum) ///
+									svy wagstaff bounded limits(0 1)
+	putexcel D13 = `r(CI)'
+	putexcel close
+	
+
+	
+	* Reasons for not taking treatment 
+	
+	local demo hfc_distance wealth_quintile_ns wempo_category org_name_num stratum 
+	
+	foreach var in `demo' {
+	    
+		svy: tab `var' notreat_transport, row
+		
+		svy: tab `var' notreat_advise, row
+		
+	}
+	
+	
+	
+	
+	
+	 
+	
+	
+	
 	
 // END HERE 
 
