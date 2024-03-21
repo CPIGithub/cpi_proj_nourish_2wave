@@ -214,6 +214,19 @@ do "$do/00_dir_setting.do"
 	lab var child_ill_trained "Treated with trained health personnel"
 	tab child_ill_trained, m 
 
+	** Treatment 
+	
+	tab1 child_diarrh_where child_cough_where child_fever_where
+	
+	tab1 child_diarrh_who child_cough_who child_fever_who
+	
+	gen child_treat_eho = (	child_diarrh_where == 5 | child_cough_where == 5 | child_fever_where == 5 | ///
+							child_diarrh_where == 6 | child_cough_where == 6 | child_fever_where == 6 | ///
+							child_diarrh_who == 9 | child_cough_who == 9 | child_fever_who == 9)
+	replace child_treat_eho = .m if child_ill888 == 1 | child_ill_yes == 0
+	lab var child_treat_eho "Treated at EHO clinic or with health personnel"
+	tab child_treat_eho, m 
+	
 	* illness episode 
 	egen child_ill_episode = rowtotal(child_ill1 child_ill2 child_ill3)
 	replace child_ill_episode = .m if child_ill888 == 1 | child_ill_yes == 0
@@ -235,12 +248,19 @@ do "$do/00_dir_setting.do"
 	lab var cope_food_consumption "Reduced food consumption"
 	tab cope_food_consumption, m 
 	
-	egen cope_financial = rowtotal(	child_*_cope1 child_*_cope2 child_*_cope5 child_*_cope6 ///
+	egen cope_financial = rowtotal(	child_*_cope1 child_*_cope2 child_*_cope9 child_*_cope6 /// // need to correct this child_*_cope9 with child_*_cope5 - now 6 obs different 
 									child_*_cope10 child_*_cope11 child_*_cope12 child_*_cope13 child_*_cope14)
 	replace cope_financial = 1 if cope_financial > 0 
 	replace cope_financial = .m if child_ill_treat != 1
 	lab var cope_financial "Financial coping"
 	tab cope_financial, m 
+	
+	egen hhpay_saving = rowtotal(	child_*_cope1 child_*_cope2 child_*_cope9)
+	replace hhpay_saving = 1 if hhpay_saving > 0 
+	replace hhpay_saving = .m if child_ill_treat != 1
+	lab var hhpay_saving "HH with saving amount (only for the sample: HH paid for tratment)"
+	tab hhpay_saving, m 
+	
 	
 	egen cope_nonfood = rowtotal(	child_*_cope3 child_*_cope9)
 	replace cope_nonfood = 1 if cope_nonfood > 0 
@@ -303,8 +323,10 @@ do "$do/00_dir_setting.do"
 	lab var notreat_hhwork "household chores burden"
 	tab notreat_hhwork, m 	
 	
+
 	
-	// notreat_transport notreat_treatcost notreat_conflict notreat_disability notreat_covid notreat_advise notreat_notpresent notreat_hhwork
+	
+	// notreat_transport notreat_treatcost notreat_conflict notreat_disability notreat_covid notreat_advise notreat_notpresent notreat_hhwork hhpay_saving
 	tab1 notreat_transport notreat_advise  
 	
 	****************************************************************************
@@ -318,14 +340,30 @@ do "$do/00_dir_setting.do"
 	
 	global outcomes		child_vaccin_yes child_ill_yes child_ill_treat child_ill_trained treat_pay cope_adverse_treatcost 
 	
-	local regressor  	caregiver_edu caregiver_age_grp caregiver_chidnum_grp caregiver_u5_num ///
-						caregiver_biochild first_born_child ///
-						child_ill_episode hfc_vill_yes hfc_distance ///
-						wealth_quintile_ns wempo_category org_name_num stratum ///
-						child_ill1 child_ill2 child_ill3 ///
-						child_sex 
+
 	
 	foreach var of global outcomes {
+	    
+		if "`var'" == "treat_pay" | "`var'" == "cope_adverse_treatcost" {
+			
+			local regressor  	caregiver_edu caregiver_age_grp caregiver_chidnum_grp caregiver_u5_num ///
+								caregiver_biochild first_born_child ///
+								child_ill_episode hfc_vill_yes hfc_distance ///
+								wealth_quintile_ns wempo_category org_name_num stratum ///
+								child_ill1 child_ill2 child_ill3 ///
+								child_sex ///
+								child_ill_trained child_treat_eho	    
+		} 
+		else {
+		    
+			local regressor  	caregiver_edu caregiver_age_grp caregiver_chidnum_grp caregiver_u5_num ///
+								caregiver_biochild first_born_child ///
+								child_ill_episode hfc_vill_yes hfc_distance ///
+								wealth_quintile_ns wempo_category org_name_num stratum ///
+								child_ill1 child_ill2 child_ill3 ///
+								child_sex 
+		}
+		
 	
 		local i = 2
 		
@@ -391,6 +429,18 @@ If the prevalence ratio for households with three or more children compared to h
 							wealth_quintile_ns wempo_category org_name_num stratum ///
 							child_sex 
 		}
+		
+		else if "`outcome'" == "treat_pay" | "`outcome'" == "cope_adverse_treatcost" {
+		local regressor  	caregiver_edu caregiver_age_grp caregiver_chidnum_grp caregiver_u5_num ///
+							caregiver_biochild first_born_child ///
+							child_ill_episode ///
+							hfc_vill_yes hfc_distance ///
+							wealth_quintile_ns wempo_category org_name_num stratum ///
+							child_ill1 child_ill2 child_ill3 ///
+							child_sex ///
+							child_ill_trained child_treat_eho 		    
+			
+		}
 
 		
 		foreach v in `regressor' {
@@ -421,7 +471,7 @@ If the prevalence ratio for households with three or more children compared to h
 						
 	local outcomes	child_vaccin_yes child_ill_yes child_ill_yes child_ill_treat child_ill_trained treat_pay cope_adverse_treatcost 
 	
-	* final model 
+	* final model [drop the type of illness and number of illness type]
 	// child_vaccin_yes
 	putexcel set "$out/reg_output/Childhood_illness_child_vaccin_yes_glm_models.xlsx", sheet("Final_model") modify 
 	
@@ -458,8 +508,6 @@ If the prevalence ratio for households with three or more children compared to h
 	svy: glm child_ill_treat 	i.caregiver_edu /// 
 								i.caregiver_u5_num ///
 								caregiver_biochild ///
-								child_ill1 child_ill3  ///
-								i.child_ill_episode ///
 								i.hfc_distance ///
 								i.wealth_quintile_ns ///
 								i.wempo_category ///
@@ -475,8 +523,6 @@ If the prevalence ratio for households with three or more children compared to h
 	
 	svy: glm child_ill_trained 	i.caregiver_u5_num ///
 								caregiver_biochild ///
-								child_ill3  ///
-								i.child_ill_episode ///
 								i.hfc_distance ///
 								i.wealth_quintile_ns ///
 								i.wempo_category ///
@@ -489,7 +535,9 @@ If the prevalence ratio for households with three or more children compared to h
 	// treat_pay 
 	putexcel set "$out/reg_output/Childhood_illness_treat_pay_glm_models.xlsx", sheet("Final_model") modify 
 	
-	svy: glm treat_pay 	i.org_name_num ///
+	svy: glm treat_pay 	child_ill_trained ///
+						child_treat_eho ///
+						i.org_name_num ///
 						stratum, ///
 						family(binomial) link(log) nolog eform
 	putexcel (A1) = etable	
@@ -497,7 +545,9 @@ If the prevalence ratio for households with three or more children compared to h
 	// cope_adverse_treatcost 
 	putexcel set "$out/reg_output/Childhood_illness_cope_adverse_treatcost_glm_models.xlsx", sheet("Final_model") modify 
 	
-	svy: glm cope_adverse_treatcost 	i.wempo_category ///
+	svy: glm cope_adverse_treatcost 	child_ill_trained ///
+										child_treat_eho ///
+										i.wempo_category ///
 										i.org_name_num ///
 										stratum, ///
 										family(binomial) link(log) nolog eform
@@ -568,8 +618,6 @@ If the prevalence ratio for households with three or more children compared to h
 								covars(	i.caregiver_edu /// 
 										i.caregiver_u5_num ///
 										caregiver_biochild ///
-										child_ill1 child_ill3  ///
-										i.child_ill_episode ///
 										i.hfc_distance ///
 										i.wealth_quintile_ns ///
 										i.wempo_category ///
@@ -586,8 +634,6 @@ If the prevalence ratio for households with three or more children compared to h
 	conindex2 child_ill_trained, rank(NationalScore) ///
 								covars(	i.caregiver_u5_num ///
 										caregiver_biochild ///
-										child_ill3  ///
-										i.child_ill_episode ///
 										i.hfc_distance ///
 										i.wealth_quintile_ns ///
 										i.wempo_category ///
@@ -601,7 +647,9 @@ If the prevalence ratio for households with three or more children compared to h
 	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
 	
 	conindex2 treat_pay, rank(NationalScore) ///
-						covars(	i.org_name_num ///
+						covars(	child_ill_trained ///
+								child_treat_eho ///
+								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
 	putexcel D11 = `r(CI)'
@@ -612,7 +660,9 @@ If the prevalence ratio for households with three or more children compared to h
 	putexcel set "$result/childhood_health_seeking_results.xlsx", sheet("CI_result") modify
 	
 	conindex2 cope_adverse_treatcost, rank(NationalScore) ///
-									covars(	i.wempo_category ///
+									covars(	child_ill_trained ///
+											child_treat_eho ///
+											i.wempo_category ///
 											i.org_name_num ///
 											stratum) ///
 									svy wagstaff bounded limits(0 1)
@@ -632,14 +682,6 @@ If the prevalence ratio for households with three or more children compared to h
 		svy: tab `var' notreat_advise, row
 		
 	}
-	
-	
-	
-	
-	
-	 
-	
-	
 	
 	
 // END HERE 
