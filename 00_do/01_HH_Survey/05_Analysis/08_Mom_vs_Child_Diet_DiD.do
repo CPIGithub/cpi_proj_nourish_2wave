@@ -207,10 +207,23 @@ do "00_dir_setting_w1.do"
 	
 	tab source, m 
 	
+	* Mom and child dietary score 
+	egen m_dscore =  rowtotal(m_grain m_pulses m_diary m_meat m_egg m_vitfruitveg m_othfruitveg)
+	replace m_dscore = .m if mi(m_grain) & mi(m_pulses) & mi(m_diary) & mi(m_meat) & mi(m_egg) & mi(m_vitfruitveg) & mi(m_othfruitveg)
+	lab var m_dscore "Mom diet score (0-7)"
+	tab m_dscore, m 
+
+	
+	egen c_dscore =  rowtotal(c_grain c_pulses c_diary c_meat c_egg c_vitfruitveg c_othfruitveg)
+	replace c_dscore = .m if mi(c_grain) & mi(c_pulses) & mi(c_diary) & mi(c_meat) & mi(c_egg) & mi(c_vitfruitveg) & mi(c_othfruitveg)
+	lab var c_dscore "Child diet score (0-7)"
+	tab c_dscore, m 
+	
+
 	** DID Implementation ** 
 	** 𝑦 = 𝛽0 + 𝛽1𝑡𝑖𝑚𝑒 + 𝛽2𝑡𝑟𝑒𝑎𝑡𝑒𝑑 + 𝛽3𝑡𝑖𝑚𝑒 ∗ 𝑡𝑟𝑒𝑎𝑡𝑒𝑑 + 𝜀
 	
-	local fgs grain pulses diary meat egg vitfruitveg othfruitveg
+	local fgs grain pulses diary meat egg vitfruitveg othfruitveg dscore 
 	foreach fg in `fgs' {
 		
 		rename *_`fg' `fg'_*
@@ -234,7 +247,7 @@ do "00_dir_setting_w1.do"
 	gen did = source * person
 	tab did, m 
 	
-	foreach var of varlist grain pulses diary meat egg vitfruitveg othfruitveg {
+	foreach var of varlist grain pulses diary meat egg vitfruitveg othfruitveg dscore {
 		
 		di "`var'"
 		diff `var' [pweight = weight_final], t(person) p(source) cov(respd_age resp_highedu child_age_month)
