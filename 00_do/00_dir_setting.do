@@ -30,7 +30,7 @@ di "`user'"
 if "`user'" == "Nicholus Tint Zaw" {
     * Nicholus Directory
 	
-	global dir		"H:\.shortcut-targets-by-id\1qS9e_FKPO2IwvcIAch8aqRrLnWosl6ja\2nd round Project Nourish Survey"
+	global dir		"I:\.shortcut-targets-by-id\1qS9e_FKPO2IwvcIAch8aqRrLnWosl6ja\2nd round Project Nourish Survey"
 	global github	"C:\Users\Nicholus Tint Zaw\Documents\GitHub\cpi_proj_nourish_2wave"
 	
 }
