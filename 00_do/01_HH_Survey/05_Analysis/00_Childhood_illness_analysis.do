@@ -248,7 +248,7 @@ do "$do/00_dir_setting.do"
 	lab var cope_food_consumption "Reduced food consumption"
 	tab cope_food_consumption, m 
 	
-	egen cope_financial = rowtotal(	child_*_cope1 child_*_cope2 child_*_cope9 child_*_cope6 /// // need to correct this child_*_cope9 with child_*_cope5 - now 6 obs different 
+	egen cope_financial = rowtotal(	child_*_cope1 child_*_cope2 child_*_cope5 child_*_cope6 /// // need to correct this child_*_cope9 with child_*_cope5 - now 6 obs different 
 									child_*_cope10 child_*_cope11 child_*_cope12 child_*_cope13 child_*_cope14)
 	replace cope_financial = 1 if cope_financial > 0 
 	replace cope_financial = .m if child_ill_treat != 1
@@ -323,7 +323,8 @@ do "$do/00_dir_setting.do"
 	lab var notreat_hhwork "household chores burden"
 	tab notreat_hhwork, m 	
 	
-
+	* save as analysis prepared dataset 
+	save "$dta/pnourish_child_health_analysisprep.dta", replace 
 	
 	
 	// notreat_transport notreat_treatcost notreat_conflict notreat_disability notreat_covid notreat_advise notreat_notpresent notreat_hhwork hhpay_saving
