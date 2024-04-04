@@ -60,6 +60,11 @@ do "$do/00_dir_setting.do"
 	* Childhood illness and Payment/Coping 
 	merge 1:1 _parent_index using `childhood_illness', assert(1 3) nogen  
 	
+	* program exposure 
+	merge 1:1 _parent_index using "$dta/pnourish_program_exposure_final.dta", assert(1 3) nogen  
+	
+
+	
 
 	****************************************************************************
 	** Construct the required varaibles for analysis 
@@ -123,7 +128,7 @@ do "$do/00_dir_setting.do"
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
-	
+	&&
 	//Childhood_illness_healthseeking
 	
 	global outcomes		depression_yes
