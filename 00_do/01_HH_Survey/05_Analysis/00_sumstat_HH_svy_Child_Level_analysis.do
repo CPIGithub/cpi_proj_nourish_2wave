@@ -84,7 +84,7 @@ do "$do/00_dir_setting.do"
 	   
 	   
 	* Design Effect Calculation 
-	svy: mean eibf 
+	svy: mean child_gam 
     estat svyset
     estat effects, deff deft meff meft
 	
