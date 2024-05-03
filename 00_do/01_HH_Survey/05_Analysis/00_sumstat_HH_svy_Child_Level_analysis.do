@@ -82,6 +82,14 @@ do "$do/00_dir_setting.do"
 	   legend label varlabels(_cons constant)              ///
 	   stats(r2 df_r bic) replace
 	   
+	   
+	* Design Effect Calculation 
+	svy: mean eibf 
+    estat svyset
+    estat effects, deff deft meff meft
+	
+	
+	   
 	****************************************************************************
 	* Child IYCF Data *
 	****************************************************************************
@@ -680,7 +688,27 @@ do "$do/00_dir_setting.do"
 	   stats(r2 df_r bic) replace
 	   
 	
-
+	* Design Effect Calculation 
+	svy: mean eibf 
+    estat svyset
+    estat effects, deff deft meff meft
+		
+	svy: mean ebf 
+    estat svyset
+    estat effects, deff deft meff meft
+	
+	svy: mean mdd 
+    estat svyset
+    estat effects, deff deft meff meft
+	
+	svy: mean mmf 
+    estat svyset
+    estat effects, deff deft meff meft
+	
+	svy: mean mad 
+    estat svyset
+    estat effects, deff deft meff meft
+	
 	   
 	* IYCF ALL *
 	// 		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
