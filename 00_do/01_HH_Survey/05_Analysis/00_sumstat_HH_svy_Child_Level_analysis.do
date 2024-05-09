@@ -21,6 +21,19 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/pnourish_child_muac_final.dta", clear   
 	
+	
+	* Generate a histogram for the MUAC variable
+	histogram u5_muac if u5_muac < 30, ///
+		frequency ///
+		//discrete ///
+		start(7) width(0.5) bin(25) ///
+		xlabel(7(0.5)19.5) ///
+		title("Histogram of MUAC Results") ///
+		ylabel(Frequency) ///
+		xtitle("MUAC") ///
+		ytitle("Frequency")
+	
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
