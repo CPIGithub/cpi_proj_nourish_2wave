@@ -813,6 +813,54 @@ do "$do/00_dir_setting.do"
 	*/
 	
 	
+	* plots for publication 
+    global graph_opts1 ///
+           bgcolor(white) ///
+           graphregion(color(white)) ///
+           legend(region(lc(none) fc(none))) ///
+           ylab(,angle(0) nogrid) ///
+           title(, justification(left) color(black) span pos(11)) ///
+           subtitle(, justification(left) color(black))
+		   
+	gen fies_insecurity_pct = fies_insecurity * 100
+	
+	graph bar 	fies_insecurity_pct [aweight = weight_final], over(NationalQuintile) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of HH with U5 Children", size(small) height(-6))								///
+				title("Proportion of U5 HH Experienced Food Insecurity" "(by Wealth Quintile)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"HH Food Insecurity (FIES raw score >= 4)", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_by_Wealth.png", replace
+
+	
+	graph bar 	fies_insecurity_pct [aweight = weight_final], over(resp_highedu) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of HH with U5 Children", size(small) height(-6))								///
+				title("Proportion of U5 HH Experienced Food Insecurity" "(by Respondent's Education)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"HH Food Insecurity (FIES raw score >= 4)", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_by_Edu.png", replace
+	
+	
+	graph bar 	fies_insecurity_pct [aweight = weight_final], over(wempo_category) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of HH with U5 Children", size(small) height(-6))								///
+				title("Proportion of U5 HH Experienced Food Insecurity" "(by Women Empowerment)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"HH Food Insecurity (FIES raw score >= 4)", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_by_WomenEmpowerment.png", replace
 	
 	
 	****************************************************************************

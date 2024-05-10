@@ -1046,6 +1046,183 @@ do "$do/00_dir_setting.do"
 	svy: mean dietary_tot, over(stratum)
 	
 	
+	* plots for publication 
+    global graph_opts1 ///
+           bgcolor(white) ///
+           graphregion(color(white)) ///
+           legend(region(lc(none) fc(none))) ///
+           ylab(,angle(0) nogrid) ///
+           title(, justification(left) color(black) span pos(11)) ///
+           subtitle(, justification(left) color(black))
+		 
+	// ebf
+	gen ebf_pct = ebf * 100
+	
+	graph bar 	ebf_pct [aweight = weight_final], over(NationalQuintile) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 0-5 months Children", size(small) height(-6))								///
+				title("Proportion of Exclusively Breastfed Children" "(by Wealth Quintile)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_by_Wealth.png", replace
+
+	
+	graph bar 	ebf_pct [aweight = weight_final], over(resp_highedu) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 0-5 months Children", size(small) height(-6))								///
+				title("Proportion of Exclusively Breastfed Children" "(by Respondent's Education)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_by_Edu.png", replace
+	
+	
+	graph bar 	ebf_pct [aweight = weight_final], over(wempo_category) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 0-5 months Children", size(small) height(-6))								///
+				title("Proportion of Exclusively Breastfed Children" "(by Women Empowerment)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_by_WomenEmpowerment.png", replace
+	
+
+	// mdd
+	gen mdd_pct = mdd * 100
+	
+	graph bar 	mdd_pct [aweight = weight_final], over(NationalQuintile) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 6-23 months Children", size(small) height(-6))								///
+				title("Proportion of Children Met Minimum Dietary Diversity" "(by Wealth Quintile)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_by_Wealth.png", replace
+
+	
+	graph bar 	mdd_pct [aweight = weight_final], over(resp_highedu) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 6-23 months Children", size(small) height(-6))								///
+				title("Proportion of Children Met Minimum Dietary Diversity" "(by Respondent's Education)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_by_Edu.png", replace
+	
+	
+	graph bar 	mdd_pct [aweight = weight_final], over(wempo_category) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 6-23 months Children", size(small) height(-6))								///
+				title("Proportion of Children Met Minimum Dietary Diversity" "(by Women Empowerment)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_by_WomenEmpowerment.png", replace
+	
+
+	// mmf
+	gen mmf_pct = mmf * 100
+	
+	graph bar 	mmf_pct [aweight = weight_final], over(NationalQuintile) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 6-23 months Children", size(small) height(-6))								///
+				title("Proportion of Children Met Minimum Meal Frequency" "(by Wealth Quintile)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/04_MMF_by_Wealth.png", replace
+
+	
+	graph bar 	mmf_pct [aweight = weight_final], over(resp_highedu) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 6-23 months Children", size(small) height(-6))								///
+				title("Proportion of Children Met Minimum Meal Frequency" "(by Respondent's Education)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/04_MMF_by_Edu.png", replace
+	
+	
+	graph bar 	mmf_pct [aweight = weight_final], over(wempo_category) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 6-23 months Children", size(small) height(-6))								///
+				title("Proportion of Children Met Minimum Meal Frequency" "(by Women Empowerment)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/04_MMF_by_WomenEmpowerment.png", replace
+	
+	// mdd
+	gen mad_pct = mad * 100
+	
+	graph bar 	mad_pct [aweight = weight_final], over(NationalQuintile) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 6-23 months Children", size(small) height(-6))								///
+				title("Proportion of Children Met Minimum Acceptable Diet" "(by Wealth Quintile)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/05_MAD_by_Wealth.png", replace
+
+	
+	graph bar 	mad_pct [aweight = weight_final], over(resp_highedu) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 6-23 months Children", size(small) height(-6))								///
+				title("Proportion of Children Met Minimum Acceptable Diet" "(by Respondent's Education)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/05_MAD_by_Edu.png", replace
+	
+	
+	graph bar 	mad_pct [aweight = weight_final], over(wempo_category) ///
+				${graph_opts1} ///
+				blabel(bar, format(%9.1f)) ///
+				ytitle("% of 6-23 months Children", size(small) height(-6))								///
+				title("Proportion of Children Met Minimum Acceptable Diet" "(by Women Empowerment)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				note(	"", size(vsmall) span)
+				
+	graph export "$plots/PN_Paper_Child_Nutrition/05_MAD_by_WomenEmpowerment.png", replace
+	
+	
+	
 	****************************************************************************
 	* Child Health Data *
 	****************************************************************************
