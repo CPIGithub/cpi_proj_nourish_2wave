@@ -822,9 +822,21 @@ do "$do/00_dir_setting.do"
            title(, justification(left) color(black) span pos(11)) ///
            subtitle(, justification(left) color(black))
 		   
+    global  graph_opts ///
+            title(, justification(left) ///
+            color(black) span pos(11)) ///
+            graphregion(color(white)) ///
+            ylab(,angle(0) nogrid) ///
+            xtit(,placement(left) justification(left)) ///
+            yscale(noline) xscale(noline) ///
+            legend(region(lc(none) fc(none)))
+			
+	/*	   
+	bysort NationalQuintile: gen bar_width = _N / 801
+		   
 	gen fies_insecurity_pct = fies_insecurity * 100
 	
-	graph bar 	fies_insecurity_pct [aweight = weight_final], over(NationalQuintile) ///
+	graph bar 	fies_insecurity_pct [aweight = weight_final], over(NationalQuintile, gap(bar_width)) ///
 				${graph_opts1} ///
 				blabel(bar, format(%9.1f)) ///
 				ytitle("% of HH with U5 Children", size(small) height(-6))								///
@@ -832,7 +844,7 @@ do "$do/00_dir_setting.do"
 						justification(left) color(black) span pos(11) size(medium)) 							///
 				plotregion(fcolor(white)) 														///
 				graphregion(fcolor(white)) ///
-				note(	"HH Food Insecurity (FIES raw score >= 4)", size(vsmall) span)
+				note(	"HH Food Insecurity (FIES raw score >= 4)", size(vsmall) span) 
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_by_Wealth.png", replace
 
@@ -862,6 +874,161 @@ do "$do/00_dir_setting.do"
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_by_WomenEmpowerment.png", replace
 	
+	*/
+	/*
+	save "$dta/pnourish_FIES_final_forplot.dta", replace   
+	
+	
+	twoway bar fies_insecurity_pct NationalQuintile, bartype(spanning)
+
+	
+	recode fies_insecurity (0 = 1) (1 = 0), gen(fies_insecurity_rc)
+	lab def fies_insecurity_rc 1"Food Secure" 0"Food Insecure"
+	lab val fies_insecurity_rc fies_insecurity_rc
+	tab fies_insecurity_rc, m 
+	
+	
+	spineplot 	fies_insecurity_rc NationalQuintile [aweight = weight_final], ///
+				percent ///
+				${graph_opts} ///
+				xlabel(, format(%13.0fc) labsize(small) angle(v) axis(2)) ///
+				xlabel(, format(%13.0fc) labsize(small) axis(1)) ///
+				ylabel(, format(%13.0fc) labsize(small) axis(2)) ///
+				xtitle("", axis(2)) ///
+				xtitle(Fraction by Wealth Quintile, size(small) height(-6) axis(1)) ///
+				ytitle("% of HH with U5 Children", size(small) height(-6) axis(1)) ///
+				ytitle(Fraction by Food Insecurity Status, size(small) height(-6) axis(2)) ///
+				title("Proportion of U5 HH Experienced Food Insecurity" "(by Wealth Quintile)", 		///
+						justification(left) color(black) span pos(11) size(medium)) 							///
+				plotregion(fcolor(white)) 														///
+				graphregion(fcolor(white)) ///
+				legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+				bar1(color(white)) bar2(color("000 116 172")) ///
+				lcolor(white) ///
+				note(	"HH Food Insecurity (FIES raw score >= 4)", size(vsmall) span) 
+				
+	
+	lowess 	fies_insecurity NationalQuintile, ///
+			lcolor(red) lwidth(medium) ///
+			legend(label(1 "Lowess Curve"))
+			
+	twoway scatter fies_insecurity NationalQuintile, ///
+			mcolor(blue) msize(small) ///
+			legend(off)		
+	
+	spineplot 	fies_insecurity NationalQuintile [aweight = weight_final], ///
+				${graph_opts1}
+	
+	*/
+	
+	global  pct `" 0 "0%" .1 "10%" .2 "20%" .3 "30%" .4 "40%" "'
+
+	
+	svy: logistic fies_insecurity i.NationalQuintile 
+	margins [aweight = weight_final], over(NationalQuintile)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("% of HH with U5 Children", size(small) height(-6)) ///
+		title("Marginal Effect of Wealth Quintile", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+		name(FIES_WQ, replace)
+				
+	//graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_Margin_by_Wealth.png", replace
+
+	lab def resp_highedu 1"Illiterate" 2"Primary" 3"Secondary" 4"Higher"
+	lab val resp_highedu resp_highedu
+	
+	svy: logistic fies_insecurity i.resp_highedu 
+	margins , over(resp_highedu)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("", size(small) height(-6)) ///
+		title("Marginal Effect of Respondent's Education", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+	name(FIES_EDU, replace)
+				
+	//graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_Margin_by_Edu.png", replace
+	
+	
+	svy: logistic fies_insecurity i.wempo_category 
+	margins , over(wempo_category)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("", size(small) height(-6)) ///
+		title("Marginal Effect of Women Empowerment", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+	name(FIES_WE, replace)  
+	
+	//graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_Margin_by_WomenEmpowerment.png", replace
+	
+	
+	graph 	combine FIES_WQ FIES_EDU FIES_WE, cols(3) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Predicted Probability of U5 HH Experienced Food Insecurity", ///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note("Note"											///
+				"Predictive margins with 95% CIs" ///
+				" " ///
+				"Education level by grade;"					///
+				"Primary education (Under 5th standard)"	///
+				"Secondary education (under 9th standard)"		///
+				"Higher education (till pass matriculation exam)" ///
+				" " ///
+				"HH Food Insecurity (FIES raw score >= 4)", size(vsmall) span)
+
+	graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_Combined.png", replace
+
+	
+	/*
+	glcurve fies_insecurity, gl(gl) p(p) lorenz // nograph
+	
+    twoway line gl p , sort || line p p , ///
+        xlabel(0(.1)1) ylabel(0(.1)1)      ///
+        xline(0(.2)1) yline(0(.2)1)        ///
+        title("Lorenz curve") subtitle("Example with custom formatting")    ///
+        legend(label(1 "Lorenz curve") label(2 "Line of perfect equality")) ///
+        plotregion(margin(zero)) aspectratio(1) scheme(economist)
+
+	*/
+	
+	/*
+	svy: mean fies_insecurity, over(NationalQuintile)
+	
+	mat a = e(b)
+		
+	mat list a
+	
+	mat S = (	389, a[1,1] \ ///
+				210, a[1,2] \ ///
+				95, a[1,3] \ ///
+				71, a[1,4] \ ///
+				31, a[1,5])
+	
+	
+	mat list S
+	
+	svmat S 
+	
+	twoway bar S2 S1, bartype(spanning) yline(1) xtitle(Percentile) ytitle(Income share)
+	*/
 	
 	****************************************************************************
 	** Program Exposure **

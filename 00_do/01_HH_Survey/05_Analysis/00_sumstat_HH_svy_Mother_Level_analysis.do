@@ -535,8 +535,21 @@ do "$do/00_dir_setting.do"
            title(, justification(left) color(black) span pos(11)) ///
            subtitle(, justification(left) color(black))
 		 
-		 
+    global  graph_opts ///
+            title(, justification(left) ///
+            color(black) span pos(11)) ///
+            graphregion(color(white)) ///
+            ylab(,angle(0) nogrid) ///
+            xtit(,placement(left) justification(left)) ///
+            yscale(noline) xscale(noline) ///
+            legend(region(lc(none) fc(none)))
+
+	lab def resp_highedu 1"Illiterate" 2"Primary" 3"Secondary" 4"Higher"
+	lab val resp_highedu resp_highedu
+	
 	// mddw_yes
+	global  pct `" 0 "0%" .2 "20%" .4 "40%" .6 "60%" .8 "80%" "'
+	/*
 	gen mddw_yes_pct = mddw_yes * 100
 	
 	graph bar 	mddw_yes_pct [aweight = weight_final], over(NationalQuintile) ///
@@ -550,8 +563,23 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_by_Wealth.png", replace
-
+	*/
+	svy: logistic mddw_yes i.NationalQuintile 
+	margins , over(NationalQuintile)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("% of Mothers", size(small) height(-6)) ///
+		title("Marginal Effect of Wealth Quintile", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+		name(MDDW_WQ, replace)
 	
+	/*
 	graph bar 	mddw_yes_pct [aweight = weight_final], over(resp_highedu) ///
 				${graph_opts1} ///
 				blabel(bar, format(%9.1f)) ///
@@ -563,8 +591,25 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_by_Edu.png", replace
+	*/
+
+	svy: logistic mddw_yes i.resp_highedu 
+	margins , over(resp_highedu)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("", size(small) height(-6)) ///
+		title("Marginal Effect of Respondent's Education", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+	name(MDDW_EDU, replace)
 	
 	
+	/*
 	graph bar 	mddw_yes_pct [aweight = weight_final], over(wempo_category) ///
 				${graph_opts1} ///
 				blabel(bar, format(%9.1f)) ///
@@ -576,8 +621,54 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_by_WomenEmpowerment.png", replace
-	
+	*/
 
+	svy: logistic mddw_yes i.wempo_category 
+	margins , over(wempo_category)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("", size(small) height(-6)) ///
+		title("Marginal Effect of Women Empowerment", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+	name(MDDW_WE, replace)  
+	
+	graph 	combine MDDW_WQ MDDW_EDU MDDW_WE, cols(3) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Predicted Probability of Mothers Met Minimum Dietary Diversity", 								///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note("Note"											///
+				"Predictive margins with 95% CIs" ///
+				" " ///
+				"Education level by grade;"					///
+				"Primary education (Under 5th standard)"	///
+				"Secondary education (under 9th standard)"		///
+				"Higher education (till pass matriculation exam)", size(vsmall) span)
+	
+	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Combined.png", replace	
+
+	
+	graph 	combine FIES_WQ FIES_EDU FIES_WE ///
+					EBF_WQ EBF_EDU EBF_WE ///
+					MDD_WQ MDD_EDU MDD_WE ///
+					MDDW_WQ MDDW_EDU MDDW_WE, rows(4) cols(3) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Proportion of Children Met Minimum Dietary Diversity", 								///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note("Note"											///
+				"Predictive margins with 95% CIs" ///
+				" " ///
+				"Education level by grade;"					///
+				"Primary education (Under 5th standard)"	///
+				"Secondary education (under 9th standard)"		///
+				"Higher education (till pass matriculation exam)", size(vsmall) span)
+	
+	//graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Combined.png", replace
 	
 	
 	****************************************************************************

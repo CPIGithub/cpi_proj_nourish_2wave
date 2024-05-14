@@ -1054,8 +1054,25 @@ do "$do/00_dir_setting.do"
            ylab(,angle(0) nogrid) ///
            title(, justification(left) color(black) span pos(11)) ///
            subtitle(, justification(left) color(black))
-		 
+		   
+    global  graph_opts ///
+            title(, justification(left) ///
+            color(black) span pos(11)) ///
+            graphregion(color(white)) ///
+            ylab(,angle(0) nogrid) ///
+            xtit(,placement(left) justification(left)) ///
+            yscale(noline) xscale(noline) ///
+            legend(region(lc(none) fc(none)))
+
+	lab def resp_highedu 1"Illiterate" 2"Primary" 3"Secondary" 4"Higher"
+	lab val resp_highedu resp_highedu
+	
+	
 	// ebf
+	
+	global  pct `" 0 "0%" .15 "15%" .3 "30%" .45 "45%" .6 "60%" .75 "75%" "'
+	
+	/*
 	gen ebf_pct = ebf * 100
 	
 	graph bar 	ebf_pct [aweight = weight_final], over(NationalQuintile) ///
@@ -1069,8 +1086,24 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_by_Wealth.png", replace
+	*/
+	svy: logistic ebf i.NationalQuintile 
+	margins , over(NationalQuintile)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("% of HH with U5 Children", size(small) height(-6)) ///
+		title("Marginal Effect of Wealth Quintile", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+		name(EBF_WQ, replace)
 
-	
+
+	/*
 	graph bar 	ebf_pct [aweight = weight_final], over(resp_highedu) ///
 				${graph_opts1} ///
 				blabel(bar, format(%9.1f)) ///
@@ -1082,8 +1115,24 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_by_Edu.png", replace
+	*/
 	
+	svy: logistic ebf i.resp_highedu 
+	margins , over(resp_highedu)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("", size(small) height(-6)) ///
+		title("Marginal Effect of Respondent's Education", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+	name(EBF_EDU, replace)
 	
+	/*
 	graph bar 	ebf_pct [aweight = weight_final], over(wempo_category) ///
 				${graph_opts1} ///
 				blabel(bar, format(%9.1f)) ///
@@ -1095,9 +1144,42 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_by_WomenEmpowerment.png", replace
-	
+	*/
 
+	svy: logistic ebf i.wempo_category 
+	margins , over(wempo_category)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("", size(small) height(-6)) ///
+		title("Marginal Effect of Women Empowerment", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+	name(EBF_WE, replace)  
+	
+	graph 	combine EBF_WQ EBF_EDU EBF_WE, cols(3) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Predicted Probability of Exclusively Breastfed Children", 								///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note("Note"											///
+				"Predictive margins with 95% CIs" ///
+				" " ///
+				"Education level by grade;"					///
+				"Primary education (Under 5th standard)"	///
+				"Secondary education (under 9th standard)"		///
+				"Higher education (till pass matriculation exam)", size(vsmall) span)
+	
+	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_Combined.png", replace
+	
+	
 	// mdd
+	global  pct `" 0 "0%" .2 "20%" .4 "40%" .6 "60%" .8 "80%" "'
+	
+	/*
 	gen mdd_pct = mdd * 100
 	
 	graph bar 	mdd_pct [aweight = weight_final], over(NationalQuintile) ///
@@ -1111,8 +1193,24 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_by_Wealth.png", replace
-
+	*/
 	
+	svy: logistic mdd i.NationalQuintile 
+	margins , over(NationalQuintile)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("% of HH with U5 Children", size(small) height(-6)) ///
+		title("Marginal Effect of Wealth Quintile", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+		name(MDD_WQ, replace)
+		
+	/*
 	graph bar 	mdd_pct [aweight = weight_final], over(resp_highedu) ///
 				${graph_opts1} ///
 				blabel(bar, format(%9.1f)) ///
@@ -1124,8 +1222,25 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_by_Edu.png", replace
+	*/
+
+	svy: logistic mdd i.resp_highedu 
+	margins , over(resp_highedu)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("", size(small) height(-6)) ///
+		title("Marginal Effect of Respondent's Education", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+	name(MDD_EDU, replace)
 	
 	
+	/*
 	graph bar 	mdd_pct [aweight = weight_final], over(wempo_category) ///
 				${graph_opts1} ///
 				blabel(bar, format(%9.1f)) ///
@@ -1137,9 +1252,40 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_by_WomenEmpowerment.png", replace
+	*/
+	svy: logistic mdd i.wempo_category 
+	margins , over(wempo_category)
+	marginsplot, ///
+		${graph_opts1} ///
+		ylab(${pct}, labsize(small)) ///
+		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
+		xtitle("") ///
+		ytitle("", size(small) height(-6)) ///
+		title("Marginal Effect of Women Empowerment", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+		plotregion(fcolor(white)) 														///
+		graphregion(fcolor(white)) ///
+		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
+	name(MDD_WE, replace)  
+	
+	graph 	combine MDD_WQ MDD_EDU MDD_WE, cols(3) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Predicted Probability of Children Met Minimum Dietary Diversity", 								///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note("Note"											///
+				"Predictive margins with 95% CIs" ///
+				" " ///
+				"Education level by grade;"					///
+				"Primary education (Under 5th standard)"	///
+				"Secondary education (under 9th standard)"		///
+				"Higher education (till pass matriculation exam)", size(vsmall) span)
+	
+	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_Combined.png", replace
 	
 
 	// mmf
+	
+	/*
 	gen mmf_pct = mmf * 100
 	
 	graph bar 	mmf_pct [aweight = weight_final], over(NationalQuintile) ///
@@ -1153,8 +1299,10 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/04_MMF_by_Wealth.png", replace
-
+	*/ 
 	
+	
+	/*
 	graph bar 	mmf_pct [aweight = weight_final], over(resp_highedu) ///
 				${graph_opts1} ///
 				blabel(bar, format(%9.1f)) ///
@@ -1166,8 +1314,10 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/04_MMF_by_Edu.png", replace
+	*/
 	
 	
+	/*
 	graph bar 	mmf_pct [aweight = weight_final], over(wempo_category) ///
 				${graph_opts1} ///
 				blabel(bar, format(%9.1f)) ///
@@ -1179,7 +1329,9 @@ do "$do/00_dir_setting.do"
 				note(	"", size(vsmall) span)
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/04_MMF_by_WomenEmpowerment.png", replace
+	*/ 
 	
+	/*
 	// mdd
 	gen mad_pct = mad * 100
 	
@@ -1221,7 +1373,7 @@ do "$do/00_dir_setting.do"
 				
 	graph export "$plots/PN_Paper_Child_Nutrition/05_MAD_by_WomenEmpowerment.png", replace
 	
-	
+	*/
 	
 	****************************************************************************
 	* Child Health Data *
