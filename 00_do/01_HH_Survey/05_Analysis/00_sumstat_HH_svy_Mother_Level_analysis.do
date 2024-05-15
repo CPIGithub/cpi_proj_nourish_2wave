@@ -567,6 +567,7 @@ do "$do/00_dir_setting.do"
 	svy: logistic mddw_yes i.NationalQuintile 
 	margins , over(NationalQuintile)
 	marginsplot, ///
+		recast(scatter) /// 
 		${graph_opts1} ///
 		ylab(${pct}, labsize(small)) ///
 		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
@@ -578,7 +579,23 @@ do "$do/00_dir_setting.do"
 		graphregion(fcolor(white)) ///
 		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
 		name(MDDW_WQ, replace)
-	
+
+	lowess 	mddw_yes NationalScore, ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(0.0 "0.0" 0.2 "0.2" 0.3680996 "Mean = 0.37" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("Minimum Dietary Diversity for Women Status" "(1 = Met MDD-W, 0 = Not Met)", size(small) height(-6)) ///
+			xtitle("Wealth Quintile National Scores" "EquityTool for MyanmarDHS2015", size(small)) ///
+			title("Across the Wealth Spectrum (LOWESS Smoothing)", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .3680996, lcolor(navy) lpattern(dash)) ///
+			name(MDDW_LW_WQ, replace)
+
+			
 	/*
 	graph bar 	mddw_yes_pct [aweight = weight_final], over(resp_highedu) ///
 				${graph_opts1} ///
@@ -596,6 +613,7 @@ do "$do/00_dir_setting.do"
 	svy: logistic mddw_yes i.resp_highedu 
 	margins , over(resp_highedu)
 	marginsplot, ///
+		recast(scatter) /// 
 		${graph_opts1} ///
 		ylab(${pct}, labsize(small)) ///
 		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
@@ -626,6 +644,7 @@ do "$do/00_dir_setting.do"
 	svy: logistic mddw_yes i.wempo_category 
 	margins , over(wempo_category)
 	marginsplot, ///
+		recast(scatter) /// 
 		${graph_opts1} ///
 		ylab(${pct}, labsize(small)) ///
 		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
@@ -637,7 +656,23 @@ do "$do/00_dir_setting.do"
 		graphregion(fcolor(white)) ///
 		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
 	name(MDDW_WE, replace)  
-	
+
+	lowess 	mddw_yes wempo_index, ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(0.0 "0.0" 0.2 "0.2" 0.3680996 "Mean = 0.37" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("", size(small) height(-6)) ///
+			xtitle("Women Empowerment Index (ICW-index)" "< 0: less empower, = 0: neutral, > 0: more empower", size(small)) ///
+			title("Across the Women Empowerment Spectrum (LOWESS Smoothing)", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .3680996, lcolor(navy) lpattern(dash)) ///
+			name(MDDW_LW_WE, replace)
+
+			
 	graph 	combine MDDW_WQ MDDW_EDU MDDW_WE, cols(3) ///
 			graphregion(color(white)) plotregion(color(white)) ///
 			title("Predicted Probability of Mothers Met Minimum Dietary Diversity", 								///
@@ -652,7 +687,16 @@ do "$do/00_dir_setting.do"
 	
 	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Combined.png", replace	
 
+	graph 	combine MDDW_LW_WQ MDDW_LW_WE, cols(2) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Minimum Dietary Diversity for Women of U2 Mothers", ///
+			justification(left) color(black) span pos(11) size(small)) 
+
+	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Lowess_Combined.png", replace
+
 	
+	
+	/*
 	graph 	combine FIES_WQ FIES_EDU FIES_WE ///
 					EBF_WQ EBF_EDU EBF_WE ///
 					MDD_WQ MDD_EDU MDD_WE ///
@@ -669,7 +713,7 @@ do "$do/00_dir_setting.do"
 				"Higher education (till pass matriculation exam)", size(vsmall) span)
 	
 	//graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Combined.png", replace
-	
+	*/
 	
 	****************************************************************************
 	* Mom Health Module *

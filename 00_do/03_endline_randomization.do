@@ -18,6 +18,9 @@ do "$do/00_dir_setting.do"
 ********************************************************************************
 * IP villages *
 ********************************************************************************
+* prepare tempfile for stratum 1
+tempfile stratum1
+save `stratum1', emptyok 
 
 **  feasibility first wave ** 
 import excel 	using "$sample/01_village_profile/PN_Coverage_List_2024_accessiblityinfo.xlsx", ///
@@ -91,7 +94,7 @@ gen rnd_num = runiform()
 sort org_name rnd_num
 bysort org_name: gen rdm_order = _n 
 
-bysort org_name: gen cluster_cat = (rdm_order <= round(_N/5.35, 1)) // get 30 clusters as priority and other as replacement 
+bysort org_name: gen cluster_cat = (rdm_order <= round(_N/7.9, 1)) // get 30 clusters as priority and other as replacement 
 lab def cluster_cat 1"priority cluster" 0"reserved cluster"
 lab val cluster_cat cluster_cat
 tab cluster_cat org_name, m
@@ -104,6 +107,7 @@ order cluster_cat cluster_order, after(org_name)
 lab var cluster_cat 	"Cluster category"
 lab var cluster_order 	"Cluster selection order (random assignment)"
 
+sort org_name cluster_cat cluster_order
 
 sum u5_pop, d // average U5 pop: 68 per village << need to check
 
@@ -118,7 +122,7 @@ lab val sample_check sample_check
 tab sample_check, m 
 */
 
-gsort org_name - cluster_cat
+// gsort org_name - cluster_cat
 
 export excel using "$result/Endline_sample_village_list.xlsx", ///
 					sheet("stratum_2", replace) firstrow(varlabels) 
@@ -134,73 +138,91 @@ restore
 ********************************************************************************
 * SAMPLING - stratum - 1: Accessible villages *
 ********************************************************************************
-/* need to update with final sample size collection 
-di 5 * 59 // sample size from stratum 2 
-di 788 - (5 * 59) // required sample for stratum 1 
-di 15 * 34
-*/
+* need to update with final sample size collection 
+di 14 * 30 // sample size from stratum 2 
+di 627 - (14 * 30) // required sample for stratum 1 
+di 14 * 15
 
-preserve 
-keep if stratum == 1
-
-sum u5_pop, d // average U2 pop: 83 per village << need to check 
-
-// 30 clusters and xx HH per cluster 
-
-set seed 234
-
-samplepps pps_cluster, size(pop_tot) n(30) withrepl // add additional cluster to save sample size from rounding work
-
-tab pps_cluster, m
+// 15 clusters and 14 HH per cluster 
 
 
-** setting priority cluster and reserve cluster 
-gen cluster_cat = (pps_cluster > 0)
-lab def cluster_cat 1"priority cluster" 0"reserved cluster"
-lab val cluster_cat cluster_cat
-tab cluster_cat org_name, m
+tab org_name if stratum == 1
 
-set seed 234
-gen rnd_num = runiform() if cluster_cat == 0
 
-sort org_name cluster_cat rnd_num
-bysort org_name cluster_cat: gen cluster_order = _n if cluster_cat == 0
+levelsof org_name, local(orgs)
 
-drop rnd_num 
+foreach org in `orgs' {
+    
+	preserve 
 
-order cluster_cat cluster_order, after(org_name)
-lab var cluster_cat 	"Cluster category"
-lab var cluster_order 	"Cluster selection order (random assignment)"
+		keep if stratum == 1 & org_name == "`org'"
 
-tab cluster_cat, m 
-tab cluster_order if cluster_cat == 0, m 
+		local cluster_num = round(15 * (_N / 236), 1)
 
-sort org_name cluster_cat cluster_order
+		sum u5_pop, d // average U2 pop: 83 per village << need to check 
 
-// keep if pps_cluster != 0 
+		set seed 443332
 
-rename pps_cluster num_cluster
-/*
-gen vill_samplesize = (num_cluster * 10)
+		samplepps pps_cluster, size(pop_tot) n(`cluster_num') withrepl // add additional cluster to save sample size from rounding work
 
-gen sample_check = (u5_pop >= vill_samplesize)
-lab def sample_check 1"have enough U5 sample size" 0"not enough U5 sample size"
-lab val sample_check sample_check
-tab sample_check, m 
+		tab pps_cluster, m
 
-gsort org_name -cluster_cat
-*/
 
+		** setting priority cluster and reserve cluster 
+		gen cluster_cat = (pps_cluster > 0)
+		lab def cluster_cat 1"priority cluster" 0"reserved cluster"
+		lab val cluster_cat cluster_cat
+		tab cluster_cat org_name, m
+
+		set seed 234
+		gen rnd_num = runiform() if cluster_cat == 0
+
+		sort org_name cluster_cat rnd_num
+		bysort org_name cluster_cat: gen cluster_order = _n if cluster_cat == 0
+
+		drop rnd_num 
+
+		order cluster_cat cluster_order, after(org_name)
+		lab var cluster_cat 	"Cluster category"
+		lab var cluster_order 	"Cluster selection order (random assignment)"
+
+		tab cluster_cat, m 
+		tab cluster_order if cluster_cat == 0, m 
+
+		sort org_name cluster_cat cluster_order
+
+		// keep if pps_cluster != 0 
+
+		rename pps_cluster num_cluster
+		/*
+		gen vill_samplesize = (num_cluster * 10)
+
+		gen sample_check = (u5_pop >= vill_samplesize)
+		lab def sample_check 1"have enough U5 sample size" 0"not enough U5 sample size"
+		lab val sample_check sample_check
+		tab sample_check, m 
+
+		gsort org_name -cluster_cat
+		*/
+
+		* save as tempfile 
+		append using `stratum1' 
+		save `stratum1', replace 
+
+	restore 
+
+}
+
+clear 
+
+* export as excel file 
+use `stratum1', clear 
 
 export excel using "$result/Endline_sample_village_list.xlsx", sheet("stratum_1", replace) firstrow(varlabels) 
 
-* save as tempfile 
-tempfile stratum1 
-save `stratum1', replace 
-
-restore 
-
 clear 
+
+
 
 ** export for preloaded dataset **
 use `stratum1', clear 

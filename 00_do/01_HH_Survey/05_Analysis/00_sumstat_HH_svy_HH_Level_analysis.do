@@ -907,12 +907,14 @@ do "$do/00_dir_setting.do"
 				lcolor(white) ///
 				note(	"HH Food Insecurity (FIES raw score >= 4)", size(vsmall) span) 
 				
-	
-	lowess 	fies_insecurity NationalQuintile, ///
+	svy: tab fies_insecurity
+	lowess 	fies_insecurity NationalScore, ///
 			lcolor(red) lwidth(medium) ///
-			legend(label(1 "Lowess Curve"))
+			legend(label(1 "Lowess Curve")) ///
+			${graph_opts1} ///
+			yline( .2347845, 	lcolor(navy) 		lpattern(dash))
 			
-	twoway scatter fies_insecurity NationalQuintile, ///
+	twoway scatter fies_insecurity NationalScore, ///
 			mcolor(blue) msize(small) ///
 			legend(off)		
 	
@@ -927,6 +929,7 @@ do "$do/00_dir_setting.do"
 	svy: logistic fies_insecurity i.NationalQuintile 
 	margins [aweight = weight_final], over(NationalQuintile)
 	marginsplot, ///
+		recast(scatter) ///
 		${graph_opts1} ///
 		ylab(${pct}, labsize(small)) ///
 		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
@@ -938,7 +941,25 @@ do "$do/00_dir_setting.do"
 		graphregion(fcolor(white)) ///
 		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
 		name(FIES_WQ, replace)
-				
+	
+	
+	lowess 	fies_insecurity NationalScore, ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(0.0 "0.0" 0.2 "0.2" 0.2347845 "Mean = 0.24" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("Food Insecurity Status" "(1 = Insecure, 0 = Secure)", size(small) height(-6)) ///
+			xtitle("Wealth Quintile National Scores" "EquityTool for MyanmarDHS2015", size(small)) ///
+			title("Across the Wealth Spectrum (LOWESS Smoothing)", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .2347845, lcolor(navy) lpattern(dash)) ///
+			name(FIES_LW_WQ, replace)
+			
+			
+			
 	//graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_Margin_by_Wealth.png", replace
 
 	lab def resp_highedu 1"Illiterate" 2"Primary" 3"Secondary" 4"Higher"
@@ -947,6 +968,7 @@ do "$do/00_dir_setting.do"
 	svy: logistic fies_insecurity i.resp_highedu 
 	margins , over(resp_highedu)
 	marginsplot, ///
+		recast(scatter) /// 
 		${graph_opts1} ///
 		ylab(${pct}, labsize(small)) ///
 		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
@@ -965,6 +987,7 @@ do "$do/00_dir_setting.do"
 	svy: logistic fies_insecurity i.wempo_category 
 	margins , over(wempo_category)
 	marginsplot, ///
+		recast(scatter) /// 
 		${graph_opts1} ///
 		ylab(${pct}, labsize(small)) ///
 		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
@@ -979,7 +1002,22 @@ do "$do/00_dir_setting.do"
 	
 	//graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_Margin_by_WomenEmpowerment.png", replace
 	
-	
+	lowess 	fies_insecurity wempo_index, ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(0.0 "0.0" 0.2 "0.2" 0.2347845 "Mean = 0.24" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("", size(small) height(-6)) ///
+			xtitle("Women Empowerment Index (ICW-index)" "< 0: less empower, = 0: neutral, > 0: more empower", size(small)) ///
+			title("Across the Women Empowerment Spectrum (LOWESS Smoothing)", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .2347845, lcolor(navy) lpattern(dash)) ///
+			name(FIES_LW_WE, replace)
+			
+			
 	graph 	combine FIES_WQ FIES_EDU FIES_WE, cols(3) ///
 			graphregion(color(white)) plotregion(color(white)) ///
 			title("Predicted Probability of U5 HH Experienced Food Insecurity", ///
@@ -996,6 +1034,14 @@ do "$do/00_dir_setting.do"
 
 	graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_Combined.png", replace
 
+	graph 	combine FIES_LW_WQ FIES_LW_WE, cols(2) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Food Insecurity Gradient of U5 HH", ///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note("Note"											///
+				"HH Food Insecurity (FIES raw score >= 4)", size(vsmall) span)
+
+	graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_Lowess_Combined.png", replace
 	
 	/*
 	glcurve fies_insecurity, gl(gl) p(p) lorenz // nograph
