@@ -579,23 +579,55 @@ do "$do/00_dir_setting.do"
 		graphregion(fcolor(white)) ///
 		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
 		name(MDDW_WQ, replace)
-
+			
 	lowess 	mddw_yes NationalScore, ///
 			adjust ///
 			lcolor(red) lwidth(medium) ///
 			${graph_opts1} ///
+			mcolor(gs16) ///
 			ylabel(0.0 "0.0" 0.2 "0.2" 0.3680996 "Mean = 0.37" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
 			xlabel(, format(%13.1fc) labsize(small)) ///
-			ytitle("Minimum Dietary Diversity for Women Status" "(1 = Met MDD-W, 0 = Not Met)", size(small) height(-6)) ///
-			xtitle("Wealth Quintile National Scores" "EquityTool for MyanmarDHS2015", size(small)) ///
-			title("Across the Wealth Spectrum (LOWESS Smoothing)", 		///
+			ytitle("Minimum Dietary Diversity for Women", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Wealth Quintile National Scores", size(small)) ///
+			title("LOWESS Smoothing: Mean adjusted smooth", 		///
 				justification(left) color(black) span pos(11) size(small)) 							///
 			plotregion(fcolor(white)) 														///
 			graphregion(fcolor(white)) ///
 			legend(off) ///
 			yline( .3680996, lcolor(navy) lpattern(dash)) ///
-			name(MDDW_LW_WQ, replace)
+			name(MDDW_LW_MEAN_WQ, replace)
 
+	lowess 	mddw_yes NationalScore, ///
+			logit ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(-2 "-2" -1 "-1" 0 "0" 0.3680996 "Mean = 0.37" 1 "1" 2 "2", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Wealth Quintile National Scores", size(small)) ///
+			title("LOWESS Smoothing: Logit transformed smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .3680996, lcolor(navy) lpattern(dash)) ///
+			name(MDDW_LW_LOGIT_WQ, replace)
+			
+	graph 	combine MDDW_LW_MEAN_WQ MDDW_LW_LOGIT_WQ, cols(2) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Minimum Dietary Diversity for Women Across the Wealth Spectrum" "U2 Mothers", ///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note(	"Note:" ///
+					" " 	///
+					"Minimum Dietary Diversity for Women: 1 = Met MDD-W, 0 = Not Met"	///
+					"Wealth Quintile National Scores: EquityTool for Myanmar DHS 2015", size(vsmall) span)
+
+	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_WealthQ_Lowess_Compare.png", replace
+	
 			
 	/*
 	graph bar 	mddw_yes_pct [aweight = weight_final], over(resp_highedu) ///
@@ -657,7 +689,7 @@ do "$do/00_dir_setting.do"
 		graphregion(fcolor(white)) ///
 		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
 	name(MDDW_WE, replace)  
-
+			
 	lowess 	mddw_yes wempo_index, ///
 			adjust ///
 			lcolor(red) lwidth(medium) ///
@@ -674,7 +706,55 @@ do "$do/00_dir_setting.do"
 			yline( .3680996, lcolor(navy) lpattern(dash)) ///
 			name(MDDW_LW_WE, replace)
 
+	lowess 	mddw_yes wempo_index, ///
+			adjust ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			mcolor(gs16) ///
+			ylabel(0.0 "0.0" 0.2 "0.2" 0.3680996 "Mean = 0.37" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("Minimum Dietary Diversity for Women", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Women Empowerment Index (ICW-index)", size(small)) ///
+			title("LOWESS Smoothing: Mean adjusted smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .3680996, lcolor(navy) lpattern(dash)) ///
+			name(MDDW_LW_MEAN_WE, replace)
+
+	lowess 	mddw_yes wempo_index, ///
+			logit ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(-1 "-1" -0.5 "-0.5" 0 "0" 0.3680996 "Mean = 0.37" 0.5 "0.5" 1 "1", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Women Empowerment Index (ICW-index)", size(small)) ///
+			title("LOWESS Smoothing: Logit transformed smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .3680996, lcolor(navy) lpattern(dash)) ///
+			name(MDDW_LW_LOGIT_WE, replace)
 			
+	graph 	combine MDDW_LW_MEAN_WE MDDW_LW_LOGIT_WE, cols(2) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Minimum Dietary Diversity for Women Across the Women Empowerment Spectrum" "U2 Mothers", ///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note(	"Note:" ///
+					" " 	///
+					"Minimum Dietary Diversity for Women: 1 = Met MDD-W, 0 = Not Met"	///
+					"Women Empowerment Index (ICW-index): < 0: less empower, = 0: neutral, > 0: more empower", size(vsmall) span)
+
+	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_WEmpower_Lowess_Compare.png", replace
+	
+	
 	graph 	combine MDDW_WQ MDDW_EDU MDDW_WE, cols(3) ///
 			graphregion(color(white)) plotregion(color(white)) ///
 			title("Predicted Probability of Mothers Met Minimum Dietary Diversity", 								///
@@ -689,13 +769,14 @@ do "$do/00_dir_setting.do"
 	
 	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Combined.png", replace	
 
+	/*
 	graph 	combine MDDW_LW_WQ MDDW_LW_WE, cols(2) ///
 			graphregion(color(white)) plotregion(color(white)) ///
 			title("Minimum Dietary Diversity for Women of U2 Mothers", ///
 			justification(left) color(black) span pos(11) size(small)) 
 
 	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Lowess_Combined.png", replace
-
+	*/
 	
 	
 	/*

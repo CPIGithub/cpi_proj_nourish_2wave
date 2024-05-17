@@ -1103,6 +1103,7 @@ do "$do/00_dir_setting.do"
 		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
 		name(EBF_WQ, replace)
 
+
 	lowess 	ebf NationalScore, ///
 			adjust ///
 			lcolor(red) lwidth(medium) ///
@@ -1119,6 +1120,56 @@ do "$do/00_dir_setting.do"
 			yline( .312499, lcolor(navy) lpattern(dash)) ///
 			name(EBF_LW_WQ, replace)
 
+	lowess 	ebf NationalScore, ///
+			adjust ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			mcolor(gs16) ///
+			ylabel(0.0 "0.0" 0.2 "0.2" 0.312499 "Mean = 0.31" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("Exclusively Breastfed Children", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Wealth Quintile National Scores", size(small)) ///
+			title("LOWESS Smoothing: Mean adjusted smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .312499, lcolor(navy) lpattern(dash)) ///
+			name(EBF_LW_MEAN_WQ, replace)
+
+	lowess 	ebf NationalScore, ///
+			logit ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(-3 "-3" -2 "-2" -1 "-1" 0 "0" 0.312499 "Mean = 0.31" 1 "1", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Wealth Quintile National Scores", size(small)) ///
+			title("LOWESS Smoothing: Logit transformed smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .312499, lcolor(navy) lpattern(dash)) ///
+			name(EBF_LW_LOGIT_WQ, replace)
+			
+	graph 	combine EBF_LW_MEAN_WQ EBF_LW_LOGIT_WQ, cols(2) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Exclusively Breastfed Children Across the Wealth Spectrum" "0 - 5 months Children", ///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note(	"Note:" ///
+					" " 	///
+					"Exclusively Breastfed: 1 = Yes, 0 = No"	///
+					"Wealth Quintile National Scores: EquityTool for Myanmar DHS 2015", size(vsmall) span)
+
+	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_WealthQ_Lowess_Compare.png", replace	
+	
+
+	
 	/*
 	graph bar 	ebf_pct [aweight = weight_final], over(resp_highedu) ///
 				${graph_opts1} ///
@@ -1179,7 +1230,7 @@ do "$do/00_dir_setting.do"
 		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
 	name(EBF_WE, replace)  
 	
-
+			
 	lowess 	ebf wempo_index, ///
 			adjust ///
 			lcolor(red) lwidth(medium) ///
@@ -1195,6 +1246,55 @@ do "$do/00_dir_setting.do"
 			legend(off) ///
 			yline( .312499, lcolor(navy) lpattern(dash)) ///
 			name(EBF_LW_WE, replace)	
+
+	lowess 	ebf wempo_index, ///
+			adjust ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			mcolor(gs16) ///
+			ylabel(0.0 "0.0" 0.2 "0.2" 0.312499 "Mean = 0.31" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("Exclusively Breastfed Children", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Wealth Quintile National Scores", size(small)) ///
+			title("LOWESS Smoothing: Mean adjusted smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .312499, lcolor(navy) lpattern(dash)) ///
+			name(EBF_LW_MEAN_WE, replace)
+
+	lowess 	ebf wempo_index, ///
+			logit ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(-3 "-3" -2 "-2" -1 "-1" 0 "0" 0.312499 "Mean = 0.31" 1 "1", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Wealth Quintile National Scores", size(small)) ///
+			title("LOWESS Smoothing: Logit transformed smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .312499, lcolor(navy) lpattern(dash)) ///
+			name(EBF_LW_LOGIT_WE, replace)
+			
+	graph 	combine EBF_LW_MEAN_WE EBF_LW_LOGIT_WE, cols(2) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Exclusively Breastfed Children Across the Women Empowerment Spectrum" "0 - 5 months Children", ///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note(	"Note:" ///
+					" " 	///
+					"Exclusively Breastfed: 1 = Yes, 0 = No"	///
+					"Women Empowerment Index (ICW-index): < 0: less empower, = 0: neutral, > 0: more empower", size(vsmall) span)
+
+	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_WEmpower_Lowess_Compare.png", replace
+	
 	
 	graph 	combine EBF_WQ EBF_EDU EBF_WE, cols(3) ///
 			graphregion(color(white)) plotregion(color(white)) ///
@@ -1210,13 +1310,14 @@ do "$do/00_dir_setting.do"
 	
 	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_Combined.png", replace
 	
+	/*
 	graph 	combine EBF_LW_WQ EBF_LW_WE, cols(2) ///
 			graphregion(color(white)) plotregion(color(white)) ///
 			title("Exclusively Breastfed Children", ///
 			justification(left) color(black) span pos(11) size(small)) 
 
 	graph export "$plots/PN_Paper_Child_Nutrition/02_EBF_Lowess_Combined.png", replace
-	
+	*/
 	
 	// mdd
 	global  pct `" 0 "0%" .2 "20%" .4 "40%" .6 "60%" .8 "80%" "'
@@ -1270,6 +1371,55 @@ do "$do/00_dir_setting.do"
 			name(MDD_LW_WQ, replace)
 
 			
+	lowess 	mdd NationalScore, ///
+			adjust ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			mcolor(gs16) ///
+			ylabel(0.0 "0.0" 0.2 "0.2" 0.3141424 "Mean = 0.31" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("Children Meeting Minimum Dietary Diversity", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Wealth Quintile National Scores", size(small)) ///
+			title("LOWESS Smoothing: Mean adjusted smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .3141424, lcolor(navy) lpattern(dash)) ///
+			name(MDD_LW_MEAN_WQ, replace)
+
+	lowess 	mdd NationalScore, ///
+			logit ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(-2 "-2" -1 "-1" 0 "0" 0.3141424 "Mean = 0.31" 1 "1" 2 "2", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Wealth Quintile National Scores", size(small)) ///
+			title("LOWESS Smoothing: Logit transformed smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .3141424, lcolor(navy) lpattern(dash)) ///
+			name(MDD_LW_LOGIT_WQ, replace)
+			
+	graph 	combine MDD_LW_MEAN_WQ MDD_LW_LOGIT_WQ, cols(2) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Children Meeting Minimum Dietary Diversity Across the Wealth Spectrum" "6 - 23 months Children", ///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note(	"Note:" ///
+					" " 	///
+					"Children Met Minimum Dietary Diversity (DD >= 5): 1 = Yes, 0 = No"	///
+					"Wealth Quintile National Scores: EquityTool for Myanmar DHS 2015", size(vsmall) span)
+
+	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_WealthQ_Lowess_Compare.png", replace	
+	
+	
 	/*
 	graph bar 	mdd_pct [aweight = weight_final], over(resp_highedu) ///
 				${graph_opts1} ///
@@ -1347,6 +1497,55 @@ do "$do/00_dir_setting.do"
 			name(MDD_LW_WE, replace)	
 
 			
+	lowess 	mdd wempo_index, ///
+			adjust ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			mcolor(gs16) ///
+			ylabel(0.0 "0.0" 0.2 "0.2" 0.3141424 "Mean = 0.31" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("Children Meeting Minimum Dietary Diversity", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Women Empowerment Index (ICW-index)", size(small)) ///
+			title("LOWESS Smoothing: Mean adjusted smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .3141424, lcolor(navy) lpattern(dash)) ///
+			name(MDD_LW_MEAN_WE, replace)
+
+	lowess 	mdd wempo_index, ///
+			logit ///
+			lcolor(red) lwidth(medium) ///
+			${graph_opts1} ///
+			ylabel(-1 "-1" -0.5 "-0.5" 0 "0" 0.3141424 "Mean = 0.31" 0.5 "0.5" 1 "1", format(%13.1fc) labsize(small)) ///
+			xlabel(, format(%13.1fc) labsize(small)) ///
+			ytitle("", size(small) height(-6)) ///
+			t1title("", size(small)) ///
+			subtitle("", size(small)) ///
+			xtitle("Wealth Quintile National Scores", size(small)) ///
+			title("LOWESS Smoothing: Logit transformed smooth", 		///
+				justification(left) color(black) span pos(11) size(small)) 							///
+			plotregion(fcolor(white)) 														///
+			graphregion(fcolor(white)) ///
+			legend(off) ///
+			yline( .3141424, lcolor(navy) lpattern(dash)) ///
+			name(MDD_LW_LOGIT_WE, replace)
+			
+	graph 	combine MDD_LW_MEAN_WE MDD_LW_LOGIT_WE, cols(2) ///
+			graphregion(color(white)) plotregion(color(white)) ///
+			title("Children Meeting Minimum Dietary Diversity Across the Women Empowerment Spectrum" "6 - 23 months Children", ///
+			justification(left) color(black) span pos(11) size(small)) ///
+			note(	"Note:" ///
+					" " 	///
+					"Children Met Minimum Dietary Diversity (DD >= 5): 1 = Yes, 0 = No"	///
+					"Women Empowerment Index (ICW-index): < 0: less empower, = 0: neutral, > 0: more empower", size(vsmall) span)
+
+	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_WEmpower_Lowess_Compare.png", replace	
+	
+	
 	graph 	combine MDD_WQ MDD_EDU MDD_WE, cols(3) ///
 			graphregion(color(white)) plotregion(color(white)) ///
 			title("Predicted Probability of Children Met Minimum Dietary Diversity", 								///
@@ -1361,13 +1560,14 @@ do "$do/00_dir_setting.do"
 	
 	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_Combined.png", replace
 	
+	/*
 	graph 	combine MDD_LW_WQ MDD_LW_WE, cols(2) ///
 			graphregion(color(white)) plotregion(color(white)) ///
 			title("Children Met Minimum Dietary Diversity", ///
 			justification(left) color(black) span pos(11) size(small)) 
 
 	graph export "$plots/PN_Paper_Child_Nutrition/03_MDD_Lowess_Combined.png", replace
-
+	*/
 	
 	// mmf
 	
