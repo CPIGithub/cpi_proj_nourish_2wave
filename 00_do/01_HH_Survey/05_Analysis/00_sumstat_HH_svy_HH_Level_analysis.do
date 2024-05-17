@@ -944,6 +944,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	lowess 	fies_insecurity NationalScore, ///
+			adjust ///
 			lcolor(red) lwidth(medium) ///
 			${graph_opts1} ///
 			ylabel(0.0 "0.0" 0.2 "0.2" 0.2347845 "Mean = 0.24" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
@@ -1003,6 +1004,7 @@ do "$do/00_dir_setting.do"
 	//graph export "$plots/PN_Paper_Child_Nutrition/01_FIES_Margin_by_WomenEmpowerment.png", replace
 	
 	lowess 	fies_insecurity wempo_index, ///
+			adjust ///
 			lcolor(red) lwidth(medium) ///
 			${graph_opts1} ///
 			ylabel(0.0 "0.0" 0.2 "0.2" 0.2347845 "Mean = 0.24" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///

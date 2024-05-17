@@ -581,6 +581,7 @@ do "$do/00_dir_setting.do"
 		name(MDDW_WQ, replace)
 
 	lowess 	mddw_yes NationalScore, ///
+			adjust ///
 			lcolor(red) lwidth(medium) ///
 			${graph_opts1} ///
 			ylabel(0.0 "0.0" 0.2 "0.2" 0.3680996 "Mean = 0.37" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
@@ -658,6 +659,7 @@ do "$do/00_dir_setting.do"
 	name(MDDW_WE, replace)  
 
 	lowess 	mddw_yes wempo_index, ///
+			adjust ///
 			lcolor(red) lwidth(medium) ///
 			${graph_opts1} ///
 			ylabel(0.0 "0.0" 0.2 "0.2" 0.3680996 "Mean = 0.37" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///

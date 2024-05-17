@@ -1104,6 +1104,7 @@ do "$do/00_dir_setting.do"
 		name(EBF_WQ, replace)
 
 	lowess 	ebf NationalScore, ///
+			adjust ///
 			lcolor(red) lwidth(medium) ///
 			${graph_opts1} ///
 			ylabel(0.0 "0.0" 0.2 "0.2" 0.312499 "Mean = 0.31" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
@@ -1117,7 +1118,7 @@ do "$do/00_dir_setting.do"
 			legend(off) ///
 			yline( .312499, lcolor(navy) lpattern(dash)) ///
 			name(EBF_LW_WQ, replace)
-			
+
 	/*
 	graph bar 	ebf_pct [aweight = weight_final], over(resp_highedu) ///
 				${graph_opts1} ///
@@ -1180,6 +1181,7 @@ do "$do/00_dir_setting.do"
 	
 
 	lowess 	ebf wempo_index, ///
+			adjust ///
 			lcolor(red) lwidth(medium) ///
 			${graph_opts1} ///
 			ylabel(0.0 "0.0" 0.2 "0.2" 0.312499 "Mean = 0.31" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
@@ -1252,6 +1254,7 @@ do "$do/00_dir_setting.do"
 		name(MDD_WQ, replace)
 
 	lowess 	mdd NationalScore, ///
+			adjust ///
 			lcolor(red) lwidth(medium) ///
 			${graph_opts1} ///
 			ylabel(0.0 "0.0" 0.2 "0.2" 0.3141424 "Mean = 0.31" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
@@ -1328,6 +1331,7 @@ do "$do/00_dir_setting.do"
 	name(MDD_WE, replace)  
 
 	lowess 	mdd wempo_index, ///
+			adjust ///
 			lcolor(red) lwidth(medium) ///
 			${graph_opts1} ///
 			ylabel(0.0 "0.0" 0.2 "0.2" 0.3141424 "Mean = 0.31" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
