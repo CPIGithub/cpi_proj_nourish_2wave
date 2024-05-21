@@ -24,10 +24,10 @@ save `stratum1', emptyok
 
 **  feasibility first wave ** 
 import excel 	using "$sample/01_village_profile/PN_Coverage_List_2024_accessiblityinfo.xlsx", ///
-				sheet("LIFT") cellrange(A3:AQ507) case(lower) clear 
+				sheet("LIFT") cellrange(A3:AR507) case(lower) clear 
 
 * drop un-necessary var
-keep AM-AQ AI-AL B-R
+keep AD AE AM-AQ AI-AL B-R AR
 
 * rename variable 
 rename B	vill_code
@@ -56,8 +56,14 @@ rename AN 	vill_proj_implement
 rename AO 	remark_ips
 rename AP 	remark_cpi
 rename AQ	remark 
+rename AD	vill_accessibility_midterm
+rename AE 	vill_proj_implement_midterm 
+rename AR	new_stratum_2
 
-
+replace vill_proj_implement_midterm = "" if vill_proj_implement_midterm == "-"
+destring vill_proj_implement_midterm, replace 
+replace vill_proj_implement_midterm = vill_proj_implement_midterm * 100 if vill_proj_implement_midterm <= 1
+tab vill_proj_implement_midterm, m 
 tab vill_proj_implement, m 
 
 egen u5_pop = rowtotal(u2_pop u2to5_pop)
@@ -65,17 +71,46 @@ replace u5_pop = .m if mi(u2_pop) & mi(u2to5_pop)
 order u5_pop, after(u2to5_pop)
 tab u5_pop, m 
 
+* Stratum classification 
+gen stratum = (vill_accessibility != "3. neither in person nor phone interviews")
+replace stratum = 2 if stratum == 0
+replace stratum = 2 if new_stratum_2 == 1
+tab stratum, m 
+
+gen stratum_midterm = (vill_accessibility_midterm != "3. neither in person nor phone interviews")
+replace stratum_midterm = 2 if stratum_midterm == 0
+tab stratum_midterm, m 
 
 * drop if there is no project implementation or missing info villages *
 keep if vill_proj_implement != 0 & !mi(vill_proj_implement)
 
 tab vill_proj_implement, m 
-
 tab vill_accessibility, m 
 
-gen stratum = (vill_accessibility != "3. neither in person nor phone interviews")
-replace stratum = 2 if stratum == 0
-tab stratum, m 
+* CHECKING Sampling Frame 
+tab stratum stratum_midterm, m col 
+
+* keep only village with at least SBCC activity implemented
+keep if vill_proj_implement >= 50 &  !mi(vill_proj_implement)
+
+tab vill_proj_implement, m 
+tab vill_accessibility org_name, m 
+
+encode org_name, gen(org_name_cat)
+encode vill_accessibility, gen(vill_accessibility_cat)
+
+* KEHOC and YSDA has village which were not able to conduct field visit 
+tab vill_proj_implement if org_name_cat > 1 & !mi(org_name_cat) & vill_accessibility_cat == 2
+drop if org_name_cat > 1 & !mi(org_name_cat) & vill_accessibility_cat == 2
+
+table vill_proj_implement vill_accessibility_cat org_name_cat , stat(freq)
+
+tab vill_proj_implement, m 
+tab vill_proj_implement org_name_cat, m 
+tab vill_proj_implement stratum, m 
+
+tab vill_proj_implement*, m 
+
 
 ********************************************************************************
 * SAMPLING - stratum - 2: Limited Accessible villages *
