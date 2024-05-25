@@ -16,6 +16,36 @@ Modified by			:
 do "$do/00_dir_setting.do"
 
 ********************************************************************************
+********************************************************************************
+
+* Get midterm data 
+use "$dta/pnourish_respondent_info_final.dta", clear
+
+* Org name - correction 
+replace org_name = "YSDA" if geo_eho_vt_name == "Naung Pa Laing" & geo_eho_vill_name == "Tadar Oo"
+replace org_name = "YSDA" if geo_eho_vt_name == "Yae Kyaw" & geo_eho_vill_name == "Yay Kyaw Gyi"
+replace org_name = "YSDA" if geo_eho_vt_name == "Myaing Ka Lay" & geo_eho_vill_name == "Myaing Kalay Out Ywar"
+
+bysort org_name township_name geo_eho_vill_name: gen mt_survey_per_vill = _N 
+lab var mt_survey_per_vill "# of survey per village (cluster) midterm"
+
+gen midterm_cluster = 1 
+lab var midterm_cluster "Midtern observed cluster (village)"
+
+bysort org_name township_name geo_eho_vill_name: keep if _n == 1
+
+keep	geo_vill org_name township_name geo_eho_vt_name geo_eho_vill_name ///
+		stratum geo_town geo_vt geo_vill ///
+		mt_survey_per_vill midterm_cluster
+		
+distinct township_name geo_eho_vt_name geo_eho_vill_name, joint 
+
+
+tempfile midterm_data
+save `midterm_data', replace 
+
+
+********************************************************************************
 * IP villages *
 ********************************************************************************
 * prepare tempfile for stratum 1
@@ -41,11 +71,11 @@ rename I	township_eho
 rename J	clinic_code 
 rename K	clinic_name 
 rename L	hospital_name
-rename M	vt_eho 
+rename M	geo_eho_vt_name  
 rename N	vt_pcode
 rename O	vill_mimu 
 rename P	vill_mimu_mmr
-rename Q 	vill_eho 
+rename Q 	geo_eho_vill_name 
 rename R	vill_pcode 
 rename AI	hh_tot
 rename AJ	pop_tot 
@@ -60,26 +90,54 @@ rename AD	vill_accessibility_midterm
 rename AE 	vill_proj_implement_midterm 
 rename AR	new_stratum_2
 
+* Matched with midterm data 
+distinct org_name township_name geo_eho_vill_name, joint 
+
+merge 1:1 	org_name township_name geo_eho_vill_name ///
+			using `midterm_data', ///
+			assert(1 3) nogen ///
+			keepusing(mt_survey_per_vill midterm_cluster)
+
 replace vill_proj_implement_midterm = "" if vill_proj_implement_midterm == "-"
 destring vill_proj_implement_midterm, replace 
 replace vill_proj_implement_midterm = vill_proj_implement_midterm * 100 if vill_proj_implement_midterm <= 1
 tab vill_proj_implement_midterm, m 
 tab vill_proj_implement, m 
 
+* check 
+assert vill_proj_implement == vill_proj_implement_midterm if vill_proj_implement == 0
+count if vill_proj_implement != 0 & vill_proj_implement_midterm == 0
+
 egen u5_pop = rowtotal(u2_pop u2to5_pop)
 replace u5_pop = .m if mi(u2_pop) & mi(u2to5_pop)
 order u5_pop, after(u2to5_pop)
 tab u5_pop, m 
 
+encode org_name, gen(org_name_cat)
+encode vill_accessibility, gen(vill_accessibility_cat)
+replace vill_accessibility_midterm = "" if vill_accessibility_midterm == "-"
+encode vill_accessibility_midterm, gen(vill_accessibility_midterm_cat)
+
 * Stratum classification 
+gen stratum_midterm = (vill_accessibility_midterm != "3. neither in person nor phone interviews")
+replace stratum_midterm = 2 if stratum_midterm == 0
+replace stratum_midterm = .m if mi(vill_proj_implement_midterm) | vill_proj_implement_midterm == 0
+tab stratum_midterm, m 
+
+* un-accessible village 
+gen unaccess_vill = (vill_accessibility == "3. neither in person nor phone interviews" &  org_name != "KDHW")
+tab unaccess_vill, m 
+
+tab stratum_midterm unaccess_vill, m 
+
+/*
 gen stratum = (vill_accessibility != "3. neither in person nor phone interviews")
 replace stratum = 2 if stratum == 0
 replace stratum = 2 if new_stratum_2 == 1
+replace stratum = .m if mi(vill_accessibility) | vill_proj_implement == 0
 tab stratum, m 
 
-gen stratum_midterm = (vill_accessibility_midterm != "3. neither in person nor phone interviews")
-replace stratum_midterm = 2 if stratum_midterm == 0
-tab stratum_midterm, m 
+tab stratum_midterm stratum if unaccess_vill != 1, m 
 
 * drop if there is no project implementation or missing info villages *
 keep if vill_proj_implement != 0 & !mi(vill_proj_implement)
@@ -96,9 +154,6 @@ keep if vill_proj_implement >= 50 &  !mi(vill_proj_implement)
 tab vill_proj_implement, m 
 tab vill_accessibility org_name, m 
 
-encode org_name, gen(org_name_cat)
-encode vill_accessibility, gen(vill_accessibility_cat)
-
 * KEHOC and YSDA has village which were not able to conduct field visit 
 tab vill_proj_implement if org_name_cat > 1 & !mi(org_name_cat) & vill_accessibility_cat == 2
 drop if org_name_cat > 1 & !mi(org_name_cat) & vill_accessibility_cat == 2
@@ -108,8 +163,46 @@ table vill_proj_implement vill_accessibility_cat org_name_cat , stat(freq)
 tab vill_proj_implement, m 
 tab vill_proj_implement org_name_cat, m 
 tab vill_proj_implement stratum, m 
+*/
+
+* keep for final sampling frame 
+drop if unaccess_vill == 1 
+drop if vill_proj_implement_midterm == 0 & vill_proj_implement == 0
+
+* stratum - new 27 vill 
+tab stratum_midterm, m 
+
+gen stratum = stratum_midterm
+replace stratum = 1 if (vill_accessibility != "3. neither in person nor phone interviews") & mi(stratum)
+replace stratum = 2 if mi(stratum)
+tab stratum, m 
+
 
 tab vill_proj_implement*, m 
+
+********************************************************************************
+* 5 villages from 27 newly implemented villages *
+********************************************************************************
+
+preserve 
+
+	keep if mi(stratum_midterm) & unaccess_vill == 0 & vill_proj_implement != 0
+	
+	gen rdm_order = _n 
+	
+	bysort org_name: gen cluster_cat = (rdm_order <= round(_N/5, 1)) // get 30 clusters as priority and other as replacement 
+	lab def cluster_cat 1"priority cluster" 0"reserved cluster"
+	lab val cluster_cat cluster_cat
+	tab cluster_cat org_name, m
+
+order cluster_cat , after(org_name)
+sort org_name cluster_cat 
+
+export excel using "$result/Endline_sample_village_list_NEW27vill.xlsx", ///
+					sheet("New_Implemented_Villages", replace) firstrow(varlabels) 
+					
+restore 
+
 
 
 ********************************************************************************
@@ -129,7 +222,7 @@ gen rnd_num = runiform()
 sort org_name rnd_num
 bysort org_name: gen rdm_order = _n 
 
-bysort org_name: gen cluster_cat = (rdm_order <= round(_N/7.9, 1)) // get 30 clusters as priority and other as replacement 
+bysort org_name: gen cluster_cat = (rdm_order <= round(_N/2.8, 1)) // get 30 clusters as priority and other as replacement 
 lab def cluster_cat 1"priority cluster" 0"reserved cluster"
 lab val cluster_cat cluster_cat
 tab cluster_cat org_name, m
@@ -159,7 +252,7 @@ tab sample_check, m
 
 // gsort org_name - cluster_cat
 
-export excel using "$result/Endline_sample_village_list.xlsx", ///
+export excel using "$result/Endline_sample_village_list_NEW27vill.xlsx", ///
 					sheet("stratum_2", replace) firstrow(varlabels) 
 
 * save as tempfile 
@@ -180,9 +273,8 @@ di 14 * 15
 
 // 15 clusters and 14 HH per cluster 
 
-
-tab org_name if stratum == 1
-
+keep if stratum == 1
+tab org_name, m 
 
 levelsof org_name, local(orgs)
 
@@ -192,7 +284,7 @@ foreach org in `orgs' {
 
 		keep if stratum == 1 & org_name == "`org'"
 
-		local cluster_num = round(15 * (_N / 236), 1)
+		local cluster_num = round(15 * (_N / 296), 1)
 
 		sum u5_pop, d // average U2 pop: 83 per village << need to check 
 
@@ -253,7 +345,9 @@ clear
 * export as excel file 
 use `stratum1', clear 
 
-export excel using "$result/Endline_sample_village_list.xlsx", sheet("stratum_1", replace) firstrow(varlabels) 
+keep if !mi(cluster_cat)
+
+export excel using "$result/Endline_sample_village_list_NEW27vill.xlsx", sheet("stratum_1", replace) firstrow(varlabels) 
 
 clear 
 
@@ -270,8 +364,8 @@ replace stratum = 2 if stratum == 0
 
 * generate pseudo code
 preserve
-keep township_pcode vt_eho
-bysort township_pcode vt_eho: keep if _n == 1
+keep township_pcode geo_eho_vt_name
+bysort township_pcode geo_eho_vt_name: keep if _n == 1
 
 gen vt_sir_num = _n + 1000
 
@@ -280,7 +374,7 @@ save `vt_sir_num', replace
 
 restore 
 
-merge m:1 township_pcode vt_eho using `vt_sir_num', keepusing(vt_sir_num)
+merge m:1 township_pcode geo_eho_vt_name using `vt_sir_num', keepusing(vt_sir_num)
 drop _merge 
 
 gen vill_sir_num = _n + 2000
@@ -296,14 +390,14 @@ drop cluster_cat_str vt_sir_num_str
 decode cluster_cat, gen(cluster_cat_str) 
 
 
-order org_name township_name township_pcode  vt_eho vt_sir_num cluster_cat cluster_cat_str vill_eho vill_sir_num
+order org_name township_name township_pcode  geo_eho_vt_name vt_sir_num cluster_cat cluster_cat_str geo_eho_vill_name vill_sir_num
  
 //order org_name township_name townshippcode fieldnamevillagetracteho vt_sir_num cluster_cat cluster_cat_str villagenameeho vill_sir_num
 
-export delimited using "$result/pn_endline_samplelist.csv", nolabel replace  
+export delimited using "$result/pn_endline_samplelist_new27vill.csv", nolabel replace  
 save "$dta/pn_endline_samplelist.dta", replace 
 
-export excel using "$result/pn_endline_samplelist.xlsx", sheet("endline_samplelist") firstrow(variable)  nolabel replace 
+export excel using "$result/pn_endline_samplelist_new27vill.xlsx", sheet("endline_samplelist") firstrow(variable)  nolabel replace 
 
 
 			
