@@ -49,6 +49,7 @@ save `midterm_data', replace
 * IP villages *
 ********************************************************************************
 * prepare tempfile for stratum 1
+clear all
 tempfile stratum1
 save `stratum1', emptyok 
 
@@ -176,7 +177,6 @@ gen stratum = stratum_midterm
 replace stratum = 1 if (vill_accessibility != "3. neither in person nor phone interviews") & mi(stratum)
 replace stratum = 2 if mi(stratum)
 tab stratum, m 
-
 
 tab vill_proj_implement*, m 
 
@@ -358,32 +358,60 @@ use `stratum1', clear
 
 append using `stratum2'
 
+distinct org_name township_name geo_eho_vt_name geo_eho_vill_name, joint 
+
 * keep only required variables
 //keep township_name townshippcode fieldnamevillagetracteho villagenameeho stratum num_cluster vill_samplesize sample_check organization cluster_cat
-replace stratum = 2 if stratum == 0
+//replace stratum = 2 if stratum == 0
 
-* generate pseudo code
+* generate pseudo code [ get from midline file]
+* Matched with midterm data 
 preserve
-keep township_pcode geo_eho_vt_name
+
+	import excel using 	"$result/pn_2_samplelist.xlsx", ///
+						sheet("pn_2_samplelist") ///
+						firstrow clear   
+						
+	rename organization org_name
+	rename fieldnamevillagetracteho geo_eho_vt_name
+	rename villagenameeho geo_eho_vill_name
+	
+	distinct org_name township_name geo_eho_vt_name geo_eho_vill_name, joint
+	
+	tempfile midterm_sf
+	save `midterm_sf', replace 
+
+restore 
+
+
+merge 1:1 	org_name township_name geo_eho_vt_name geo_eho_vill_name ///
+			using `midterm_sf', ///
+			keepusing(vt_sir_num vill_sir_num vt_cluster_cat)
+			
+drop if _merge == 2 // village not accessible at endline
+drop _merge 
+	
+preserve
+keep township_pcode geo_eho_vt_name vt_sir_num
 bysort township_pcode geo_eho_vt_name: keep if _n == 1
 
-gen vt_sir_num = _n + 1000
+replace vt_sir_num = _n + 1000 if mi(vt_sir_num)
 
 tempfile vt_sir_num
 save `vt_sir_num', replace 
 
 restore 
 
-merge m:1 township_pcode geo_eho_vt_name using `vt_sir_num', keepusing(vt_sir_num)
+merge m:1 township_pcode geo_eho_vt_name using `vt_sir_num', assert(3) keepusing(vt_sir_num)
+
 drop _merge 
 
-gen vill_sir_num = _n + 2000
+replace vill_sir_num = _n + 2000 if mi(vill_sir_num)
 
+tostring cluster_cat, gen(cluster_cat_str_raw)
+tostring vt_sir_num, gen(vt_sir_num_str_raw)
 
-tostring cluster_cat, gen(cluster_cat_str)
-tostring vt_sir_num, gen(vt_sir_num_str)
-
-gen vt_cluster_cat = cluster_cat_str + "_" + vt_sir_num_str 
+replace vt_cluster_cat = cluster_cat_str + "_" + vt_sir_num_str if mi(vt_cluster_cat)
 
 drop cluster_cat_str vt_sir_num_str
 
