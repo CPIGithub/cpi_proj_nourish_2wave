@@ -392,17 +392,19 @@ drop if _merge == 2 // village not accessible at endline
 drop _merge 
 	
 preserve
-keep township_pcode geo_eho_vt_name vt_sir_num
-bysort township_pcode geo_eho_vt_name: keep if _n == 1
 
-replace vt_sir_num = _n + 1000 if mi(vt_sir_num)
+	keep township_pcode geo_eho_vt_name vt_sir_num
+	bysort township_pcode geo_eho_vt_name: keep if _n == 1
 
-tempfile vt_sir_num
-save `vt_sir_num', replace 
+	replace vt_sir_num = _n + 1000 if mi(vt_sir_num)
+
+	tempfile vt_sir_num
+	save `vt_sir_num', replace 
 
 restore 
 
-merge m:1 township_pcode geo_eho_vt_name using `vt_sir_num', assert(3) keepusing(vt_sir_num)
+merge m:1 	township_pcode geo_eho_vt_name using `vt_sir_num', ///
+			keepusing(vt_sir_num) update replace 
 
 drop _merge 
 
