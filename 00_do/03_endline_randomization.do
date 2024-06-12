@@ -386,14 +386,37 @@ restore
 
 merge 1:1 	org_name township_name geo_eho_vt_name geo_eho_vill_name ///
 			using `midterm_sf', ///
-			keepusing(vt_sir_num vill_sir_num vt_cluster_cat)
+			keepusing(vill_sir_num vt_sir_num /*vt_cluster_cat*/)
 			
 drop if _merge == 2 // village not accessible at endline
+
 drop _merge 
-	
+
+* village tract  id number update 
+sum vt_sir_num 
+replace vt_sir_num = _n + `r(max)' if mi(vt_sir_num)
+
+count if mi(vt_sir_num)
+assert `r(N)' == 0 
+
+sum vt_sir_num
+distinct vt_sir_num 
+
+* village id number update 
+sum vill_sir_num 
+replace vill_sir_num = _n + `r(max)' if mi(vill_sir_num)
+
+count if mi(vill_sir_num)
+assert `r(N)' == 0 
+
+sum vill_sir_num
+distinct vill_sir_num 
+assert `r(ndistinct)' == _N 
+
+/*
 preserve
 
-	keep township_pcode geo_eho_vt_name vt_sir_num
+	keep township_pcode geo_eho_vt_name vill_sir_num // vt_sir_num
 	bysort township_pcode geo_eho_vt_name: keep if _n == 1
 
 	replace vt_sir_num = _n + 1000 if mi(vt_sir_num)
@@ -409,11 +432,13 @@ merge m:1 	township_pcode geo_eho_vt_name using `vt_sir_num', ///
 drop _merge 
 
 replace vill_sir_num = _n + 2000 if mi(vill_sir_num)
+*/
 
-tostring cluster_cat, gen(cluster_cat_str_raw)
-tostring vt_sir_num, gen(vt_sir_num_str_raw)
 
-replace vt_cluster_cat = cluster_cat_str + "_" + vt_sir_num_str if mi(vt_cluster_cat)
+tostring cluster_cat, gen(cluster_cat_str)
+tostring vt_sir_num, gen(vt_sir_num_str)
+
+gen vt_cluster_cat = cluster_cat_str + "_" + vt_sir_num_str // if mi(vt_cluster_cat)
 
 drop cluster_cat_str vt_sir_num_str
 
