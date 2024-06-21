@@ -1,7 +1,7 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	2nd round data collection: duplciate check 			
+Purpose				:	Endline data collection: duplciate check 			
 Author				:	Nicholus Tint Zaw
 Date				: 	11/24/2022
 Modified by			:
