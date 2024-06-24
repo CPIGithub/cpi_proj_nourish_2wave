@@ -1,7 +1,7 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	2nd round data collection: dofile set-up			
+Purpose				:	Endline data collection: HH Survey HFC dofile set-up			
 Author				:	Nicholus Tint Zaw
 Date				: 	11/24/2022
 Modified by			:
@@ -13,25 +13,19 @@ Modified by			:
 ** Directory Settings **
 ********************************************************************************
 
-do "$hhimport/01_survey_import_hh.do"
-
-********************************************************************************
-* dofile - 0: Convert imported data *
-********************************************************************************
-
-do "$hhhfc/01_hfc_completion.do"
+do "$hhimport/endline/01_survey_import_hh.do"
 
 ********************************************************************************
 * dofile - 1: Completion Progress *
 ********************************************************************************
 
-do "$hhhfc/01_hfc_completion.do"
+do "$hhhfc/endline/01_hfc_completion.do"
 
 ********************************************************************************
 * dofile - 2: Duplicate Check *
 ********************************************************************************
 
-do "$hhhfc/02_hfc_duplicate.do"
+do "$hhhfc/endline/02_hfc_duplicate.do"
 
 ********************************************************************************
 * dofile - 3:  Missingness Check *
@@ -43,7 +37,7 @@ do "$hhhfc/02_hfc_duplicate.do"
 * dofile - 4:  Outliers Check*
 ********************************************************************************
 
-do "$hhhfc/04_hfc_outlier.do"
+do "$hhhfc/endline/04_hfc_outlier.do"
 
 ********************************************************************************
 * dofile - 5: Skip-pattern Check *
@@ -55,8 +49,20 @@ do "$hhhfc/04_hfc_outlier.do"
 * dofile - 6:  Enumerator Performance *
 ********************************************************************************
 
-do "$hhhfc/06_hfc_enuperform.do"
+do "$hhhfc/endline/06_hfc_enuperform.do"
 
+
+********************************************************************************
+* dofile - 7:  Village Level Completion *
+********************************************************************************
+
+do "$hhhfc/endline/07_hfc_vill_completion.do"
+
+********************************************************************************
+* dofile - 8:  Other Specify Translation Work *
+********************************************************************************
+
+do "$hhhfc/endline/08_hfc_other_opinion_check.do"
 
 ** END OF DOFILE **
  
