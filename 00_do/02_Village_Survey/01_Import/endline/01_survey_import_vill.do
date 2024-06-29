@@ -151,6 +151,9 @@ Modified by			:
 
 	use "$dta/endline/PN_Village_Survey_ENDLINE_FINAL.dta", clear
 		
+	** Duplicate Check and Solved ** 
+	drop if uuid == "4494cf13-97cc-42ec-8c60-9ee2bd5eaf57"
+	
 	// check var 
 	local master _N
 	di `master'

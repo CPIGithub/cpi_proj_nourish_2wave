@@ -145,8 +145,12 @@ Modified by			:
 
 
 	// Prepare one Wide format dataset 
-
 	use "$dta/endline/PN_HH_Survey_Endline_FINAL.dta", clear
+	
+	** Duplicate Check and Solved ** 
+	drop if uuid == "103597a0-d3a6-4de2-a9c3-daf5164202ab"
+	drop if uuid == "83df550a-4573-4cd6-9cb7-8aebd68d8646"
+	
 	
 	// check var 
 	local master _N
