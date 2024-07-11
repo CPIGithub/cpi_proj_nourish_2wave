@@ -44,9 +44,9 @@ Modified by			:
 
 	// survey per org by stratum 
 	gen org_st_target_N = .m 
-	replace  org_st_target_N = (10 * 14) 	if stratum == 2 & org_name == "YSDA"
-	replace  org_st_target_N = (13 * 14) 	if stratum == 2 & org_name == "KEHOC"
-	replace  org_st_target_N = (10 * 14) 	if stratum == 2 & org_name == "KDHW"
+	replace  org_st_target_N = (9 * 14) 	if stratum == 2 & org_name == "YSDA"
+	replace  org_st_target_N = (16 * 14) 	if stratum == 2 & org_name == "KEHOC"
+	replace  org_st_target_N = (5 * 14) 	if stratum == 2 & org_name == "KDHW"
 
 	replace  org_st_target_N = (3 * 14) 	if stratum == 1 & org_name == "YSDA"
 	replace  org_st_target_N = (5 * 14) 	if stratum == 1 & org_name == "KEHOC"
