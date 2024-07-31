@@ -21,6 +21,13 @@ Modified by			:
 
 	** HH Survey Dataset **
 	use "$dta/endline/PN_HH_Survey_Endline_FINAL.dta", clear 
+	
+	gen vill_sir_num = geo_vill
+	merge m:1 vill_sir_num using "$dta/pn_endline_samplelist.dta", keepusing(stratum_midterm)
+	
+	drop if _merge == 2
+	drop _merge 
+	
 
 	local maingeo org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
 
