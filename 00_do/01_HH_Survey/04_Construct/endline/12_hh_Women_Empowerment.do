@@ -1,9 +1,9 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	2nd round data collection: hh Income and Wealth Quantile cleaning 			
+Purpose				:	Endline data collection: hh Income and Wealth Quantile cleaning 			
 Author				:	Nicholus Tint Zaw
-Date				: 	03/01/2023
+Date				: 	06/13/2024
 Modified by			:
 
 
@@ -20,7 +20,7 @@ do "$do/00_dir_setting.do"
 ********************************************************************************
 
 	** HH Survey Dataset **
-	use "$dta/PN_HH_Survey_HH_Level_raw.dta", clear 
+	use "$dta/endline/PN_HH_Survey_Endline_FINAL_Cleaned.dta", clear  
 	
 	* keep only HH income and characteristc modules 
 	local maingeo 	org_name stratum geo_town township_name geo_vt geo_eho_vt_name geo_vill geo_eho_vill_name
@@ -42,7 +42,8 @@ do "$do/00_dir_setting.do"
 	
 	destring female_adult, replace 
 	
-	foreach v of varlist 	wempo_childcare wempo_mom_health wempo_child_health ///
+	foreach v of varlist 	wempo_familyfood ///
+							wempo_childcare wempo_mom_health wempo_child_health ///
 							wempo_women_wages wempo_major_purchase wempo_visiting ///
 							wempo_women_health wempo_child_wellbeing  {
 		
@@ -78,7 +79,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Weight variable *
-	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
+	merge m:1 geo_vill 	using "$dta/endline/pnourish_endline_hh_weight_final.dta", ///
 						keepusing(stratum stratum_num org_name_num weight_final)
 	
 	keep if _merge == 3
@@ -88,7 +89,7 @@ do "$do/00_dir_setting.do"
 	
 	* Add Wealth Quantile variable **
 	//drop prgexpo_pn
-	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
+	merge m:1 _parent_index using "$dta/endline/pnourish_INCOME_WEALTH_final.dta", ///
 							keepusing(enu_name income_lastmonth wealth_quintile_ns ///
 							wealth_quintile_modify NationalQuintile NationalScore hhitems_phone prgexpo_pn edu_exposure)
 	
@@ -102,7 +103,7 @@ do "$do/00_dir_setting.do"
 						dev_proj_tot ///
 						pn_yes pn_sbcc_yn pn_muac_yn pn_wsbcc_yn pn_wash_yn pn_emgy_yn pn_hgdn_yn pn_msg_yn
 	
-	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+	merge m:1 geo_vill using 	"$dta/endline/PN_Village_Survey_Endline_FINAL_Constructed.dta", ///
 								keepusing($villinfo)
 	
 	drop if _merge == 2
@@ -115,18 +116,22 @@ do "$do/00_dir_setting.do"
 	* recode the variable applied for index development
 	/*
 	-1 Men vs 1 Women and 0 for joint
-	
-	
 	*/
 	
-	local attributes 	wempo_childcare wempo_mom_health wempo_child_health wempo_women_wages ///
+	* 3 distinct differences compare to midterm 
+	* 1- new var in endline - wempo_familyfood
+	* 2- code correction - husband alone as -1 in endline, but 0 in midterm 
+	* 3- new parameter - other hh member were code as -1 in endline, midter treated them as missing
+	
+	local attributes 	wempo_familyfood ///
+						wempo_childcare wempo_mom_health wempo_child_health wempo_women_wages ///
 						wempo_major_purchase wempo_visiting wempo_women_health wempo_child_wellbeing
 	
 	foreach var in `attributes' {
 	    
 		gen `var'_d = (`var' == 1) 
-		replace `var'_d = -1 if `var' == 2
-		replace `var'_d = .m if `var' == 0 | `var' > 3
+		replace `var'_d = -1 if `var' >= 3 & !mi(`var')
+		replace `var'_d = .m if `var' == 0 //| `var' > 3
 		tab `var'_d, m 
 	}
 	
@@ -137,7 +142,7 @@ do "$do/00_dir_setting.do"
 	tab wempo_grp_tot, m 
 	  
 	* standartized the variable  inputs for ICW index development 
-	local inputs 	wempo_grp_tot wempo_childcare_d wempo_mom_health_d ///
+	local inputs 	wempo_grp_tot wempo_familyfood wempo_childcare_d wempo_mom_health_d ///
 					wempo_child_health_d wempo_women_wages_d wempo_major_purchase_d ///
 					wempo_visiting_d wempo_women_health_d wempo_child_wellbeing_d
 	
@@ -167,19 +172,18 @@ do "$do/00_dir_setting.do"
 	sum wempo_index, d 
 	gen progressivenss = (wempo_index < `r(p50)')
 	lab var progressivenss "Low Women Empowerment (Index < median score)"
+	replace progressivenss = .m if mi(wempo_index)
 	tab progressivenss, m 
-	
-	
-	merge 1:1 respd_id using "$dta/pnourish_FIES_final.dta"
-		 
+
+
 	* Check for Missing variable label and variable label 
 	// iecodebook template using "$out/pnourish_WOMEN_EMPOWER_final.xlsx" // export template
-	
+	lab drop vill_accessibility_midterm_cat // problem with var lab
 	iecodebook apply using "$raw/pnourish_WOMEN_EMPOWER_cleaning.xlsx" 
 	
 
 	** SAVE for analysis dataset 
-	save "$dta/pnourish_WOMEN_EMPOWER_final.dta", replace  
+	save "$dta/endline/pnourish_WOMEN_EMPOWER_final.dta", replace  
 
 
 // END HERE 

@@ -1,9 +1,9 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	2nd round data collection: hh Income and Wealth Quantile cleaning 			
+Purpose				:	Endline data collection: hh Income and Wealth Quantile cleaning 			
 Author				:	Nicholus Tint Zaw
-Date				: 	03/01/2023
+Date				: 	06/13/2024
 Modified by			:
 
 
@@ -20,7 +20,7 @@ do "$do/00_dir_setting.do"
 ********************************************************************************
 
 	** HH Survey Dataset **
-	use "$dta/PN_HH_Survey_HH_Level_raw.dta", clear 
+	use "$dta/endline/PN_HH_Survey_Endline_FINAL_Cleaned.dta", clear 
 	
 	
 	* keep only HH income and characteristc modules 
@@ -34,7 +34,7 @@ do "$do/00_dir_setting.do"
 			cal_housing_start-cal_housing_end ///
 			cal_hhinc_start-cal_hhinc_end ///
 			water_sum ///
-			prgexpo_pn prgexpo_join5 prgexpo_join6 prgexp_iec0 prgexpo_join8
+			prgexpo_pn prgexpo_join5 prgexpo_join6 prgexp_iec0 prgexpo_join8 prgexp_iec_hw0 prgexp_iec_iycf0
 			
 	drop cal* // cla_*
 	
@@ -248,15 +248,15 @@ do "$do/00_dir_setting.do"
 	** PROJECT NOURISH COVERAGE **
 	replace prgexpo_pn = 0 if prgexpo_pn == 999
 	tab prgexpo_pn, m 
-&&
+
 	** exposure to education part **
-	gen edu_exposure 		= (prgexpo_join5 == 1 | prgexpo_join6 == 1 | prgexp_iec0 == 0)
+	gen edu_exposure 		= (prgexpo_join5 == 1 | prgexpo_join6 == 1 | prgexp_iec0 != 0 | prgexp_iec_hw0 != 0 | prgexp_iec_iycf0 != 0)
 	lab var edu_exposure "Exposure with PN SBCC related activities"
 	tab edu_exposure, m 
 
 	
 	* Add Weight variable *
-	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
+	merge m:1 geo_vill 	using "$dta/endline/pnourish_endline_hh_weight_final.dta", ///
 						keepusing(stratum stratum_num org_name_num weight_final)
 	
 	keep if _merge == 3
@@ -269,7 +269,7 @@ do "$do/00_dir_setting.do"
 						dev_proj_tot ///
 						pn_yes pn_sbcc_yn pn_muac_yn pn_wsbcc_yn pn_wash_yn pn_emgy_yn pn_hgdn_yn pn_msg_yn
 	
-	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+	merge m:1 geo_vill using 	"$dta/endline/PN_Village_Survey_Endline_FINAL_Constructed.dta", ///
 								keepusing($villinfo)
 	
 	drop if _merge == 2
@@ -327,14 +327,16 @@ do "$do/00_dir_setting.do"
 	tab wealth_quintile_modify, m 
 	
 	* Check for Missing variable label and variable label 
-	// iecodebook template using "$out/pnourish_INCOME_WEALTH_final.xlsx" // export template
+	//iecodebook template using "$raw/endline/codebook/pn_endline_INCOME_WEALTH_final.xlsx" // export template
+	
+	lab drop vill_accessibility_midterm_cat // problem with var lab 
 	
 	iecodebook apply using "$raw/pnourish_INCOME_WEALTH_cleaning.xlsx" 
 
 	
 	
 	** SAVE for analysis dataset 
-	save "$dta/pnourish_INCOME_WEALTH_final.dta", replace  
+	save "$dta/endline/pnourish_INCOME_WEALTH_final.dta", replace  
 
 /*
 	** Check for un-matched villages from Village Survey ** 

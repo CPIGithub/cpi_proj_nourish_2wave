@@ -1,9 +1,9 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	2nd round data collection: Child IYCF data cleaning 			
+Purpose				:	Endline data collection: Child IYCF data cleaning 			
 Author				:	Nicholus Tint Zaw
-Date				: 	03/01/2023
+Date				: 	06/13/2024
 Modified by			:
 
 
@@ -19,9 +19,7 @@ do "$do/00_dir_setting.do"
 	****************************************************************************
 	* Child IYCF Data *
 	****************************************************************************
-	use "$dta/pnourish_child_iycf_raw.dta", clear 
-	
-	replace child_bfyest = 0 if child_bfyest == 999 // treat as NO BF
+	use "$dta/endline/pnourish_child_iycf_raw.dta", clear 
 	
 	// _parent_index child_id_iycf
 	rename child_id_iycf roster_index
@@ -36,7 +34,7 @@ do "$do/00_dir_setting.do"
 	** HH Roster **
 	preserve 
 
-	use "$dta/grp_hh_clean.dta", clear
+	use "$dta/endline/grp_hh_clean.dta", clear
 	
 	keep	_parent_index roster_index hh_mem_name hh_mem_sex hh_mem_age hh_mem_age_month ///
 			hh_mem_dob_know hh_mem_dob hh_mem_certification calc_age_months women_pos1
@@ -410,7 +408,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Weight variable *
-	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
+	merge m:1 geo_vill 	using "$dta/endline/pnourish_endline_hh_weight_final.dta", ///
 						keepusing(stratum stratum_num org_name_num weight_final)
 	
 	keep if _merge == 3
@@ -423,7 +421,7 @@ do "$do/00_dir_setting.do"
 					resp_hhhead resp_highedu resp_occup respd_preg respd_child ///
 					respd_1stpreg_age respd_chid_num hhhead_highedu hhhead_occup hh_mem_highedu_all
 					
-	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
+	merge m:1 _parent_index using "$dta/endline/pnourish_INCOME_WEALTH_final.dta", ///
 							keepusing(	`mainresp' ///
 										income_lastmonth wealth_quintile_ns NationalQuintile ///
 										wealth_quintile_modify NationalScore hhitems_phone prgexpo_pn edu_exposure)
@@ -438,7 +436,7 @@ do "$do/00_dir_setting.do"
 						dev_proj_tot ///
 						pn_yes pn_sbcc_yn pn_muac_yn pn_wsbcc_yn pn_wash_yn pn_emgy_yn pn_hgdn_yn pn_msg_yn
 	
-	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+	merge m:1 geo_vill using 	"$dta/endline/PN_Village_Survey_Endline_FINAL_Constructed.dta", ///
 								keepusing($villinfo)
 	
 	drop if _merge == 2
@@ -447,12 +445,12 @@ do "$do/00_dir_setting.do"
 
 	* Check for Missing variable label and variable label 
 	// iecodebook template using "$out/pnourish_child_iycf_final.xlsx" // export template
-	
+	lab drop vill_accessibility_midterm_cat // problem with var lab
 	iecodebook apply using "$raw/pnourish_child_iycf_cleaning.xlsx" 
 
 	
 	** SAVE for analysis dataset 
-	save "$dta/pnourish_child_iycf_final.dta", replace  
+	save "$dta/endline/pnourish_child_iycf_final.dta", replace  
 
 
 // END HERE 
