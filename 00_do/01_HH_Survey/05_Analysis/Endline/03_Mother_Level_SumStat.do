@@ -283,8 +283,6 @@ do "$do/00_dir_setting.do"
 	
 	* Loop through the generated variables and update their labels
 	foreach var of varlist phq9_cat_* {
-		* Treat new var as 0
-		replace `var' = 0 
 		
 		* Get the current label
 		local current_label : variable label `var'
@@ -354,13 +352,30 @@ do "$do/00_dir_setting.do"
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
-
-	global outcomes wempo_familyfood ///
-					wempo_childcare wempo_mom_health wempo_child_health ///
-					wempo_women_wages wempo_major_purchase wempo_visiting ///
-					wempo_women_health wempo_child_wellbeing ///
+	tab wempo_category, gen(wempo_category_)
+	
+	* Loop through the generated variables and update their labels
+	foreach var of varlist wempo_category_* {
+		
+		* Get the current label
+		local current_label : variable label `var'
+		
+		* Extract the part after "=="
+		local new_label = substr("`current_label'", strpos("`current_label'", "==") + 2, .)
+		
+		* Trim any leading or trailing spaces
+		local new_label = trim("`new_label'")
+		
+		* Update the variable label
+		label variable `var' "`new_label'"
+	}
+	
+	
+	global outcomes wempo_familyfood_yes wempo_childcare_yes wempo_mom_health_yes ///
+					wempo_child_health_yes wempo_women_wages_yes wempo_major_purchase_yes ///
+					wempo_visiting_yes wempo_women_health_yes wempo_child_wellbeing_yes ///
 					wempo_grp_tot ///
-					progressivenss wempo_category
+					wempo_index progressivenss wempo_category_1 wempo_category_2 wempo_category_3
 	
 	
 	* All Obs

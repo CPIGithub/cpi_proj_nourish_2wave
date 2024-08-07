@@ -248,7 +248,39 @@ do "$do/00_dir_setting.do"
 	lab drop vill_accessibility_midterm_cat // problem with var lab
 	iecodebook apply using "$raw/pnourish_program_exposure_cleaning.xlsx" 
 
-
+	** ADDITIONAL IEC INDICATORS **
+	gen prgexp_iec_hw_yes = (prgexp_iec_hw0 == 0)
+	replace prgexp_iec_hw_yes = .m if prgexpo_pn != 1
+	lab var prgexp_iec_hw_yes "Never seem Handwashing IEC"
+	lab val prgexp_iec_hw_yes yesno
+	order prgexp_iec_hw_yes, after(prgexp_iec_hw0)
+	tab prgexp_iec_hw_yes, m 
+	
+	egen prgexp_iec_hw_tot = rowtotal(	prgexp_iec_hw1 prgexp_iec_hw2 prgexp_iec_hw3 ///
+										prgexp_iec_hw4 prgexp_iec_hw5 prgexp_iec_hw6 ///
+										prgexp_iec_hw7 prgexp_iec_hw8 prgexp_iec_hw9)
+	replace prgexp_iec_hw_tot = .m if prgexpo_pn != 1
+	lab var prgexp_iec_hw_tot "Total number of Handwashing IEC exposed [0-9]"
+	order prgexp_iec_hw_tot, after(prgexp_iec_hw_yes)
+	tab prgexp_iec_hw_tot, m 
+	
+					
+	gen prgexp_iec_iycf_yes = (prgexp_iec_iycf0 == 0)
+	replace prgexp_iec_iycf_yes = .m if prgexpo_pn != 1
+	lab var prgexp_iec_iycf_yes "Never seem IYCF IEC"
+	lab val prgexp_iec_iycf_yes yesno
+	order prgexp_iec_iycf_yes, after(prgexp_iec_iycf0)
+	tab prgexp_iec_iycf_yes, m 
+	
+	egen prgexp_iec_iycf_tot = rowtotal(	prgexp_iec_iycf1 prgexp_iec_iycf2 prgexp_iec_iycf3 ///
+											prgexp_iec_iycf4 prgexp_iec_iycf5 prgexp_iec_iycf6 ///
+											prgexp_iec_iycf7 prgexp_iec_iycf8 prgexp_iec_iycf9 ///
+											prgexp_iec_iycf10)
+	replace prgexp_iec_iycf_tot = .m if prgexpo_pn != 1
+	lab var prgexp_iec_iycf_tot "Total number of IYCF IEC exposed [0-10]"
+	order prgexp_iec_iycf_tot, after(prgexp_iec_iycf_yes)
+	tab prgexp_iec_iycf_tot, m 
+	
 	** SAVE for analysis dataset 
 	save "$dta/endline/pnourish_program_exposure_final.dta", replace  
 

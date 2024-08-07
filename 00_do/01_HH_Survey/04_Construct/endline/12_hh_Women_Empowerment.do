@@ -49,6 +49,15 @@ do "$do/00_dir_setting.do"
 		
 		replace `v' = .m if female_adult == 0 
 		tab `v', m 
+		
+		* Gen dummy one
+		local oldlab : variable label `v'
+		
+		gen `v'_yes = (`v' == 1)
+		replace `v'_yes = .m if mi(`v')
+		lab var `v'_yes "`oldlab'"
+		tab `v'_yes, m 
+
 	}
 	
 	// 1) Own health care.
@@ -139,6 +148,7 @@ do "$do/00_dir_setting.do"
 	egen wempo_grp_tot = rowtotal(wempo_group2 wempo_group3 wempo_group4 wempo_group5 wempo_group888)
 	replace wempo_grp_tot = 0 if wempo_group1 == 1
 	replace wempo_grp_tot = .m if mi(wempo_group)
+	lab var wempo_grp_tot "Number of groups participated"
 	tab wempo_grp_tot, m 
 	  
 	* standartized the variable  inputs for ICW index development 

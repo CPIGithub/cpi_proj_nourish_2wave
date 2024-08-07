@@ -250,10 +250,11 @@ do "$do/00_dir_setting.do"
 	tab prgexpo_pn, m 
 
 	** exposure to education part **
-	gen edu_exposure 		= (prgexpo_join5 == 1 | prgexpo_join6 == 1 | prgexp_iec0 != 0 | prgexp_iec_hw0 != 0 | prgexp_iec_iycf0 != 0)
+	gen edu_exposure 		= (	prgexpo_join5 == 1 | prgexpo_join6 == 1 | ///
+								prgexp_iec0 == 0 | prgexp_iec_hw0 == 0 | ///
+								prgexp_iec_iycf0 == 0)
 	lab var edu_exposure "Exposure with PN SBCC related activities"
 	tab edu_exposure, m 
-
 	
 	* Add Weight variable *
 	merge m:1 geo_vill 	using "$dta/endline/pnourish_endline_hh_weight_final.dta", ///

@@ -143,7 +143,8 @@ do "$do/00_dir_setting.do"
 	
 	global outcomes	eibf ebf2d ebf pre_bf mixmf bof cbf ///
 					isssf food_g1 food_g2 food_g3 food_g4 food_g5 food_g6 food_g7 food_g8 ///
-					mdd mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf
+					mdd dietary_tot ///
+					mmf_bf_6to8 mmf_bf_9to23 mmf_bf mmf_nonbf mmf mmff mad mad_bf mad_nobf
 
 
 	* All Obs
