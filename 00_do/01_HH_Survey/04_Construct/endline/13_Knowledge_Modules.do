@@ -190,7 +190,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	egen iycf_k_tot = rowtotal(eibf_k isssf_food_k isssf_water_k isssf_liquid_k be_stop_k ebf_k meal_req_k dietary_4grp_k meal_freq_k)
-	lab var iycf_k_tot "IYCF Knowledge question score (raw score)"
+	lab var iycf_k_tot "IYCF Knowledge question score (raw score) [0-9]"
 	tab iycf_k_tot, m 
 	
 	sum iycf_k_tot, d

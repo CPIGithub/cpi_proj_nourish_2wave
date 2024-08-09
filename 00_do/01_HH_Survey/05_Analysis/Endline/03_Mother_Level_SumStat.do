@@ -344,7 +344,7 @@ do "$do/00_dir_setting.do"
 	restore		
 	
 	****************************************************************************
-	** Women Empowerment **
+	** Women Empowerment [endline] **
 	****************************************************************************
 	
 	use "$dta/endline/pnourish_WOMEN_EMPOWER_final.dta", clear  
@@ -375,7 +375,8 @@ do "$do/00_dir_setting.do"
 					wempo_child_health_yes wempo_women_wages_yes wempo_major_purchase_yes ///
 					wempo_visiting_yes wempo_women_health_yes wempo_child_wellbeing_yes ///
 					wempo_grp_tot ///
-					wempo_index progressivenss wempo_category_1 wempo_category_2 wempo_category_3
+					wempo_index progressivenss wempo_category_1 wempo_category_2 wempo_category_3 ///
+					wempo_hnut_act_ja
 	
 	
 	* All Obs
@@ -421,6 +422,143 @@ do "$do/00_dir_setting.do"
 									sheet("$sub_grp") firstrow(varlabels) keepcellfmt sheetreplace 
 	
 	restore	
+	
+	****************************************************************************
+	** Women Empowerment [Midterm] **
+	****************************************************************************
+	
+	use "$dta/pnourish_WOMEN_EMPOWER_final.dta", clear  
+
+	* svy weight apply 
+	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+
+	tab wempo_category, gen(wempo_category_)
+	
+	* Loop through the generated variables and update their labels
+	foreach var of varlist wempo_category_* {
+		
+		* Get the current label
+		local current_label : variable label `var'
+		
+		* Extract the part after "=="
+		local new_label = substr("`current_label'", strpos("`current_label'", "==") + 2, .)
+		
+		* Trim any leading or trailing spaces
+		local new_label = trim("`new_label'")
+		
+		* Update the variable label
+		label variable `var' "`new_label'"
+	}
+	
+	
+	global outcomes wempo_childcare_yes wempo_mom_health_yes ///
+					wempo_child_health_yes wempo_women_wages_yes wempo_major_purchase_yes ///
+					wempo_visiting_yes wempo_women_health_yes wempo_child_wellbeing_yes ///
+					wempo_grp_tot ///
+					wempo_index progressivenss wempo_category_1 wempo_category_2 wempo_category_3 ///
+					wempo_hnut_act_ja
+	
+	
+	* All Obs
+	preserve 
+
+		keep $outcomes weight_final geo_vill stratum_num wealth_quintile_ns
+		
+		do "$hhdo/Function/00_frequency_table_one.do"
+
+
+		export excel $export_table 	using "$out/endline/sumstat/MIDTERM_MOM_EMPOWERMENT_SUMSTAT.xlsx", /// 
+									sheet("Empowerment") firstrow(varlabels) keepcellfmt sheetreplace 
+	
+	restore	
+	
+	
+	* by STRATUM 
+	preserve 
+
+		keep $outcomes weight_final geo_vill stratum_num wealth_quintile_ns
+		
+		global sub_grp stratum_num
+		
+		do "$hhdo/Function/00_frequency_crosstable.do"
+
+		export excel $export_table 	using "$out/endline/sumstat/MIDTERM_MOM_EMPOWERMENT_SUMSTAT.xlsx", /// 
+									sheet("$sub_grp") firstrow(varlabels) keepcellfmt sheetreplace 
+	
+	restore	
+	
+	
+	* by STRATUM 
+	preserve 
+
+		keep $outcomes weight_final geo_vill stratum_num wealth_quintile_ns
+		
+		global sub_grp wealth_quintile_ns
+		
+		do "$hhdo/Function/00_frequency_crosstable.do"
+
+
+		export excel $export_table 	using "$out/endline/sumstat/MIDTERM_MOM_EMPOWERMENT_SUMSTAT.xlsx", /// 
+									sheet("$sub_grp") firstrow(varlabels) keepcellfmt sheetreplace 
+	
+	restore	
+		
+	****************************************************************************
+	** Knowledge Module **
+	****************************************************************************
+		
+	use "$dta/endline/pnourish_knowledge_module_final.dta", clear 
+	
+	* svy weight apply 
+	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+
+	global outcomes	iycf_k_tot iycf_k_yes hw_critical_soap_k 
+	
+	
+	* All Obs
+	preserve 
+
+		keep $outcomes weight_final geo_vill stratum_num wealth_quintile_ns
+		
+		do "$hhdo/Function/00_frequency_table_one.do"
+
+
+		export excel $export_table 	using "$out/endline/sumstat/MOM_KNOWLEDGE_SUMSTAT.xlsx", /// 
+									sheet("Knowledge") firstrow(varlabels) keepcellfmt sheetreplace 
+	
+	restore	
+	
+	
+	* by STRATUM 
+	preserve 
+
+		keep $outcomes weight_final geo_vill stratum_num wealth_quintile_ns
+		
+		global sub_grp stratum_num
+		
+		do "$hhdo/Function/00_frequency_crosstable.do"
+
+		export excel $export_table 	using "$out/endline/sumstat/MOM_KNOWLEDGE_SUMSTAT.xlsx", /// 
+									sheet("$sub_grp") firstrow(varlabels) keepcellfmt sheetreplace 
+	
+	restore	
+	
+	
+	* by STRATUM 
+	preserve 
+
+		keep $outcomes weight_final geo_vill stratum_num wealth_quintile_ns
+		
+		global sub_grp wealth_quintile_ns
+		
+		do "$hhdo/Function/00_frequency_crosstable.do"
+
+
+		export excel $export_table 	using "$out/endline/sumstat/MOM_KNOWLEDGE_SUMSTAT.xlsx", /// 
+									sheet("$sub_grp") firstrow(varlabels) keepcellfmt sheetreplace 
+	
+	restore	
+
 	
 // END HERE 
 

@@ -50,6 +50,25 @@ do "$do/00_dir_setting.do"
 		tab `v', m 
 	}
 	
+	
+	foreach v of varlist 	wempo_childcare wempo_mom_health wempo_child_health ///
+							wempo_women_wages wempo_major_purchase wempo_visiting ///
+							wempo_women_health wempo_child_wellbeing  {
+		
+		replace `v' = .m if female_adult == 0 
+		tab `v', m 
+		
+		* Gen dummy one
+		local oldlab : variable label `v'
+		
+		gen `v'_yes = (`v' == 1)
+		replace `v'_yes = .m if mi(`v')
+		lab var `v'_yes "`oldlab'"
+		tab `v'_yes, m 
+
+	}
+	
+	
 	// 1) Own health care.
 	gen women_ownhealth = (wempo_mom_health == 1)
 	replace women_ownhealth = .m if mi(wempo_mom_health)
@@ -130,6 +149,10 @@ do "$do/00_dir_setting.do"
 		tab `var'_d, m 
 	}
 	
+	gen wempo_hnut_act_ja = (wempo_child_health < 3 | wempo_childcare < 3 | wempo_child_wellbeing < 3)
+	replace wempo_hnut_act_ja = .m if mi(wempo_child_health) & mi(wempo_childcare) & mi(wempo_child_wellbeing)
+	lab var wempo_hnut_act_ja "Health and nutritional activities of children (either joint or alone)"
+	tab wempo_hnut_act_ja, m 	
 	
 	egen wempo_grp_tot = rowtotal(wempo_group2 wempo_group3 wempo_group4 wempo_group5 wempo_group888)
 	replace wempo_grp_tot = 0 if wempo_group1 == 1
@@ -166,6 +189,7 @@ do "$do/00_dir_setting.do"
 	* progressiveness 
 	sum wempo_index, d 
 	gen progressivenss = (wempo_index < `r(p50)')
+	replace progressivenss = .m if mi(wempo_index)
 	lab var progressivenss "Low Women Empowerment (Index < median score)"
 	tab progressivenss, m 
 	
