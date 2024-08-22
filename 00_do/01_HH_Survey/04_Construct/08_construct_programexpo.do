@@ -15,7 +15,6 @@ Modified by			:
 
 do "$do/00_dir_setting.do"
 
-
 	****************************************************************************
 	* HH Level Dataset *
 	****************************************************************************
@@ -143,7 +142,6 @@ do "$do/00_dir_setting.do"
 	
 	drop _merge 
 	
-	
 	** Program Access **
 	/*
 	Adam note:
@@ -231,7 +229,6 @@ do "$do/00_dir_setting.do"
 	
 	* Check for Missing variable label and variable label 
 	// iecodebook template using "$out/pnourish_program_exposure_final.xlsx" // export template
-	
 	iecodebook apply using "$raw/pnourish_program_exposure_cleaning.xlsx" 
 
 

@@ -15,6 +15,44 @@ Modified by			:
 
 do "$do/00_dir_setting.do"
 
+
+	* endline weight 
+	use "$dta/endline/pnourish_endline_hh_weight_final.dta", clear   
+
+	isid township_name geo_town geo_eho_vt_name geo_eho_vill_name vill_code // geo_vill
+	
+	use "$dta/pnourish_hh_weight_final.dta", clear   
+
+	isid township_name geo_town geo_eho_vt_name geo_eho_vill_name vill_code // geo_vill
+	
+	keep 	township_name geo_town geo_eho_vt_name geo_eho_vill_name vill_code geo_vill ///
+			hh_prob_midterm cluster_prob_midterm weight_final_midterm
+			
+	gen midterm_endline = 0 
+			
+	tempfile midterm 
+	save `midterm', replace 
+	
+	
+	use "$dta/endline/pnourish_endline_hh_weight_final.dta", clear  
+	
+	gen midterm_endline = 1
+
+	keep 	township_name geo_town geo_eho_vt_name geo_eho_vill_name vill_code geo_vill ///
+			hh_prob cluster_prob weight_final midterm_endline
+
+	append using `midterm'
+	
+	
+	gen weight_compare = weight_final if midterm_endline == 1
+	replace weight_compare = 1/(cluster_prob * hh_prob_midterm) if midterm_endline == 0 
+	
+	
+	
+	&&
+	
+	
+
 ********************************************************************************
 * IP villages *
 ********************************************************************************
@@ -27,8 +65,6 @@ rename townshippcode 				geo_town
 rename vt_sir_num 					geo_vt
 rename vill_sir_num 				geo_vill 
 rename organization 				org_name 
-rename villagecode					vill_code
-
 distinct geo_vill
 
 drop sr 
@@ -144,10 +180,6 @@ tab stratum_num, m
 
 encode org_name, gen(org_name_num)
 order org_name_num, after(org_name)
-
-gen hh_prob_midterm = hh_prob
-gen cluster_prob_midterm = cluster_prob
-gen weight_final_midterm = weight_final
 
 * export as excel file 
 export excel using "$result/pn_2_survey_weight.xlsx", sheet("weight") firstrow(variable)  nolabel replace 

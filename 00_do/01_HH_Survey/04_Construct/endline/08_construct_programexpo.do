@@ -15,6 +15,19 @@ Modified by			:
 
 do "$do/00_dir_setting.do"
 
+	****************************************************************************
+	** Program Activity - last 6 months **
+	
+	import excel using "$raw/endline/Activitiesbyvillages.xlsx", sheet("Activitybyvillages") firstrow cellrange(A2:AK46) clear 
+	
+	keep vill_code org_name geo_eho_vt_name activity_6m geo_eho_vill_name proj_act_6-proj_act_8
+	
+	isid org_name geo_eho_vill_name
+	
+	tempfile act_6m 
+	save `act_6m', replace 
+	
+	clear 
 
 	****************************************************************************
 	* HH Level Dataset *
@@ -157,6 +170,8 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2
 	
 	drop _merge 
+	
+	// merge m:1 geo_eho_vill_name org_name using `act_6m'
 	
 	** Program Access **
 	/*
