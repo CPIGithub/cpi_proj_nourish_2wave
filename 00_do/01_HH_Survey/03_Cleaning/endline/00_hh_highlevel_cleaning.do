@@ -96,6 +96,13 @@ Modified by			:
 	order respd_id, after(cal_respid)
 	drop cal_respid _merge 
 
+	replace cal_vill = "Mi Tan Kyaung Ah Tat" if respd_id == "MMR003007_1102_2420_12_1"
+	// replace geo_eho_vill_name = "Mi Tan Kyaung Ah Tat" if respd_id == "MMR003007_1102_2420_12_1"
+	replace geo_vill = 2419 if respd_id == "MMR003007_1102_2420_12_1"
+	
+	
+	replace geo_eho_vill_name = cal_vill // data cleaning done with this name
+	
 
 	* save as cleaned dataset 
 	save "$dta/endline/PN_HH_Survey_Endline_FINAL_Cleaned.dta", replace  

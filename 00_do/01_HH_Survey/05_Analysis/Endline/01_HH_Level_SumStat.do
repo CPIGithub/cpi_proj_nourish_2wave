@@ -305,16 +305,15 @@ do "$do/00_dir_setting.do"
 		export excel $export_table 	using "$out/endline/sumstat/HH_WASH_SUMSTAT.xlsx", /// 
 									sheet("$sub_grp") firstrow(varlabels) keepcellfmt sheetreplace 
 	
-	restore		
+	restore			
 	
-
 	****************************************************************************
 	** FIES **
 	****************************************************************************
 
 	use "$dta/endline/pnourish_FIES_final.dta", clear   
 
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
+	merge m:1 _parent_index using "$dta/endline/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
 	
 	drop if _merge == 2 
 	drop _merge 
@@ -325,7 +324,7 @@ do "$do/00_dir_setting.do"
 						mkt_near_dist_dry mkt_near_dist_rain ///
 						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
 	
-	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+	merge m:1 geo_vill using 	"$dta/endline/PN_Village_Survey_Endline_FINAL_Constructed.dta", ///
 								keepusing($villinfo) 
 	
 	drop if _merge == 2

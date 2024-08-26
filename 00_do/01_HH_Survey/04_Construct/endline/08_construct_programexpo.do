@@ -24,6 +24,9 @@ do "$do/00_dir_setting.do"
 	
 	isid org_name geo_eho_vill_name
 	
+	replace geo_eho_vt_name = "Htoke Kaw Koe" if vill_code == "KRN-002-VIL-042"
+	replace geo_eho_vill_name = "Htoke Kaw Koe" if vill_code == "KRN-002-VIL-042"
+	
 	tempfile act_6m 
 	save `act_6m', replace 
 	
@@ -171,7 +174,31 @@ do "$do/00_dir_setting.do"
 	
 	drop _merge 
 	
-	// merge m:1 geo_eho_vill_name org_name using `act_6m'
+	merge m:1 geo_eho_vill_name org_name using `act_6m'
+	
+	preserve 
+	
+	 keep if _merge == 2 
+	 
+	if _N > 0 {
+		
+		export excel using "$out/endline/village_issue.xlsx", sheet("not found in hh data") firstrow(varlabels) sheetreplace
+		
+	}
+	
+	restore 
+	
+	preserve 
+	
+	 keep if _merge == 1
+	 
+	if _N > 0 {
+		
+		export excel using "$out/endline/village_issue.xlsx", sheet("villages outside of 42") firstrow(varlabels) sheetreplace
+		
+	}
+	
+	restore 
 	
 	** Program Access **
 	/*

@@ -166,6 +166,9 @@ tab vill_proj_implement org_name_cat, m
 tab vill_proj_implement stratum, m 
 */
 
+* save to use for comparision study 
+save "$dta/pn_endline_village_list_updated.dta", replace 
+
 * keep for final sampling frame 
 drop if unaccess_vill == 1 
 drop if vill_proj_implement_midterm == 0 & vill_proj_implement == 0
