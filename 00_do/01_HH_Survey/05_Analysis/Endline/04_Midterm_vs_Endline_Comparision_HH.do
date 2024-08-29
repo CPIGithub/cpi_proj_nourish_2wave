@@ -168,6 +168,9 @@ do "$do/00_dir_setting.do"
 			stats(r2 df_r bic) replace
 
 
+	svy: glm midterm_endline NationalScore ///
+					stratum,  ///
+					family(binomial) link(log) nolog eform 
 	
 	****************************************************************************
 	** FIES **
