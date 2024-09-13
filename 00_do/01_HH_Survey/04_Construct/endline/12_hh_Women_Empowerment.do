@@ -156,9 +156,15 @@ do "$do/00_dir_setting.do"
 	tab wempo_grp_tot, m 
 	  
 	* standartized the variable  inputs for ICW index development 
-	local inputs 	wempo_grp_tot wempo_familyfood wempo_childcare_d wempo_mom_health_d ///
+	// applied same input attributes at midterm 
+	local inputs 	wempo_grp_tot wempo_childcare_d wempo_mom_health_d ///
 					wempo_child_health_d wempo_women_wages_d wempo_major_purchase_d ///
-					wempo_visiting_d wempo_women_health_d wempo_child_wellbeing_d
+					wempo_visiting_d wempo_women_health_d wempo_child_wellbeing_d 
+					
+					/*
+					wempo_grp_tot wempo_familyfood wempo_childcare_d wempo_mom_health_d ///
+					wempo_child_health_d wempo_women_wages_d wempo_major_purchase_d ///
+					wempo_visiting_d wempo_women_health_d wempo_child_wellbeing_d */
 	
 	foreach var in `inputs' {
 	    
@@ -167,9 +173,16 @@ do "$do/00_dir_setting.do"
 	}
 	
 	* index development // not included the # of groups participate 
+	// applied same input attributes at midterm 
 	icw_index	wempo_childcare_d_z wempo_mom_health_d_z wempo_child_health_d_z ///
 				wempo_women_wages_d_z wempo_major_purchase_d_z wempo_visiting_d_z ///
+				wempo_women_health_d_z wempo_child_wellbeing_d_z, gen(wempo_index)  
+				
+				/*
+				wempo_childcare_d_z wempo_mom_health_d_z wempo_child_health_d_z ///
+				wempo_women_wages_d_z wempo_major_purchase_d_z wempo_visiting_d_z ///
 				wempo_women_health_d_z wempo_child_wellbeing_d_z, gen(wempo_index)
+				*/
 				
 	lab var wempo_index "Women Empowerment Index (ICW-index)"		
 	tab wempo_index, m 

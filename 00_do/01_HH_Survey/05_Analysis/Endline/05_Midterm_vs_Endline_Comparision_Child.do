@@ -16,6 +16,43 @@ Modified by			:
 do "$do/00_dir_setting.do"
 
 	****************************************************************************
+	* Child MUAC *
+	****************************************************************************
+		
+	** Midterm vs endline 
+
+	* endline 
+	use "$dta/endline/pnourish_child_muac_final.dta", clear  
+		
+	gen midterm_endline = 1 
+	
+	append using "$dta/pnourish_child_muac_final.dta"
+	
+	replace midterm_endline = 0 if mi(midterm_endline)
+	tab midterm_endline, m 
+	
+	drop weight_final
+		
+	merge m:1 midterm_endline geo_vill using "$dta/endline/pnourish_midterm_vs_endline_hh_comparision_weight_final.dta", keepusing(weight_final)   
+
+	tab midterm_endline _merge // un-matched come from the inaccessible village at endline (from midterm sample)
+	keep if _merge == 3
+	drop _merge 
+
+	
+	global outcomes	child_gam child_mam child_sam
+					 
+					
+	foreach var in $outcomes {
+	    
+		di "`var'"
+		conindex `var' , rank(wealth_quintile_ns) svy wagstaff bounded limits(0 1) compare(midterm_endline)
+		
+	}	
+	
+	
+	
+	****************************************************************************
 	* Child IYCF Data *
 	****************************************************************************
 		
@@ -133,6 +170,24 @@ do "$do/00_dir_setting.do"
 			cells(b(star fmt(3)) se(par fmt(2)))  ///
 			legend label varlabels(_cons constant) ///
 			stats(r2 df_r bic) replace					
+	
+
+	global outcomes	eibf ebf pre_bf cbf ///
+					isssf ///
+					mdd mad  // dietary_tot
+					 
+					
+	foreach var in $outcomes {
+	    
+		di "`var'"
+		conindex `var' , rank(wealth_quintile_ns) svy wagstaff bounded limits(0 1) compare(midterm_endline)
+		
+	}				
+	
+	
+	conindex dietary_tot, rank(wealth_quintile_ns) svy wagstaff bounded limits(0 8) compare(midterm_endline)
+	
+	
 	
 	****************************************************************************
 	* Child Health Data *

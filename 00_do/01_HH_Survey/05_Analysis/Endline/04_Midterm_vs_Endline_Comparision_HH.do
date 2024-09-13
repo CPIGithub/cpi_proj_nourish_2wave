@@ -398,6 +398,17 @@ do "$do/00_dir_setting.do"
 			legend label varlabels(_cons constant) ///
 			stats(r2 df_r bic) replace
 
+	global outcomes	fies_category_2 fies_category_3 
+						
+	foreach var in $outcomes {
+	    
+		di "`var'"
+		conindex `var' , rank(wealth_quintile_ns) svy wagstaff bounded limits(0 1) compare(midterm_endline)
+		
+	}				
+	
+	
+	conindex fies_rawscore, rank(wealth_quintile_ns) svy wagstaff bounded limits(0 8) compare(midterm_endline)
 	
 
 	****************************************************************************
@@ -531,7 +542,23 @@ do "$do/00_dir_setting.do"
 			eform ///
 			cells(b(star fmt(3)) se(par fmt(2)))  ///
 			legend label varlabels(_cons constant) ///
-			stats(r2 df_r bic) replace	
+			stats(r2 df_r bic) replace
+			
+			
+	global outcomes	pn_access pn_muac_access pn_msg_access pn_wash_access pn_sbcc_access pn_hgdn_access pn_emgy_access
+					
+						
+	foreach var in $outcomes {
+	    
+		di "`var'"
+		conindex `var' , rank(wealth_quintile_ns) svy wagstaff bounded limits(0 1) compare(midterm_endline)
+		
+	}				
+	
+	
+	//conindex wempo_index, rank(wealth_quintile_ns) svy wagstaff bounded limits(-3 1.11) compare(midterm_endline)
+	
+
 	
 // END HERE 
 

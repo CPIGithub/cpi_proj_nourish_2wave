@@ -132,7 +132,20 @@ do "$do/00_dir_setting.do"
 			cells(b(star fmt(3)) se(par fmt(2)))  ///
 			legend label varlabels(_cons constant) ///
 			stats(r2 df_r bic) replace			
+
+	global outcomes	mddw_yes 
+					
+	foreach var in $outcomes {
+	    
+		di "`var'"
+		conindex `var' , rank(wealth_quintile_ns) svy wagstaff bounded limits(0 1) compare(midterm_endline)
+		
+	}				
 	
+	
+	conindex mddw_score, rank(wealth_quintile_ns) svy wagstaff bounded limits(0 10) compare(midterm_endline)
+	
+						
 	
 	****************************************************************************
 	* Mom Health Module *
@@ -532,7 +545,28 @@ do "$do/00_dir_setting.do"
 			cells(b(star fmt(3)) se(par fmt(2)))  ///
 			legend label varlabels(_cons constant) ///
 			stats(r2 df_r bic) replace	
+
+	
+	
+	global outcomes /*wempo_familyfood_yes*/ wempo_childcare_yes wempo_child_health_yes wempo_child_wellbeing_yes ///
+					wempo_mom_health_yes wempo_women_health_yes ///
+					 wempo_women_wages_yes wempo_major_purchase_yes ///
+					wempo_visiting_yes wempo_hnut_act_ja 
+					
+						
+	foreach var in $outcomes {
+	    
+		di "`var'"
+		conindex `var' , rank(wealth_quintile_ns) svy wagstaff bounded limits(0 1) compare(midterm_endline)
 		
+	}				
+	
+	
+	conindex wempo_index, rank(wealth_quintile_ns) svy wagstaff bounded limits(-3 1.11) compare(midterm_endline)
+	
+
+	
+	
 
 // END HERE 
 

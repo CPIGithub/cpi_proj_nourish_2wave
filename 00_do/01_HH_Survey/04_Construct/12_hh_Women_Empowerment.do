@@ -141,13 +141,28 @@ do "$do/00_dir_setting.do"
 	local attributes 	wempo_childcare wempo_mom_health wempo_child_health wempo_women_wages ///
 						wempo_major_purchase wempo_visiting wempo_women_health wempo_child_wellbeing
 	
-	foreach var in `attributes' {
+	/*
+	// this is the code use at midterm and have flaw in value assignment - for women and men deicision making 
+	// improved at endline but the midterm result did not change much as only slightly changes in value and still significant among qealth quintiles
+	
+	foreach var in `attributes' { 
 	    
 		gen `var'_d = (`var' == 1) 
 		replace `var'_d = -1 if `var' == 2
 		replace `var'_d = .m if `var' == 0 | `var' > 3
 		tab `var'_d, m 
 	}
+	*/
+	
+	// endline improvement code 
+	foreach var in `attributes' {
+	    
+		gen `var'_d = (`var' == 1) 
+		replace `var'_d = -1 if `var' >= 3 & !mi(`var')
+		replace `var'_d = .m if `var' == 0 //| `var' > 3
+		tab `var'_d, m 
+	}
+	
 	
 	gen wempo_hnut_act_ja = (wempo_child_health < 3 | wempo_childcare < 3 | wempo_child_wellbeing < 3)
 	replace wempo_hnut_act_ja = .m if mi(wempo_child_health) & mi(wempo_childcare) & mi(wempo_child_wellbeing)
