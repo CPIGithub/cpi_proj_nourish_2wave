@@ -273,6 +273,22 @@ do "$do/00_dir_setting.do"
 	replace cope_adverse_treatcost = .m if child_ill_treat != 1
 	lab var cope_adverse_treatcost "Any adverse coping mechanism (to pay for treatment)"
 	tab cope_adverse_treatcost, m 	
+	
+	
+	* coping mechanism - individual var 
+	
+	forvalues x = 1/14 {
+	    
+		local label_`x' : var label child_diarrh_cope`x'
+		
+		egen cope_all_`x' = rowtotal(child_*_cope`x')
+		replace cope_all_`x' = 1 if cope_all_`x' > 0 
+		replace cope_all_`x' = .m if child_ill_treat != 1
+		lab var cope_all_`x' "`label_`x''"
+		tab cope_all_`x', m 		
+		
+	}
+	
 
 	* Reason for not taking treatment * 
 	egen notreat_transport = rowtotal(child_*_notreat1 child_*_notreat2 child_*_notreat3 child_*_notreat9)
@@ -683,6 +699,45 @@ If the prevalence ratio for households with three or more children compared to h
 		svy: tab `var' notreat_advise, row
 		
 	}
+	
+	
+	** COPING AND NO TREAT REASONS **
+	global outcomes	child_ill_yes child_ill_treat child_ill_trained treat_pay cope_adverse_treatcost  ///
+					cope_all_2 cope_all_3 cope_all_4 cope_all_5 cope_all_6 ///
+					cope_all_8 cope_all_11 ///
+					cope_all_13 ///
+					notreat_transport notreat_treatcost notreat_conflict notreat_disability ///
+					notreat_covid notreat_advise notreat_notpresent notreat_hhwork
+					
+					
+	* All Obs
+	preserve 
+
+		keep $outcomes weight_final geo_vill stratum_num wealth_quintile_ns
+		
+		do "$hhdo/Function/00_frequency_table_one.do"
+
+
+		export excel $export_table 	using "$out/CHILD_HEALTH_SEEKING.xlsx", /// 
+									sheet("Health_Seeking") firstrow(varlabels) keepcellfmt sheetreplace 
+	
+	restore	
+	
+	
+	* by STRATUM 
+	preserve 
+
+		keep $outcomes weight_final geo_vill stratum_num wealth_quintile_ns
+		
+		global sub_grp wealth_quintile_ns
+		
+		do "$hhdo/Function/00_frequency_crosstable.do"
+
+		export excel $export_table 	using "$out/CHILD_HEALTH_SEEKING.xlsx", /// 
+									sheet("$sub_grp") firstrow(varlabels) keepcellfmt sheetreplace 
+	
+	restore	
+	
 	
 	
 // END HERE 
