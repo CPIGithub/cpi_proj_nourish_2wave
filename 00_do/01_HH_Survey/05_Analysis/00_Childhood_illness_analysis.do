@@ -740,6 +740,20 @@ If the prevalence ratio for households with three or more children compared to h
 	
 	
 	
+	* Equi Plot * 
+	import excel using "$result/childhood_health_seeking_results.xlsx", sheet("equiplot") firstrow clear 
+	
+	equiplot Poorest Poor Medium Wealthy Wealthiest, over(indicator)
+	
+	equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
+				over(indicator) sort(order) dotsize(3) ///
+				xtitle("% of U2 children ") legtitle("Wealth Quintiles") connected
+
+	graph export "$plots/EquiPlot_Child_Health_Seeking.png", replace
+	
+	
+	note(	"Source: $dtasource", size(vsmall) span)
+	
 // END HERE 
 
 

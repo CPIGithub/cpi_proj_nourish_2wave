@@ -2835,6 +2835,17 @@ do "$do/00_dir_setting.do"
 	
 
 	
+	* Equi Plot * 
+	import excel using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", sheet("equiplot") firstrow clear 
+	
+	equiplot Poorest Poor Medium Wealthy Wealthiest, over(indicator)
+	
+	equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
+				over(indicator) sort(order) dotsize(3) ///
+				xtitle("% of Mothers with U2 children ") legtitle("Wealth Quintiles") connected
+
+	graph export "$plots/EquiPlot_Mom_Health_Seeking.png", replace
+	
 	
 	****************************************************************************
 	** PHQ9 **
