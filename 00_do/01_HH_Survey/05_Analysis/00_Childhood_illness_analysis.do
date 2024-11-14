@@ -687,10 +687,25 @@ If the prevalence ratio for households with three or more children compared to h
 	putexcel close
 	
 
+	* Equi Plot * 
+	import excel using "$result/childhood_health_seeking_results.xlsx", sheet("equiplot") firstrow clear 
+	
+	equiplot Poorest Poor Medium Wealthy Wealthiest, over(indicator)
+	
+	equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
+				over(indicator) sort(order) dotsize(3) ///
+				xtitle("% of U2 children ") legtitle("Wealth Quintiles") connected
+
+	graph export "$plots/EquiPlot_Child_Health_Seeking.png", replace
+	
+	
+	note(	"Source: $dtasource", size(vsmall) span)
+	
 	
 	* Reasons for not taking treatment 
 	
-	local demo hfc_distance wealth_quintile_ns wempo_category org_name_num stratum 
+	local demo hfc_distance wealth_quintile_ns 
+	org_name_num stratum 
 	
 	foreach var in `demo' {
 	    
@@ -739,21 +754,120 @@ If the prevalence ratio for households with three or more children compared to h
 	restore	
 	
 	
+	// notreat_transport notreat_treatcost notreat_conflict notreat_disability notreat_covid notreat_advise notreat_notpresent notreat_hhwork
+					
+	local outcomes	notreat_transport notreat_treatcost notreat_conflict notreat_disability ///
+					/*notreat_covid*/ notreat_advise notreat_notpresent notreat_hhwork
 	
-	* Equi Plot * 
-	import excel using "$result/childhood_health_seeking_results.xlsx", sheet("equiplot") firstrow clear 
-	
-	equiplot Poorest Poor Medium Wealthy Wealthiest, over(indicator)
-	
-	equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
-				over(indicator) sort(order) dotsize(3) ///
-				xtitle("% of U2 children ") legtitle("Wealth Quintiles") connected
+	foreach outcome in `outcomes' {
+	 
+		local regressor  	caregiver_edu caregiver_age_grp caregiver_chidnum_grp caregiver_u5_num ///
+							caregiver_biochild first_born_child ///
+							child_ill_episode ///
+							hfc_vill_yes hfc_distance ///
+							wealth_quintile_ns wempo_category org_name_num stratum ///
+							child_ill1 child_ill2 child_ill3 ///
+							child_sex ///
+							child_ill_trained child_treat_eho 		    
 
-	graph export "$plots/EquiPlot_Child_Health_Seeking.png", replace
+		
+		foreach v in `regressor' {
+			
+			
+			putexcel set "$out/reg_output/No_treatment_`outcome'_glm_models.xlsx", sheet("`v'") modify 
+		
+			//if "`v'" != "child_ill_episode" | "`var'" == "caregiver_u5_num" {
+				
+				//svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform
+			//}
+			//else {
+				
+				svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform
+			//}
+			
+			
+			estimates store `v', title(`v')
+			
+			putexcel (A1) = etable
+			
+		}
+			
+	}	
+	   
+
+	** Concentration Index 		
+	local outcomes	notreat_transport notreat_treatcost notreat_conflict notreat_disability ///
+					/*notreat_covid*/ notreat_advise notreat_notpresent notreat_hhwork
+					
+	foreach var in `outcomes' {
+		
+		di "`var'"
+		conindex `var', rank(NationalScore) svy wagstaff bounded limits(0 1)
+
+	}
 	
 	
-	note(	"Source: $dtasource", size(vsmall) span)
+	* CI adjusted model 
+	// notreat_transport
 	
+	conindex2 notreat_disability, rank(NationalScore) ///
+								covars(	child_ill_episode) ///
+								svy wagstaff bounded limits(0 1)
+
+
+	
+	// notreat_hhwork		
+	conindex2 notreat_hhwork, rank(NationalScore) ///
+								covars(	child_ill_episode /// 
+										i.wealth_quintile_ns) ///
+								svy wagstaff bounded limits(0 1)
+	
+	// notreat_advise
+	conindex2 notreat_advise, rank(NationalScore) ///
+								covars(	hfc_vill_yes ///
+										i.hfc_distance ///
+										i.wealth_quintile_ns ///
+										i.wempo_category ///
+										i.org_name_num ///
+										stratum) ///
+								svy wagstaff bounded limits(0 1)		
+
+
+	// notreat_transport							
+	conindex2 notreat_transport, rank(NationalScore) ///
+								covars(	i.hfc_distance ///
+										i.wealth_quintile_ns ///
+										i.wempo_category ///
+										stratum) ///
+								svy wagstaff bounded limits(0 1)	
+								
+
+	// notreat_treatcost			
+	conindex2 notreat_treatcost, rank(NationalScore) ///
+								covars(	i.org_name_num) ///
+								svy wagstaff bounded limits(0 1)	
+ 	
+	// notreat_notpresent			
+	conindex2 notreat_notpresent, rank(NationalScore) ///
+								covars(	i.caregiver_edu /// 
+										i.caregiver_chidnum_grp ///
+										i.caregiver_u5_num ///
+										caregiver_biochild ///
+										first_born_child ///
+										i.hfc_distance ///
+										i.wealth_quintile_ns ///
+										i.wempo_category ///
+										i.org_name_num ///
+										stratum) ///
+								svy wagstaff bounded limits(0 1)
+	
+	// notreat_conflict
+	conindex2 notreat_conflict, rank(NationalScore) ///
+								covars(	i.caregiver_edu /// 
+										i.wealth_quintile_ns) ///
+								svy wagstaff bounded limits(0 1)
+
+								
 // END HERE 
 
 
