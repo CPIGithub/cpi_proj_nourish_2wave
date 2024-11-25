@@ -249,7 +249,8 @@ do "$do/00_dir_setting.do"
 	gen midterm_endline = 0 
 
 	keep 	org_name township_name geo_town geo_eho_vt_name geo_eho_vill_name vill_code geo_vill ///
-			weight_final midterm_endline
+			weight_final midterm_endline ///
+			household population pop2years pop25years u5_pop
 			
 			
 	tempfile midterm 
@@ -263,7 +264,8 @@ do "$do/00_dir_setting.do"
 	gen midterm_endline = 1
 
 	keep 	township_name geo_town geo_eho_vt_name geo_eho_vill_name vill_code geo_vill ///
-			weight_final midterm_endline
+			weight_final midterm_endline ///
+			household population pop2years pop25years u5_pop
 
 	append using `midterm'
 	
