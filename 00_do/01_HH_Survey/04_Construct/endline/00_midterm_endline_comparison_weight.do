@@ -275,6 +275,9 @@ do "$do/00_dir_setting.do"
 	lab val midterm_endline midterm_endline
 	tab midterm_endline, m 
 	
+	* Village name correction * 
+	replace geo_eho_vt_name = "Sin Kyone" if vill_code == "KRN-006-VIL-035"
+	replace geo_eho_vill_name = "Taw Gyi Gone" if vill_code == "KRN-006-VIL-035"
 	
 	* save as final weight for comparision 
 	save "$dta/endline/pnourish_midterm_vs_endline_hh_comparision_weight_final.dta", replace   

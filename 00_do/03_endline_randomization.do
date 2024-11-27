@@ -94,6 +94,8 @@ rename AR	new_stratum_2
 * Matched with midterm data 
 distinct org_name township_name geo_eho_vill_name, joint 
 
+save "$dta/endline/endline_sampling_frame_vill_feasibility_status.dta", replace 
+
 merge 1:1 	org_name township_name geo_eho_vill_name ///
 			using `midterm_data', ///
 			assert(1 3) nogen ///
