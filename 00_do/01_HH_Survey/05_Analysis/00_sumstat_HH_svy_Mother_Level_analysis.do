@@ -2836,6 +2836,7 @@ do "$do/00_dir_setting.do"
 
 	
 	* Equi Plot * 
+	* ref: https://www.equidade.org/equiplot
 	import excel using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", sheet("equiplot") firstrow clear 
 	
 	equiplot Poorest Poor Medium Wealthy Wealthiest, over(indicator)
