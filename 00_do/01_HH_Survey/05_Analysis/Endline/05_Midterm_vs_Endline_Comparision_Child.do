@@ -61,9 +61,45 @@ do "$do/00_dir_setting.do"
 	* endline 
 	use "$dta/endline/pnourish_child_iycf_final.dta", clear  
 		
+	merge m:1 _parent_index using 	"$dta/endline/pnourish_WOMEN_EMPOWER_final.dta", ///
+									assert(2 3) keep(matched) nogen ///
+									keepusing(wempo_index wempo_category progressivenss)
+
+	* Add Village Survey Info 
+	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
+						mkt_near_dist_dry mkt_near_dist_rain ///
+						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
+
+	merge m:1 geo_vill using 	"$dta/endline/PN_Village_Survey_Endline_FINAL_Constructed.dta", /// 
+								keepusing($villinfo) 						
+	
+	drop if _merge == 2
+	drop _merge 
+	
 	gen midterm_endline = 1 
 	
-	append using "$dta/pnourish_child_iycf_final.dta"
+	* midterm 
+	preserve 
+	
+		use "$dta/pnourish_child_iycf_final.dta", clear 
+		
+		merge m:1 _parent_index using	"$dta/pnourish_WOMEN_EMPOWER_final.dta", ///
+										assert(2 3) keep(matched) nogen ///
+										keepusing(wempo_index wempo_category progressivenss)
+
+	
+		merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", /// 
+									keepusing($villinfo) 
+				
+		drop if _merge == 2
+		drop _merge 
+	
+		tempfile midterm 
+		save `midterm', replace 
+	
+	restore 
+	
+	append using `midterm'
 	
 	replace midterm_endline = 0 if mi(midterm_endline)
 	tab midterm_endline, m 
@@ -75,7 +111,6 @@ do "$do/00_dir_setting.do"
 	tab midterm_endline _merge // un-matched come from the inaccessible village at endline (from midterm sample)
 	keep if _merge == 3
 	drop _merge 
-	
 	
 	* prepare covariate 
 	* geo and stratum 
@@ -120,6 +155,29 @@ do "$do/00_dir_setting.do"
 	lab var caregiver_chidnum_grp "Caregiver Number of Children"
 	tab caregiver_chidnum_grp, m 
 	
+	* Village level info
+	* proximity to health facility 
+	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
+	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
+	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
+	tab hfc_near_dist, m 
+	
+	tab hfc_vill0, m 
+	gen hfc_vill_yes = (hfc_vill0 == 0)
+	replace hfc_vill_yes = .m if mi(hfc_vill0)
+	lab val hfc_vill_yes yesno 
+	tab hfc_vill_yes, m 
+	
+	* distance HFC category 
+	gen hfc_distance = .m 
+	replace hfc_distance = 0 if hfc_near_dist_rain == 0
+	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
+	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
+	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
+	lab val hfc_distance hfc_distance
+	lab var hfc_distance "Nearest Health Facility - hours for round trip"
+	tab hfc_distance, mis
 	
 	* HH info 
 	sum NationalScore
@@ -186,6 +244,38 @@ do "$do/00_dir_setting.do"
 	
 	
 	conindex dietary_tot, rank(wealth_quintile_ns) svy wagstaff bounded limits(0 8) compare(midterm_endline)
+	
+	** multivariate CI - TEST VERSION **
+	/*
+	NationalScore wealth_quintile_ns
+	income_lastmonth
+	
+	wempo_index
+	
+	hfc_distance
+	
+	child_age_month caregiver_age
+	
+	midterm_endline
+	
+	*/
+	
+	logit mdd NationalScore income_lastmonth wempo_index hfc_distance caregiver_age child_age_month if midterm_endline == 0 
+
+	predict p_mdd_midterm if midterm_endline == 0, pr
+
+	logit mdd NationalScore income_lastmonth wempo_index hfc_distance caregiver_age child_age_month if midterm_endline == 1
+
+	predict p_mdd_endline if midterm_endline == 1, pr
+	
+	gen p_mdd = p_mdd_midterm
+	replace p_mdd = p_mdd_endline if !mi(p_mdd_endline) & mi(p_mdd_midterm)
+	tab p_mdd, m 
+	
+	egen rank_p_mdd = rank(p_mdd)
+
+	conindex mdd , rank(wealth_quintile_ns) svy wagstaff bounded limits(0 1) compare(midterm_endline)
+	conindex mdd , rank(rank_p_mdd) svy wagstaff bounded limits(0 1) compare(midterm_endline)
 	
 	
 	
