@@ -163,7 +163,6 @@ do "$do/00_dir_setting.do"
 		tab `var'_d, m 
 	}
 	
-	
 	gen wempo_hnut_act_ja = (wempo_child_health < 3 | wempo_childcare < 3 | wempo_child_wellbeing < 3)
 	replace wempo_hnut_act_ja = .m if mi(wempo_child_health) & mi(wempo_childcare) & mi(wempo_child_wellbeing)
 	lab var wempo_hnut_act_ja "Health and nutritional activities of children (either joint or alone)"
