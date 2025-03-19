@@ -228,7 +228,7 @@ decode cluster_cat, gen(cluster_cat_str)
 order organization  township_name townshippcode fieldnamevillagetracteho vt_sir_num cluster_cat cluster_cat_str villagenameeho vill_sir_num
 
 export delimited using "$result/pn_2_samplelist.csv", nolabel replace  
-save "$dta/pn_2_samplelist.dta", replace 
+save "$dta/pn_2_samplelist_new.dta", replace // should use the final one pn_2_samplelist_final as it was applied in the sampling work
 
 export excel using "$result/pn_2_samplelist.xlsx", sheet("pn_2_samplelist") firstrow(variable)  nolabel replace 
 

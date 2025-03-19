@@ -97,7 +97,7 @@ do "$do/00_dir_setting.do"
 	
 	
 	* Add Weight variable *
-	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
+	merge m:1 geo_vill 	using "$dta/pnourish_midterm_hh_weight_final.dta", /// // pnourish_hh_weight_final 
 						keepusing(stratum stratum_num org_name_num weight_final)
 	
 	keep if _merge == 3
@@ -159,7 +159,7 @@ do "$do/00_dir_setting.do"
 	    
 		gen `var'_d = (`var' == 1) 
 		replace `var'_d = -1 if `var' >= 3 & !mi(`var')
-		replace `var'_d = .m if `var' == 0 //| `var' > 3
+		replace `var'_d = .m if mi(`var') // `var' == 0 //| `var' > 3
 		tab `var'_d, m 
 	}
 	

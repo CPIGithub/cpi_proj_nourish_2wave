@@ -41,7 +41,7 @@ save `dfsamplesize', replace
 clear 
 
 // new pre-loaded file
-use "$dta/pn_2_samplelist.dta", clear  
+use "$dta/pn_2_samplelist_final.dta", clear  
  
 rename fieldnamevillagetracteho  	geo_eho_vt_name
 rename villagenameeho 				geo_eho_vill_name
