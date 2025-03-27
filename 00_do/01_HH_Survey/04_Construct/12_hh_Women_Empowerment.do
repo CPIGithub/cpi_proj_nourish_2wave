@@ -157,11 +157,14 @@ do "$do/00_dir_setting.do"
 	// endline improvement code 
 	foreach var in `attributes' {
 	    
-		gen `var'_d = (`var' == 1) 
-		replace `var'_d = -1 if `var' >= 3 & !mi(`var')
+		gen `var'_d = (`var' == 1) // women alone 
+		replace `var'_d = -1 if `var' >= 3 & !mi(`var') // husband or others
 		replace `var'_d = .m if mi(`var') // `var' == 0 //| `var' > 3
 		tab `var'_d, m 
 	}
+	
+	* code as -1 for no working women 
+	replace wempo_women_wages_d = -1 if wempo_women_wages == 0 
 	
 	gen wempo_hnut_act_ja = (wempo_child_health < 3 | wempo_childcare < 3 | wempo_child_wellbeing < 3)
 	replace wempo_hnut_act_ja = .m if mi(wempo_child_health) & mi(wempo_childcare) & mi(wempo_child_wellbeing)

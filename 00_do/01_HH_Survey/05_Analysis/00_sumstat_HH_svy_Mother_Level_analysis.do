@@ -2911,6 +2911,11 @@ do "$do/00_dir_setting.do"
 							}*/
 
 							
+	* Individual parameter - dummy variables 
+	svy: mean	wempo_childcare_yes wempo_mom_health_yes wempo_child_health_yes ///
+				wempo_women_wages_yes wempo_major_purchase_yes wempo_visiting_yes ///
+				wempo_women_health_yes wempo_child_wellbeing_yes
+							
 	svy: mean 	wempo_childcare wempo_mom_health wempo_child_health ///
 				wempo_women_wages wempo_major_purchase wempo_visiting ///
 				wempo_women_health wempo_child_wellbeing
@@ -3032,6 +3037,13 @@ do "$do/00_dir_setting.do"
 	svy: mean wempo_index, over(wealth_quintile_modify)
 	test _b[c.wempo_index@1bn.wealth_quintile_modify] = _b[c.wempo_index@2bn.wealth_quintile_modify] = _b[c.wempo_index@3bn.wealth_quintile_modify] = _b[c.wempo_index@4bn.wealth_quintile_modify] = _b[c.wempo_index@5bn.wealth_quintile_modify]
 
+	svy: tab stratum_num wempo_category , row 
+	svy: tab wealth_quintile_ns wempo_category , row 
+	
+	
+	svy: mean wempo_index, over(hhitems_phone) 
+	svy: mean wempo_index, over(pn_yes)  
+	svy: mean wempo_index, over(edu_exposure) 
 	
 	encode enu_name, gen(enu_name_num)
 	svy: mean wempo_index if org_name_num == 1, over(enu_name_num)
