@@ -972,7 +972,7 @@ do "$do/00_dir_setting.do"
 	putexcel (A1) = etable
 	
 	conindex mdd, rank(NationalScore) svy wagstaff bounded limits(0 1)
-	conindex2 mdd, rank(NationalScore) covars(i.resp_highedu i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mdd, rank(NationalScore) covars(i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 
 	conindex mdd, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 mdd, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
