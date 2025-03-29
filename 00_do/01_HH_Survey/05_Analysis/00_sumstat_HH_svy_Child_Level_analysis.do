@@ -909,7 +909,7 @@ do "$do/00_dir_setting.do"
 	
 	putexcel set "$out/reg_output/IYCF_dietary_tot_logistic_models.xls", sheet("Final_model") modify 
 	
-	svy: reg dietary_tot i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance i.org_name_num stratum 
+	svy: reg dietary_tot i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance stratum 
 	
 	putexcel (A1) = etable
 	
@@ -1002,7 +1002,7 @@ do "$do/00_dir_setting.do"
 	putexcel (A1) = etable
 
 	conindex mad, rank(NationalScore) svy wagstaff bounded limits(0 1)
-	conindex2 mad, rank(NationalScore) covars(i.resp_highedu i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mad, rank(NationalScore) covars(i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 	
 	conindex mad, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 mad, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
