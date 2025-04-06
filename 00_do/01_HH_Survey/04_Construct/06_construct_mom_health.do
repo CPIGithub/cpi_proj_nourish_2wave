@@ -143,7 +143,7 @@ do "$do/00_dir_setting.do"
 									anc_vill_who`n' anc_othp_who`n')
 									
 		//replace anc_who_`n' = 1 if anc_who_`n' > 1
-		replace anc_who_`n' = .m if anc_yn != 1
+		replace anc_who_`n' = .m if mi(anc_yn) // anc_yn != 1
 		tab anc_who_`n' , m 
 	}
 
@@ -163,7 +163,7 @@ do "$do/00_dir_setting.do"
 	gen anc_who_trained 	= (	anc_who_1 == 1 | anc_who_2 == 1 | anc_who_3 == 1 | ///
 								anc_who_4 == 1 | anc_who_5 == 1 | anc_who_6 == 1 | ///
 								anc_who_7 == 1 | anc_who_8 == 1 | anc_who_9 == 1)
-	replace anc_who_trained = .m if anc_yn != 1
+	replace anc_who_trained = .m if mi(anc_yn) // anc_yn != 1
 	lab var anc_who_trained "ANC with trained health personnel"
 	tab anc_who_trained, m 
 	
@@ -209,14 +209,14 @@ do "$do/00_dir_setting.do"
 	egen anc_who_tot = rowtotal(	anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 ///
 									anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 ///
 									anc_who_11 anc_who_888)
-	replace anc_who_tot = .m if anc_yn != 1
+	replace anc_who_tot = .m if mi(anc_yn) // anc_yn != 1
 	tab anc_who_tot, m 
 	
 	egen anc_all_visit_tot = rowtotal(	anc_home_visit anc_hosp_visit anc_pc_visit ///
 										anc_rhc_visit anc_ehoc_visit anc_ehom_visit ///
 										anc_vill_visit anc_othp_visit)
 	replace anc_all_visit_tot = round(anc_all_visit_tot / anc_who_tot, 1)
-	replace anc_all_visit_tot = .m if anc_yn != 1
+	replace anc_all_visit_tot = .m if mi(anc_yn) // anc_yn != 1
 	
 	tab anc_all_visit_tot, m 
 	
@@ -319,7 +319,7 @@ do "$do/00_dir_setting.do"
 									pnc_vill_who`n' pnc_othp_who`n')
 									
 		replace pnc_who_`n' = 1 if pnc_who_`n' > 1
-		replace pnc_who_`n' = .m if pnc_yn != 1
+		replace pnc_who_`n' = .m if mi(pnc_yn) // pnc_yn != 1
 		tab pnc_who_`n' , m 
 	}
 
@@ -340,7 +340,7 @@ do "$do/00_dir_setting.do"
 	gen pnc_who_trained 	= (	pnc_who_1 == 1 | pnc_who_2 == 1 | pnc_who_3 == 1 | ///
 								pnc_who_4 == 1 | pnc_who_5 == 1 | pnc_who_6 == 1 | ///
 								pnc_who_7 == 1 | pnc_who_8 == 1 | pnc_who_9 == 1)
-	replace pnc_who_trained = .m if pnc_yn != 1
+	replace pnc_who_trained = .m if mi(pnc_yn) // pnc_yn != 1
 	lab var pnc_who_trained "PNC with trained health personnel"
 	tab pnc_who_trained, m 
 	
@@ -372,7 +372,7 @@ do "$do/00_dir_setting.do"
 									nbc_vill_who`n' nbc_othp_who`n')
 									
 		replace nbc_who_`n' = 1 if nbc_who_`n' > 1
-		replace nbc_who_`n' = .m if nbc_yn != 1
+		replace nbc_who_`n' = .m if mi(nbc_yn) // nbc_yn != 1
 		tab nbc_who_`n' , m 
 	}
 
@@ -393,13 +393,13 @@ do "$do/00_dir_setting.do"
 	gen nbc_who_trained 	= (	nbc_who_1 == 1 | nbc_who_2 == 1 | nbc_who_3 == 1 | ///
 								nbc_who_4 == 1 | nbc_who_5 == 1 | nbc_who_6 == 1 | ///
 								nbc_who_7 == 1 | nbc_who_8 == 1 | nbc_who_9 == 1)
-	replace nbc_who_trained = .m if nbc_yn != 1
+	replace nbc_who_trained = .m if mi(nbc_yn) // nbc_yn != 1
 	lab var nbc_who_trained "NBC with trained health personnel"
 	tab nbc_who_trained, m 
 	
 	
 	* Add Weight variable *
-	merge m:1 geo_vill 	using "$dta/pnourish_hh_weight_final.dta", ///
+	merge m:1 geo_vill 	using "$dta/pnourish_midterm_hh_weight_final.dta", /// // pnourish_hh_weight_final
 						keepusing(stratum stratum_num org_name_num weight_final)
 	
 	keep if _merge == 3

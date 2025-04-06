@@ -20,7 +20,50 @@ do "$do/00_dir_setting.do"
 	****************************************************************************
 
 	use "$dta/pnourish_respondent_info_final.dta", clear   
+	
+	* Add Village Survey Info 
+	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
+						mkt_near_dist_dry mkt_near_dist_rain ///
+						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
+	
+	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
+								keepusing($villinfo) 
+	
+	drop if _merge == 2
+	drop _merge 
+	
+	
+	egen mkt_near_dist = rowmean(mkt_near_dist_dry mkt_near_dist_rain)
+	replace mkt_near_dist = .m if mi(mkt_near_dist_dry) & mi(mkt_near_dist_rain)
+	lab var mkt_near_dist "Nearest Market - hours for round trip"
+	tab mkt_near_dist, m 
+	
+	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
+	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
+	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
+	tab hfc_near_dist, m 
+	
+	gen mkt_distance = .m 
+	replace mkt_distance = 0 if mkt_near_dist_rain == 0
+	replace mkt_distance = 1 if mkt_near_dist_rain > 0 & mkt_near_dist_rain <= 1.5
+	replace mkt_distance = 2 if mkt_near_dist_rain > 1.5 & mkt_near_dist_rain <= 5
+	replace mkt_distance = 3 if mkt_near_dist_rain > 5 & !mi(mkt_near_dist_rain)
+	lab var mkt_distance "Nearest Market - hours for round trip"
+	lab def mkt_distance 0"Market at village" 1"< 1.5 hrs" 2"1.5 - 5 hrs" 3"> 5 hrs"
+	lab val mkt_distance mkt_distance
+	tab mkt_distance, mis
 
+	gen hfc_distance = .m 
+	replace hfc_distance = 0 if hfc_near_dist_rain == 0
+	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
+	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
+	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
+	lab val hfc_distance hfc_distance
+	lab var hfc_distance "Nearest Health Facility - hours for round trip"
+	tab hfc_distance, mis
+	
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
@@ -54,6 +97,9 @@ do "$do/00_dir_setting.do"
 	svy: tab wealth_quintile_ns, ci 
 	svy: tab wealth_quintile_modify, ci 
 	
+	* HFC and Market Distance 
+	svy: tab mkt_distance, ci  
+	svy: tab hfc_distance, ci   
 
 	* cross-tab 
 	// phone 
@@ -620,6 +666,7 @@ do "$do/00_dir_setting.do"
 	
 	svy: mean fies_insecurity
 	svy: mean fies_insecurity, over(NationalQuintile)
+	svy: mean fies_insecurity, over(wealth_quintile_ns)
 	conindex fies_insecurity, rank(NationalQuintile) svy wagstaff bounded limits(0 1)
 
 	
@@ -1195,7 +1242,7 @@ do "$do/00_dir_setting.do"
 	svy: tab NationalQuintile prgexpo_pn, row
 
 	svy: tab wealth_quintile_ns prgexpo_pn, row 
-
+	conindex prgexpo_pn, rank(NationalQuintile) svy wagstaff bounded limits(0 1)
 	
 	// prgexpo_join1 prgexpo_join2 prgexpo_join3 prgexpo_join4 prgexpo_join5 prgexpo_join6 prgexpo_join7 prgexpo_join8 prgexpo_join9
 	svy: mean prgexpo_join1 
@@ -1230,10 +1277,10 @@ do "$do/00_dir_setting.do"
 						
 	
 	foreach var of varlist 	prgexpo_pn prgexpo_join1 prgexpo_join2 prgexpo_join3 prgexpo_join4 ///
-							prgexpo_join5 prgexpo_join6 prgexpo_join7 prgexpo_join8 {
+							prgexpo_join5 prgexpo_join6 prgexpo_join7 prgexpo_join8 prgexpo_join9 {
 					
 		di "`var'"
-		//svy: tab NationalQuintile `var', row 
+		svy: tab wealth_quintile_ns `var', row 
 		conindex `var', rank(NationalScore) svy wagstaff bounded limits(0 1)
 		
 		}

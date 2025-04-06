@@ -2834,7 +2834,7 @@ do "$do/00_dir_setting.do"
 	}
 	
 
-	
+	&&
 	* Equi Plot * 
 	* ref: https://www.equidade.org/equiplot
 	import excel using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", sheet("equiplot") firstrow clear 
@@ -2916,6 +2916,17 @@ do "$do/00_dir_setting.do"
 				wempo_women_wages_yes wempo_major_purchase_yes wempo_visiting_yes ///
 				wempo_women_health_yes wempo_child_wellbeing_yes
 							
+	
+	foreach var of varlist 	wempo_childcare_yes wempo_mom_health_yes wempo_child_health_yes ///
+							wempo_women_wages_yes wempo_major_purchase_yes wempo_visiting_yes ///
+							wempo_women_health_yes wempo_child_wellbeing_yes{
+								
+		di "`var'"
+		svy: tab wealth_quintile_ns `var', row   
+		//conindex `var', rank(NationalScore) svy wagstaff bounded limits(0 1)
+		
+		}	
+	
 	svy: mean 	wempo_childcare wempo_mom_health wempo_child_health ///
 				wempo_women_wages wempo_major_purchase wempo_visiting ///
 				wempo_women_health wempo_child_wellbeing
