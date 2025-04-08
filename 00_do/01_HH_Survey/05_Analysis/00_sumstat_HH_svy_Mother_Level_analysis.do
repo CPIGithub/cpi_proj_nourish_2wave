@@ -805,7 +805,7 @@ do "$do/00_dir_setting.do"
 	use "$dta/pnourish_mom_health_final.dta", clear   
 
 	* women empowerment dataset 
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss high_empower)
 	
 	drop if _merge == 2 
 	drop _merge 
@@ -1075,9 +1075,13 @@ do "$do/00_dir_setting.do"
 			_b[c.wempo_index@3bn.stratum_num] = ///
 			_b[c.wempo_index@4bn.stratum_num] = ///
 			_b[c.wempo_index@5bn.stratum_num]
-		
+			
+	conindex wempo_index, rank(NationalScore) svy truezero generalized
+	conindex `v', rank(`var') svy wagstaff bounded limits(0 8)
+	
 	svy: tab wealth_quintile_ns progressivenss, row 
 	svy: tab wealth_quintile_ns wempo_category, row 
+	conindex progressivenss, rank(NationalScore) svy wagstaff bounded limits(0 1)
 
 	svy: mean wempo_index
 	svy: mean wempo_index, over(wealth_quintile_ns)
@@ -1087,7 +1091,9 @@ do "$do/00_dir_setting.do"
 			_b[c.wempo_index@4bn.wealth_quintile_ns] = ///
 			_b[c.wempo_index@5bn.wealth_quintile_ns]
 			
-
+	svy: mean high_empower
+	svy: mean high_empower, over(wealth_quintile_ns)
+	conindex high_empower, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	
 	****************************************************************************
 	** Mom ANC **
