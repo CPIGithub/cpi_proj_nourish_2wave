@@ -210,6 +210,10 @@ do "$do/00_dir_setting.do"
 	lab var progressivenss "Low Women Empowerment (Index < median score)"
 	tab progressivenss, m 
 	
+	gen high_empower = (progressivenss == 0)
+	replace high_empower = .m if mi(progressivenss)
+	lab var high_empower "High Women Empowerment (Index > median score)"
+	tab high_empower, m 
 	
 	merge 1:1 respd_id using "$dta/pnourish_FIES_final.dta"
 		 

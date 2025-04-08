@@ -3075,6 +3075,10 @@ do "$do/00_dir_setting.do"
 	
 	svy: mean progressivenss
 	svy: mean progressivenss, over(NationalQuintile)
+	
+	svy: mean high_empower
+	svy: mean high_empower, over(NationalQuintile)
+	conindex high_empower, rank(NationalScore) svy wagstaff bounded limits(0 1)
 
 	
 	
