@@ -176,6 +176,10 @@ do "$do/00_dir_setting.do"
 	svy: tab hh_mem_highedu_all prgexpo_pn, row 
 	
 	
+	// distance to market and HFC
+	svy: tab mkt_distance , ci 
+	svy: tab hfc_distance, ci 
+	
 	****************************************************************************
 	* HH Income *
 	****************************************************************************

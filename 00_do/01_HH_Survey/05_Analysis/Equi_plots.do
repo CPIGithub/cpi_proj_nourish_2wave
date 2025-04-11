@@ -34,8 +34,9 @@ do "$do/00_dir_setting.do"
 	equiplot Poorest Poor Medium Wealthy Wealthiest, over(indicator)
 	
 	equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
-				over(indicator) sort(order) dotsize(3) ///
-				xtitle("% of Mothers with U2 children ") legtitle("Wealth Quintiles") connected
+				over(indicator) sort(order) dotsize(1.5) ///
+				xtitle("% of Mothers with U2 children ") ///
+				legtitle("Maternal Health Service Utilization by Wealth Quintile") connected
 
 	graph export "$plots/EquiPlot_Mom_Health_Seeking.png", replace
 	
@@ -55,11 +56,12 @@ do "$do/00_dir_setting.do"
 	* Women_Empowerment
 	preserve 
 		
-		keep if order2 < 22 
+		keep if order2 > 1 & order2 < 22 
 		
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order2) dotsize(1.5) /// 
-					xtitle("% of HH (w/U5) or Mother (w/U5)") legtitle("Women's Empowerment by Wealth Quintiles") connected
+					xtitle("% of Eligible Households/Women") ///
+					legtitle("Women's Empowerment and Project Nourish Coverage by Wealth Quintile") connected 
 
 		graph export "$plots/EquiPlot_Women_Empowerment_Long.png", replace
 		//graph export "$plots/EquiPlot_Women_Empowerment.gph", replace
@@ -68,11 +70,12 @@ do "$do/00_dir_setting.do"
 	
 	preserve 
 		
-		keep if order2 < 14 
+		keep if order2 > 1 & order2 < 14 
 		
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order2) dotsize(1.5) /// 
-					xtitle("% of (w/U5)") legtitle("Women's Empowerment by Wealth Quintiles") connected
+					xtitle("Percentage of Women with Children Under 5 (%)") ///
+					legtitle("Women's Empowerment Indicators by Wealth Quintile") connected
 
 		graph export "$plots/EquiPlot_Women_Empowerment.png", replace
 		//graph export "$plots/EquiPlot_Women_Empowerment.gph", replace
@@ -86,7 +89,8 @@ do "$do/00_dir_setting.do"
 		
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order2) dotsize(1.5) /// 
-					xtitle("% of HH (w/U5)") legtitle("Project Nourish Coverage by Wealth Quintiles") connected
+					xtitle("% of Households with U5 Children") ///
+					legtitle("Coverage of Project Nourish Interventions by Wealth Quintile") connected
 
 		graph export "$plots/EquiPlot_PN_Coverage.png", replace
 		//graph export "$plots/EquiPlot_PN_Coverage.gph", replace
@@ -100,7 +104,8 @@ do "$do/00_dir_setting.do"
 		
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order2) dotsize(1.5) /// 
-					xtitle("% of HH (w/U5) or Mother (w/U5) or Child (Under 2)") legtitle("Food Security by Wealth Quintile") connected
+					xtitle("Percent of Population Meeting Indicator (%)") ///
+					legtitle("Food Security and Dietary Diversity Indicators by Wealth Quintile") connected
 
 		graph export "$plots/EquiPlot_Food_Security.png", replace
 		//graph export "$plots/EquiPlot_Food_Security.gph", replace
