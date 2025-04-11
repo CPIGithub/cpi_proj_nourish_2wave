@@ -112,7 +112,7 @@ do "$do/00_dir_setting.do"
 	tab anc_yn, m 
 	
 	// anc_where 
-	replace anc_where = .m if anc_yn != 1
+	replace anc_where = .m if mi(anc_yn) // anc_yn != 1
 	tab anc_where, m 
 	
 	lab def ancwhere 	1"Home" 2"Government hospital" 3"Private Clinic" 4"SRHC-RHC" ///
@@ -122,6 +122,28 @@ do "$do/00_dir_setting.do"
 	lab val anc_where ancwhere 
 	tab anc_where, m 
 	
+	
+	local ancwhere 	`""Home" "Government hospital" "Private Clinic" "SRHC-RHC" "EHO Clinic" "EHO clinic mobile team (within village)" "Routine ANC place within village" "Other""'
+						
+	levelsof anc_where, local(places)
+	
+	local i = 1
+	foreach x in `places' {
+		
+		local label : word `i' of `ancwhere'
+		
+		gen anc_where_`x' = (anc_where == `x')
+		replace anc_where_`x' = .m if mi(anc_yn)
+		
+		lab var anc_where_`x' "`label'"
+		
+		tab anc_where_`x' , m 
+		
+		local i = `i' + 1
+	}
+	
+	
+	order anc_where_*, after(anc_where)
 	
 	// anc_*_who
 	local phase anc pnc nbc 
@@ -142,7 +164,7 @@ do "$do/00_dir_setting.do"
 									anc_rhc_who`n' anc_ehoc_who`n' anc_ehom_who`n' ///
 									anc_vill_who`n' anc_othp_who`n')
 									
-		//replace anc_who_`n' = 1 if anc_who_`n' > 1
+		replace anc_who_`n' = 1 if anc_who_`n' > 1
 		replace anc_who_`n' = .m if mi(anc_yn) // anc_yn != 1
 		tab anc_who_`n' , m 
 	}
@@ -216,6 +238,7 @@ do "$do/00_dir_setting.do"
 										anc_rhc_visit anc_ehoc_visit anc_ehom_visit ///
 										anc_vill_visit anc_othp_visit)
 	replace anc_all_visit_tot = round(anc_all_visit_tot / anc_who_tot, 1)
+	replace anc_all_visit_tot = 0 if anc_yn == 0
 	replace anc_all_visit_tot = .m if mi(anc_yn) // anc_yn != 1
 	
 	tab anc_all_visit_tot, m 
@@ -234,10 +257,11 @@ do "$do/00_dir_setting.do"
 	foreach n in `numbers' {
 		
 		replace anc_who_visit_`n' 	= anc_all_visit_tot if anc_who_`n' == 1
+		replace anc_who_visit_`n' 	= 0 if anc_who_`n' == 0
+		
 		tab anc_who_visit_`n', m 
 	}
 		
-
 	lab var anc_who_visit_1 	"Specialist"
 	lab var anc_who_visit_2 	"Doctor"
 	lab var anc_who_visit_3 	"Nurse"
@@ -307,7 +331,29 @@ do "$do/00_dir_setting.do"
 	
 	// pnc_where 
 	replace pnc_where = .m if pnc_yn != 1
+	lab val pnc_where ancwhere 
 	tab pnc_where, m 
+	
+	local pncwhere 	`""Home" "Government hospital" "Private Clinic" "SRHC-RHC" "EHO Clinic" "EHO clinic mobile team (within village)" "Routine ANC place within village" "Don't know/Don't remember" "Other""'
+						
+	levelsof pnc_where, local(places)
+	
+	local i = 1
+	foreach x in `places' {
+		
+		local label : word `i' of `pncwhere'
+		
+		gen pnc_where_`x' = (pnc_where == `x')
+		replace pnc_where_`x' = .m if mi(pnc_yn)
+		
+		lab var pnc_where_`x' "`label'"
+		
+		tab pnc_where_`x' , m 
+		
+		local i = `i' + 1
+	}
+	
+	order pnc_where_*, after(pnc_where)
 
 	// pnc_*_who
 	local numbers 1 2 3 4 5 6 7 8 9 10 11 888
@@ -322,7 +368,6 @@ do "$do/00_dir_setting.do"
 		replace pnc_who_`n' = .m if mi(pnc_yn) // pnc_yn != 1
 		tab pnc_who_`n' , m 
 	}
-
 	
 	lab var pnc_who_1 	"Specialist"
 	lab var pnc_who_2 	"Doctor"
@@ -359,8 +404,31 @@ do "$do/00_dir_setting.do"
 	tab nbc_2days_yn, m 
 	
 	// nbc_where
-	replace nbc_where = .m if nbc_yn != 1
+	replace nbc_where = .m if nbc_yn != 1	
+	lab val nbc_where ancwhere 
 	tab nbc_where, m 
+	
+	
+	local nbcwhere 	`""Home" "Government hospital" "Private Clinic" "SRHC-RHC" "EHO Clinic" "EHO clinic mobile team (within village)" "Routine ANC place within village" "Other""'
+						
+	levelsof nbc_where, local(places)
+	
+	local i = 1
+	foreach x in `places' {
+		
+		local label : word `i' of `nbcwhere'
+		
+		gen nbc_where_`x' = (nbc_where == `x')
+		replace nbc_where_`x' = .m if mi(nbc_yn)
+		
+		lab var nbc_where_`x' "`label'"
+		
+		tab nbc_where_`x' , m 
+		
+		local i = `i' + 1
+	}
+	
+	order nbc_where_*, after(nbc_where)
 	
 	// nbc_*_who
 	local numbers 1 2 3 4 5 6 7 8 9 10 11 888

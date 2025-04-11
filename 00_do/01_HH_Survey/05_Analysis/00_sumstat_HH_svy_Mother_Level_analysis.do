@@ -1077,7 +1077,6 @@ do "$do/00_dir_setting.do"
 			_b[c.wempo_index@5bn.stratum_num]
 			
 	conindex wempo_index, rank(NationalScore) svy truezero generalized
-	conindex `v', rank(`var') svy wagstaff bounded limits(0 8)
 	
 	svy: tab wealth_quintile_ns progressivenss, row 
 	svy: tab wealth_quintile_ns wempo_category, row 
@@ -1110,6 +1109,7 @@ do "$do/00_dir_setting.do"
 	svy: mean  anc_yn
 	svy: tab stratum_num anc_yn, row 
 	svy: tab NationalQuintile anc_yn, row
+	svy: tab wealth_quintile_ns anc_yn, row 
 	svy: tab hh_mem_dob_str anc_yn, row 
 	
 	lab var anc_yn "ANC - yes"
@@ -1127,20 +1127,26 @@ do "$do/00_dir_setting.do"
 		legend(label(1 "Lowess Curve"))
 		
 	graph export "$plots/lowess_anc_childob.png", replace
-
-	
 	
 	svy: reg anc_yn hfc_near_dist_dry 
 	svy: reg anc_yn hfc_near_dist_rain 
 
-	
+
 	// anc_where 
-	svy: tab anc_where,ci
+	svy: mean anc_where_1 anc_where_2 anc_where_3 anc_where_4 anc_where_5 anc_where_6 anc_where_7 anc_where_888
 	svy: tab stratum_num anc_where, row 
 	svy: tab NationalQuintile anc_where, row 
-	svy: tab NationalQuintile_recod anc_where, row 
+	svy: tab wealth_quintile_ns anc_where, row 
 	svy: tab wealth_quintile_ns anc_where, row 
 	
+	svy: mean 	anc_where_1 anc_where_2 anc_where_3 anc_where_4 anc_where_5 anc_where_6 anc_where_7 anc_where_888, ///
+				over(stratum_num)
+	
+	svy: mean 	anc_where_1 anc_where_2 anc_where_3 anc_where_4 anc_where_5 anc_where_6 anc_where_7 anc_where_888, ///
+				over(NationalQuintile)	
+	
+	svy: mean 	anc_where_1 anc_where_2 anc_where_3 anc_where_4 anc_where_5 anc_where_6 anc_where_7 anc_where_888, ///
+				over(wealth_quintile_ns)			
 	
 	// anc_*_who
 	// anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 anc_who_11 anc_who_888
@@ -1161,6 +1167,11 @@ do "$do/00_dir_setting.do"
 	svy: mean 	anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 anc_who_6 ///
 				anc_who_7 anc_who_8 anc_who_9 anc_who_10 anc_who_11 anc_who_888, ///
 				over(NationalQuintile)
+	
+	svy: mean 	anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 anc_who_6 ///
+				anc_who_7 anc_who_8 anc_who_9 anc_who_10 anc_who_11 anc_who_888, ///
+				over(wealth_quintile_ns)				
+				
 	
 	foreach var of varlist 	anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 ///
 							anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 ///
@@ -1189,6 +1200,8 @@ do "$do/00_dir_setting.do"
 	svy: mean  anc_who_trained
 	svy: tab stratum_num anc_who_trained, row 
 	svy: tab NationalQuintile anc_who_trained, row
+	svy: tab wealth_quintile_ns anc_who_trained, row
+	
 	svy: tab hh_mem_dob_str anc_who_trained, row 
 
 	* Create a scatter plot with lowess curves 
@@ -1212,6 +1225,9 @@ do "$do/00_dir_setting.do"
 
 	// anc_*_visit
 	// anc_who_visit_1 anc_who_visit_2 anc_who_visit_3 anc_who_visit_4 anc_who_visit_5 anc_who_visit_6 anc_who_visit_7 anc_who_visit_8 anc_who_visit_9 anc_who_visit_10 anc_who_visit_11 anc_who_visit_888
+	
+	
+	svy: mean anc_who_visit_1 anc_who_visit_2 anc_who_visit_3 anc_who_visit_4 anc_who_visit_5 anc_who_visit_6 anc_who_visit_7 anc_who_visit_8 anc_who_visit_9 anc_who_visit_10 anc_who_visit_11 anc_who_visit_888
 	
 	svy: mean	anc_who_visit_1 
 	
@@ -1248,6 +1264,9 @@ do "$do/00_dir_setting.do"
 	svy: mean anc_visit_trained, over(NationalQuintile)
 	svy: reg anc_visit_trained i.NationalQuintile
 
+	svy: mean anc_visit_trained, over(wealth_quintile_ns)
+	svy: reg anc_visit_trained i.wealth_quintile_ns	
+	
 	svy: reg anc_visit_trained hfc_near_dist_dry 
 	svy: reg anc_visit_trained hfc_near_dist_rain 
 
@@ -1255,6 +1274,7 @@ do "$do/00_dir_setting.do"
 	svy: mean  anc_visit_trained_4times
 	svy: tab stratum_num anc_visit_trained_4times, row 
 	svy: tab NationalQuintile anc_visit_trained_4times, row
+	svy: tab wealth_quintile_ns anc_visit_trained_4times, row
 	
 	svy: tab hh_mem_dob_str anc_visit_trained_4times, row 
 
@@ -1592,8 +1612,8 @@ do "$do/00_dir_setting.do"
 	foreach outcome in `outcomes' {
 	 
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
-							anc_month_dry_2s anc_month_wet_2s ///
-							hfc_vill_yes hfc_distance ///
+							/*anc_month_dry_2s anc_month_wet_2s*/ ///
+							/*hfc_vill_yes*/ hfc_distance ///
 							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
@@ -1638,7 +1658,28 @@ do "$do/00_dir_setting.do"
 			
 	}
 	
-	** anc_yn
+	** anc_yn	
+	svy: glm 		anc_yn	 	i.resp_highedu /// // svy: logistic 
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								i.hfc_distance ///
+								i.wealth_quintile_ns ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum, ///
+								family(binomial) link(log) nolog eform
+					
+	conindex anc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 anc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
 	// Education as rank
 	conindex anc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 anc_yn, 	rank(resp_highedu_ci) ///
@@ -1668,6 +1709,27 @@ do "$do/00_dir_setting.do"
 
 						
 	** anc_who_trained 
+	svy: glm anc_who_trained 	/*i.resp_highedu*/ /// // svy: logistic 
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								i.hfc_distance ///
+								/*i.wealth_quintile_ns*/ ///
+								/*i.wempo_category*/ ///
+								i.org_name_num ///
+								stratum, ///
+								family(binomial) link(log) nolog eform
+					
+	conindex anc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 anc_who_trained, 	rank(NationalScore) ///
+						covars(	/*i.resp_highedu*/ ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								/*i.wempo_category*/) ///
+						svy wagstaff bounded limits(0 1)
+						
 	// Education as rank
 	conindex anc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 anc_who_trained, 	rank(resp_highedu_ci) ///
@@ -1696,6 +1758,27 @@ do "$do/00_dir_setting.do"
 						svy wagstaff bounded limits(0 1)
 	
 	** anc_visit_trained_4times 
+	svy: glm anc_visit_trained_4times 	  	i.resp_highedu /// // svy: logistic 
+											/*i.mom_age_grp*/ ///
+											i.respd_chid_num_grp ///
+											i.hfc_distance ///
+											i.wealth_quintile_ns ///
+											i.wempo_category ///
+											i.org_name_num ///
+											stratum, ///
+											family(binomial) link(log) nolog eform
+					
+	conindex anc_visit_trained_4times, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 anc_visit_trained_4times, 	rank(NationalScore) ///
+									covars(	i.resp_highedu ///
+											/*i.mom_age_grp*/ ///
+											i.respd_chid_num_grp ///
+											i.hfc_distance ///
+											i.org_name_num ///
+											stratum ///
+											i.wempo_category) ///
+									svy wagstaff bounded limits(0 1)
+						
 	// Education as rank
 	conindex anc_visit_trained_4times, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 anc_visit_trained_4times, 	rank(resp_highedu_ci) ///
@@ -1942,7 +2025,7 @@ do "$do/00_dir_setting.do"
 	 
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
 							delivery_month_season ///
-							hfc_vill_yes hfc_distance ///
+							/*hfc_vill_yes*/ hfc_distance ///
 							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
@@ -1989,6 +2072,29 @@ do "$do/00_dir_setting.do"
 	
 	
 	** insti_birth   
+	svy: glm insti_birth 	i.resp_highedu /// // svy: logistic
+							/*i.mom_age_grp*/ ///
+							i.respd_chid_num_grp ///
+							/*i.delivery_month_season*/ ///
+							i.hfc_distance ///
+							i.wealth_quintile_ns ///
+							/*i.wempo_category*/ ///
+							/*i.org_name_num*/ ///
+							stratum, ///
+							family(binomial) link(log) nolog eform
+							
+	conindex insti_birth, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 insti_birth, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								/*i.wempo_category*/ ///
+								/*i.org_name_num*/ ///
+								stratum) ///
+						svy wagstaff bounded limits(0 1)
+						
 	// Education as rank
 	conindex insti_birth, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 insti_birth, 	rank(resp_highedu_ci) ///
@@ -2016,7 +2122,30 @@ do "$do/00_dir_setting.do"
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
 						
-	** skilled_battend  
+	** skilled_battend
+	svy: glm skilled_battend 	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wealth_quintile_ns ///
+								/*i.wempo_category*/ ///
+								i.org_name_num ///
+								stratum, ///
+								family(binomial) link(log) nolog eform
+							
+	conindex skilled_battend, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 skilled_battend, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								/*i.org_name_num*/ ///
+								stratum) ///
+						svy wagstaff bounded limits(0 1)
+
 	// Education as rank
 	conindex skilled_battend, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 skilled_battend, 	rank(resp_highedu_ci) ///
@@ -2067,14 +2196,26 @@ do "$do/00_dir_setting.do"
 	svy: reg pnc_yn hfc_near_dist_dry 
 	svy: reg pnc_yn hfc_near_dist_rain 	
 	
+	svy: tab hhitems_phone pnc_yn, row 
+	svy: tab prgexpo_pn pnc_yn, row 	
+	svy: tab edu_exposure pnc_yn, row 
+	
 	// pnc_where 
-	svy: tab pnc_where,ci
+	svy: mean pnc_where_1 pnc_where_2 pnc_where_3 pnc_where_4 pnc_where_5 pnc_where_6 pnc_where_888 pnc_where_999
 	svy: tab stratum_num pnc_where, row 
 	svy: tab NationalQuintile pnc_where, row 
 	svy: tab NationalQuintile_recod pnc_where, row 
 	svy: tab wealth_quintile_ns pnc_where, row 
 	
-
+	svy: mean 	pnc_where_1 pnc_where_2 pnc_where_3 pnc_where_4 pnc_where_5 pnc_where_6 pnc_where_888 pnc_where_999, ///
+				over(stratum_num)
+				
+	svy: mean 	pnc_where_1 pnc_where_2 pnc_where_3 pnc_where_4 pnc_where_5 pnc_where_6 pnc_where_888 pnc_where_999, ///
+				over(NationalQuintile)
+				
+	svy: mean 	pnc_where_1 pnc_where_2 pnc_where_3 pnc_where_4 pnc_where_5 pnc_where_6 pnc_where_888 pnc_where_999, ///
+				over(wealth_quintile_ns)
+				
 	// pnc_*_who
 	// pnc_who_1 pnc_who_2 pnc_who_3 pnc_who_4 pnc_who_5 pnc_who_6 pnc_who_7 pnc_who_8 pnc_who_9 pnc_who_10 pnc_who_11 pnc_who_888
 	
@@ -2096,6 +2237,11 @@ do "$do/00_dir_setting.do"
 	svy: mean 	pnc_who_1 pnc_who_2 pnc_who_3 pnc_who_4 pnc_who_5 pnc_who_6 ///
 				pnc_who_7 pnc_who_8 pnc_who_9 pnc_who_10 pnc_who_11 pnc_who_888, ///
 				over(NationalQuintile)
+				
+	svy: mean 	pnc_who_1 pnc_who_2 pnc_who_3 pnc_who_4 pnc_who_5 pnc_who_6 ///
+				pnc_who_7 pnc_who_8 pnc_who_9 pnc_who_10 pnc_who_11 pnc_who_888, ///
+				over(wealth_quintile_ns)
+				
 	
 	foreach var of varlist 	pnc_who_1 pnc_who_2 pnc_who_3 pnc_who_4 pnc_who_5 ///
 							pnc_who_6 pnc_who_7 pnc_who_8 pnc_who_9 pnc_who_10 ///
@@ -2260,7 +2406,7 @@ do "$do/00_dir_setting.do"
 	 
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
 							delivery_month_season ///
-							hfc_vill_yes hfc_distance ///
+							hfc_distance ///
 							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
@@ -2307,6 +2453,29 @@ do "$do/00_dir_setting.do"
 	
 	
 	** pnc_yn   
+	svy: glm pnc_yn 	i.resp_highedu /// // svy: logistic
+						/*i.mom_age_grp*/ ///
+						i.respd_chid_num_grp ///
+						/*i.delivery_month_season*/ ///
+						i.hfc_distance ///
+						i.wealth_quintile_ns ///
+						i.wempo_category ///
+						i.org_name_num ///
+						stratum, ///
+						family(binomial) link(log) nolog eform
+						
+	conindex pnc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 pnc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum) ///
+						svy wagstaff bounded limits(0 1)
+						
 	// Education as rank
 	conindex pnc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 pnc_yn, 	rank(resp_highedu_ci) ///
@@ -2335,7 +2504,30 @@ do "$do/00_dir_setting.do"
 						svy wagstaff bounded limits(0 1)
 							
 							
-	** pnc_who_trained  
+	** pnc_who_trained 
+	svy: glm pnc_who_trained 	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wealth_quintile_ns ///
+								/*i.wempo_category*/ ///
+								/*i.org_name_num*/ ///
+								stratum, ///
+								family(binomial) link(log) nolog eform
+						
+	conindex pnc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 pnc_who_trained, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								/*i.wempo_category*/ ///
+								/*i.org_name_num*/ ///
+								stratum) ///
+						svy wagstaff bounded limits(0 1)
+						
 	// Education as rank
 	conindex pnc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 pnc_who_trained, 	rank(resp_highedu_ci) ///
@@ -2399,12 +2591,20 @@ do "$do/00_dir_setting.do"
 	svy: reg nbc_2days_yn hfc_near_dist_rain 	
 	
 	// nbc_where
-	svy: tab nbc_where,ci
+	svy: mean nbc_where_1 nbc_where_2 nbc_where_3 nbc_where_4 nbc_where_5 nbc_where_6 nbc_where_7 nbc_where_888
 	svy: tab stratum_num nbc_where, row 
 	svy: tab NationalQuintile nbc_where, row 
 	svy: tab NationalQuintile_recod nbc_where, row 
 	svy: tab wealth_quintile_ns nbc_where, row 
 	
+	svy: mean nbc_where_1 nbc_where_2 nbc_where_3 nbc_where_4 nbc_where_5 nbc_where_6 nbc_where_7 nbc_where_888, ///
+				over(stratum_num)
+	
+	svy: mean nbc_where_1 nbc_where_2 nbc_where_3 nbc_where_4 nbc_where_5 nbc_where_6 nbc_where_7 nbc_where_888, ///
+				over(NationalQuintile)
+	
+	svy: mean nbc_where_1 nbc_where_2 nbc_where_3 nbc_where_4 nbc_where_5 nbc_where_6 nbc_where_7 nbc_where_888, ///
+				over(wealth_quintile_ns)
 	
 	// nbc_*_who
 	// nbc_who_1 nbc_who_2 nbc_who_3 nbc_who_4 nbc_who_5 nbc_who_6 nbc_who_7 nbc_who_8 nbc_who_9 nbc_who_10 nbc_who_11 nbc_who_888
@@ -2427,6 +2627,10 @@ do "$do/00_dir_setting.do"
 				nbc_who_7 nbc_who_8 nbc_who_9 nbc_who_10 nbc_who_11 nbc_who_888, ///
 				over(NationalQuintile)
 	
+	svy: mean 	nbc_who_1 nbc_who_2 nbc_who_3 nbc_who_4 nbc_who_5 nbc_who_6 ///
+				nbc_who_7 nbc_who_8 nbc_who_9 nbc_who_10 nbc_who_11 nbc_who_888, ///
+				over(wealth_quintile_ns)
+				
 	foreach var of varlist 	nbc_who_1 nbc_who_2 nbc_who_3 nbc_who_4 nbc_who_5 ///
 							nbc_who_6 nbc_who_7 nbc_who_8 nbc_who_9 nbc_who_10 ///
 							nbc_who_11 nbc_who_888 {
@@ -2630,7 +2834,7 @@ do "$do/00_dir_setting.do"
 	 
 		local regressor  	resp_highedu mom_age_grp respd_chid_num_grp ///
 							delivery_month_season ///
-							hfc_vill_yes hfc_distance ///
+							hfc_distance ///
 							wealth_quintile_ns wempo_category org_name_num stratum  
 		
 		foreach v in `regressor' {
@@ -2677,6 +2881,29 @@ do "$do/00_dir_setting.do"
 	
 	
 	** nbc_yn   
+	svy: glm nbc_yn 	i.resp_highedu /// // svy: logistic
+						/*i.mom_age_grp*/ ///
+						i.respd_chid_num_grp ///
+						/*i.delivery_month_season*/ ///
+						i.hfc_distance ///
+						i.wealth_quintile_ns ///
+						i.wempo_category ///
+						i.org_name_num ///
+						stratum, ///
+						family(binomial) link(log) nolog eform
+						
+	conindex nbc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 nbc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum) ///
+						svy wagstaff bounded limits(0 1)
+						
 	// Education as rank
 	conindex nbc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 nbc_yn, 	rank(resp_highedu_ci) ///
@@ -2705,6 +2932,29 @@ do "$do/00_dir_setting.do"
 						svy wagstaff bounded limits(0 1)
 	
 	** nbc_who_trained  
+	svy: glm nbc_who_trained 	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wealth_quintile_ns ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum, ///
+								family(binomial) link(log) nolog eform
+						
+	conindex nbc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 nbc_who_trained, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								i.respd_chid_num_grp ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum) ///
+						svy wagstaff bounded limits(0 1)
+						
 	// Education as rank
 	conindex nbc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 nbc_who_trained, 	rank(resp_highedu_ci) ///
