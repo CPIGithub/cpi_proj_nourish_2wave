@@ -1621,10 +1621,10 @@ do "$do/00_dir_setting.do"
 			putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "anc_month_dry_2s" | "`v'" == "anc_month_wet_2s" | "`v'" == "hfc_near_dist" {
-				svy: glm `outcome' `v', family(binomial) link(log) nolog eform // svy: logistic 
+				svy: glm `outcome' `v', family(poisson) link(log) nolog eform // svy: logistic 
 			}
 			else {
-				svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform // svy: logistic 
+				svy: glm `outcome' i.`v', family(poisson) link(log) nolog eform // svy: logistic 
 			}
 			
 			estimates store `v', title(`v')
@@ -1659,15 +1659,30 @@ do "$do/00_dir_setting.do"
 	}
 	
 	** anc_yn	
-	svy: glm 		anc_yn	 	i.resp_highedu /// // svy: logistic 
-								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
-								i.hfc_distance ///
-								i.wealth_quintile_ns ///
-								i.wempo_category ///
-								i.org_name_num ///
-								stratum, ///
-								family(binomial) link(log) nolog eform
+	
+	svy: glm anc_yn i.resp_highedu, family(poisson) link(log) nolog eform
+	svy: glm anc_yn i.resp_highedu, family(binomial) link(log) nolog eform
+	
+	local outcomes	anc_yn 
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: glm 		`outcome' 	i.resp_highedu /// // svy: logistic 
+									/*i.mom_age_grp*/ ///
+									i.respd_chid_num_grp ///
+									i.hfc_distance ///
+									i.wealth_quintile_ns ///
+									i.wempo_category ///
+									i.org_name_num ///
+									stratum, ///
+									family(poisson) link(log) nolog eform
+	
+		putexcel (A1) = etable
+			
+	}
 					
 	conindex anc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 anc_yn, 	rank(NationalScore) ///
@@ -1709,25 +1724,36 @@ do "$do/00_dir_setting.do"
 
 						
 	** anc_who_trained 
-	svy: glm anc_who_trained 	/*i.resp_highedu*/ /// // svy: logistic 
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								i.hfc_distance ///
-								/*i.wealth_quintile_ns*/ ///
-								/*i.wempo_category*/ ///
-								i.org_name_num ///
-								stratum, ///
-								family(binomial) link(log) nolog eform
+	local outcomes	anc_who_trained 
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: glm 		`outcome' 	/*i.resp_highedu*/ /// // svy: logistic 
+									i.mom_age_grp ///
+									i.respd_chid_num_grp ///
+									i.hfc_distance ///
+									i.wealth_quintile_ns ///
+									/*i.wempo_category*/ ///
+									i.org_name_num ///
+									stratum, ///
+									family(poisson) link(log) nolog eform
+	
+		putexcel (A1) = etable
+			
+	}
 					
 	conindex anc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 anc_who_trained, 	rank(NationalScore) ///
-						covars(	/*i.resp_highedu*/ ///
+						covars(	/*i.resp_highedu*/ /// // svy: logistic 
 								i.mom_age_grp ///
 								i.respd_chid_num_grp ///
 								i.hfc_distance ///
+								/*i.wempo_category*/ ///
 								i.org_name_num ///
-								stratum ///
-								/*i.wempo_category*/) ///
+								stratum) ///
 						svy wagstaff bounded limits(0 1)
 						
 	// Education as rank
@@ -1758,25 +1784,36 @@ do "$do/00_dir_setting.do"
 						svy wagstaff bounded limits(0 1)
 	
 	** anc_visit_trained_4times 
-	svy: glm anc_visit_trained_4times 	  	i.resp_highedu /// // svy: logistic 
-											/*i.mom_age_grp*/ ///
-											i.respd_chid_num_grp ///
-											i.hfc_distance ///
-											i.wealth_quintile_ns ///
-											i.wempo_category ///
-											i.org_name_num ///
-											stratum, ///
-											family(binomial) link(log) nolog eform
+	local outcomes	anc_visit_trained_4times 
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: glm 		`outcome' 	i.resp_highedu /// // svy: logistic 
+									/*i.mom_age_grp*/ ///
+									i.respd_chid_num_grp ///
+									i.hfc_distance ///
+									i.wealth_quintile_ns ///
+									i.wempo_category ///
+									i.org_name_num ///
+									stratum, ///
+									family(poisson) link(log) nolog eform
+	
+		putexcel (A1) = etable
+			
+	}
 					
 	conindex anc_visit_trained_4times, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 anc_visit_trained_4times, 	rank(NationalScore) ///
-									covars(	i.resp_highedu ///
+									covars(	i.resp_highedu /// // svy: logistic 
 											/*i.mom_age_grp*/ ///
 											i.respd_chid_num_grp ///
 											i.hfc_distance ///
+											i.wempo_category ///
 											i.org_name_num ///
-											stratum ///
-											i.wempo_category) ///
+											stratum) ///
 									svy wagstaff bounded limits(0 1)
 						
 	// Education as rank
@@ -2033,10 +2070,10 @@ do "$do/00_dir_setting.do"
 			putexcel set "$out/reg_output/Delivery_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "hfc_near_dist" {
-				svy: glm `outcome' `v', family(binomial) link(log) nolog eform // svy: logistic
+				svy: glm `outcome' `v', family(poisson) link(log) nolog eform // svy: logistic
 			}
 			else {
-				svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform // svy: logistic
+				svy: glm `outcome' i.`v', family(poisson) link(log) nolog eform // svy: logistic
 			}
 			
 			estimates store `v', title(`v')
@@ -2071,8 +2108,15 @@ do "$do/00_dir_setting.do"
 	}
 	
 	
-	** insti_birth   
-	svy: glm insti_birth 	i.resp_highedu /// // svy: logistic
+	** insti_birth 
+	local outcomes	insti_birth  
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/Delivery_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							/*i.mom_age_grp*/ ///
 							i.respd_chid_num_grp ///
 							/*i.delivery_month_season*/ ///
@@ -2081,18 +2125,21 @@ do "$do/00_dir_setting.do"
 							/*i.wempo_category*/ ///
 							/*i.org_name_num*/ ///
 							stratum, ///
-							family(binomial) link(log) nolog eform
+							family(poisson) link(log) nolog eform
+		putexcel (A1) = etable
+			
+	}
 							
 	conindex insti_birth, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 insti_birth, 	rank(NationalScore) ///
 						covars(	i.resp_highedu /// // svy: logistic
-								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
-								/*i.delivery_month_season*/ ///
-								i.hfc_distance ///
-								/*i.wempo_category*/ ///
-								/*i.org_name_num*/ ///
-								stratum) ///
+							/*i.mom_age_grp*/ ///
+							i.respd_chid_num_grp ///
+							/*i.delivery_month_season*/ ///
+							i.hfc_distance ///
+							/*i.wempo_category*/ ///
+							/*i.org_name_num*/ ///
+							stratum) ///
 						svy wagstaff bounded limits(0 1)
 						
 	// Education as rank
@@ -2123,26 +2170,36 @@ do "$do/00_dir_setting.do"
 						svy wagstaff bounded limits(0 1)
 						
 	** skilled_battend
-	svy: glm skilled_battend 	i.resp_highedu /// // svy: logistic
-								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
-								/*i.delivery_month_season*/ ///
-								i.hfc_distance ///
-								i.wealth_quintile_ns ///
-								/*i.wempo_category*/ ///
-								i.org_name_num ///
-								stratum, ///
-								family(binomial) link(log) nolog eform
+	local outcomes	skilled_battend  
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/Delivery_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
+							/*i.mom_age_grp*/ ///
+							i.respd_chid_num_grp ///
+							/*i.delivery_month_season*/ ///
+							i.hfc_distance ///
+							i.wealth_quintile_ns ///
+							/*i.wempo_category*/ ///
+							i.org_name_num ///
+							stratum, ///
+							family(poisson) link(log) nolog eform
+		putexcel (A1) = etable
+			
+	}
 							
-	conindex skilled_battend, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex , rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 skilled_battend, 	rank(NationalScore) ///
 						covars(	i.resp_highedu /// // svy: logistic
 								/*i.mom_age_grp*/ ///
 								i.respd_chid_num_grp ///
 								/*i.delivery_month_season*/ ///
 								i.hfc_distance ///
-								i.wempo_category ///
-								/*i.org_name_num*/ ///
+								/*i.wempo_category*/ ///
+								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
 
@@ -2414,10 +2471,10 @@ do "$do/00_dir_setting.do"
 			putexcel set "$out/reg_output/PNC_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "hfc_near_dist" {
-				svy: glm `outcome' `v', family(binomial) link(log) nolog eform // svy: logistic
+				svy: glm `outcome' `v', family(poisson) link(log) nolog eform // svy: logistic
 			}
 			else {
-				svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform // svy: logistic
+				svy: glm `outcome' i.`v', family(poisson) link(log) nolog eform // svy: logistic
 			}
 			
 			estimates store `v', title(`v')
@@ -2452,17 +2509,28 @@ do "$do/00_dir_setting.do"
 	}
 	
 	
-	** pnc_yn   
-	svy: glm pnc_yn 	i.resp_highedu /// // svy: logistic
-						/*i.mom_age_grp*/ ///
-						i.respd_chid_num_grp ///
-						/*i.delivery_month_season*/ ///
-						i.hfc_distance ///
-						i.wealth_quintile_ns ///
-						i.wempo_category ///
-						i.org_name_num ///
-						stratum, ///
-						family(binomial) link(log) nolog eform
+	** pnc_yn  
+	
+	local outcomes	pnc_yn 
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/PNC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
+							/*i.mom_age_grp*/ ///
+							i.respd_chid_num_grp ///
+							/*i.delivery_month_season*/ ///
+							i.hfc_distance ///
+							i.wealth_quintile_ns ///
+							/*i.wempo_category*/ ///
+							i.org_name_num ///
+							stratum, ///
+							family(poisson) link(log) nolog eform
+		putexcel (A1) = etable
+			
+	}
 						
 	conindex pnc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 pnc_yn, 	rank(NationalScore) ///
@@ -2471,7 +2539,7 @@ do "$do/00_dir_setting.do"
 								i.respd_chid_num_grp ///
 								/*i.delivery_month_season*/ ///
 								i.hfc_distance ///
-								i.wempo_category ///
+								/*i.wempo_category*/ ///
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
@@ -2504,17 +2572,27 @@ do "$do/00_dir_setting.do"
 						svy wagstaff bounded limits(0 1)
 							
 							
-	** pnc_who_trained 
-	svy: glm pnc_who_trained 	i.resp_highedu /// // svy: logistic
-								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
-								/*i.delivery_month_season*/ ///
-								i.hfc_distance ///
-								i.wealth_quintile_ns ///
-								/*i.wempo_category*/ ///
-								/*i.org_name_num*/ ///
-								stratum, ///
-								family(binomial) link(log) nolog eform
+	** pnc_who_trained
+	local outcomes	pnc_who_trained
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/PNC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
+							/*i.mom_age_grp*/ ///
+							i.respd_chid_num_grp ///
+							/*i.delivery_month_season*/ ///
+							i.hfc_distance ///
+							i.wealth_quintile_ns ///
+							/*i.wempo_category*/ ///
+							/*i.org_name_num*/ ///
+							stratum, ///
+							family(poisson) link(log) nolog eform
+		putexcel (A1) = etable
+			
+	}
 						
 	conindex pnc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 pnc_who_trained, 	rank(NationalScore) ///
@@ -2842,10 +2920,10 @@ do "$do/00_dir_setting.do"
 			putexcel set "$out/reg_output/NBC_`outcome'_logistic_models.xls", sheet("`v'") modify 
 		
 			if "`v'" == "hfc_near_dist" {
-				svy: glm `outcome' `v', family(binomial) link(log) nolog eform // svy: logistic 
+				svy: glm `outcome' `v', family(poisson) link(log) nolog eform // svy: logistic 
 			}
 			else {
-				svy: glm `outcome' i.`v', family(binomial) link(log) nolog eform // svy: logistic 
+				svy: glm `outcome' i.`v', family(poisson) link(log) nolog eform // svy: logistic 
 			}
 			
 			estimates store `v', title(`v')
@@ -2881,6 +2959,32 @@ do "$do/00_dir_setting.do"
 	
 	
 	** nbc_yn   
+	* got same RR from two models in both version 
+	svy: glm nbc_yn i.wempo_category, family(poisson) link(log) nolog eform 
+	svy: glm nbc_yn i.wempo_category, family(binomial) link(log) nolog eform 
+
+	local outcomes	nbc_yn 
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/NBC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
+							/*i.mom_age_grp*/ ///
+							i.respd_chid_num_grp ///
+							/*i.delivery_month_season*/ ///
+							i.hfc_distance ///
+							i.wealth_quintile_ns ///
+							i.wempo_category ///
+							i.org_name_num ///
+							stratum, ///
+							family(poisson) link(log) nolog eform
+		putexcel (A1) = etable
+			
+	}
+	
+	* binomial had convergence not achieved issue
 	svy: glm nbc_yn 	i.resp_highedu /// // svy: logistic
 						/*i.mom_age_grp*/ ///
 						i.respd_chid_num_grp ///
@@ -2891,7 +2995,30 @@ do "$do/00_dir_setting.do"
 						i.org_name_num ///
 						stratum, ///
 						family(binomial) link(log) nolog eform
+			
+	* SAME output svy: poisson , irr VS glm, family(poisson) link(log) nolog eform
+	svy: poisson nbc_yn i.resp_highedu /// // svy: logistic
+						/*i.mom_age_grp*/ ///
+						i.respd_chid_num_grp ///
+						/*i.delivery_month_season*/ ///
+						i.hfc_distance ///
+						i.wealth_quintile_ns ///
+						i.wempo_category ///
+						i.org_name_num ///
+						stratum, ///
+						irr
 						
+	svy: glm nbc_yn 	i.resp_highedu /// // svy: logistic
+						/*i.mom_age_grp*/ ///
+						i.respd_chid_num_grp ///
+						/*i.delivery_month_season*/ ///
+						i.hfc_distance ///
+						i.wealth_quintile_ns ///
+						i.wempo_category ///
+						i.org_name_num ///
+						stratum, ///
+						family(poisson) link(log) nolog eform
+								
 	conindex nbc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 nbc_yn, 	rank(NationalScore) ///
 						covars(	i.resp_highedu /// // svy: logistic
@@ -2932,16 +3059,26 @@ do "$do/00_dir_setting.do"
 						svy wagstaff bounded limits(0 1)
 	
 	** nbc_who_trained  
-	svy: glm nbc_who_trained 	i.resp_highedu /// // svy: logistic
-								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
-								/*i.delivery_month_season*/ ///
-								i.hfc_distance ///
-								i.wealth_quintile_ns ///
-								i.wempo_category ///
-								i.org_name_num ///
-								stratum, ///
-								family(binomial) link(log) nolog eform
+	local outcomes	nbc_who_trained 
+	
+	foreach outcome in `outcomes' {
+	 
+			
+		putexcel set "$out/reg_output/NBC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
+		
+		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
+							/*i.mom_age_grp*/ ///
+							i.respd_chid_num_grp ///
+							/*i.delivery_month_season*/ ///
+							i.hfc_distance ///
+							i.wealth_quintile_ns ///
+							i.wempo_category ///
+							i.org_name_num ///
+							stratum, ///
+							family(poisson) link(log) nolog eform
+		putexcel (A1) = etable
+			
+	}
 						
 	conindex nbc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 nbc_who_trained, 	rank(NationalScore) ///

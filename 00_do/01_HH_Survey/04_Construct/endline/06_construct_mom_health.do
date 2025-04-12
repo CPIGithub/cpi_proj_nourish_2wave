@@ -105,7 +105,6 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2 // Mom health session only ask for U2 mom - ummatched came from > 2 yrs old
 	drop _merge 
 	
-	
 	****************************************************************************
 	** Mom ANC **
 	****************************************************************************
@@ -129,8 +128,29 @@ do "$do/00_dir_setting.do"
 	lab val anc_where ancwhere 
 	*/
 	tab anc_where, m 
-	tab1 anc_where1 anc_where2 anc_where3 anc_where4 anc_where5 anc_where6 anc_where7 anc_where999, m 
+	replace anc_where = ""
+	destring anc_where, replace 
 	
+	local ancwhere 	`""Home" "Government hospital" "Private Clinic" "SRHC-RHC" "EHO Clinic" "EHO clinic mobile team (within village)" "Routine ANC place within village" "Other""'
+	
+	local anc_places 1 2 3 4 5 6 7 888
+	
+	local i = 1
+	foreach x in `anc_places' {
+	    
+		local label : word `i' of `ancwhere'
+		
+		replace anc_where`x' = 0 if anc_yn == 0
+		
+		rename anc_where`x' anc_where_`x'
+		
+		lab var anc_where_`x' "`label'"
+		
+		tab anc_where_`x' , m 
+		
+		local i = `i' + 1
+		
+	}
 	
 	// anc_*_who
 	local phase anc pnc nbc 
@@ -151,8 +171,8 @@ do "$do/00_dir_setting.do"
 									anc_rhc_who`n' anc_ehoc_who`n' anc_ehom_who`n' ///
 									anc_vill_who`n' anc_othp_who`n')
 									
-		//replace anc_who_`n' = 1 if anc_who_`n' > 1
-		replace anc_who_`n' = .m if anc_yn != 1
+		replace anc_who_`n' = 1 if anc_who_`n' > 1
+		replace anc_who_`n' = .m if mi(anc_yn) // anc_yn != 1
 		tab anc_who_`n' , m 
 	}
 
@@ -172,7 +192,7 @@ do "$do/00_dir_setting.do"
 	gen anc_who_trained 	= (	anc_who_1 == 1 | anc_who_2 == 1 | anc_who_3 == 1 | ///
 								anc_who_4 == 1 | anc_who_5 == 1 | anc_who_6 == 1 | ///
 								anc_who_7 == 1 | anc_who_8 == 1 | anc_who_9 == 1)
-	replace anc_who_trained = .m if anc_yn != 1
+	replace anc_who_trained = .m if mi(anc_yn) // anc_yn != 1
 	lab var anc_who_trained "ANC with trained health personnel"
 	tab anc_who_trained, m 
 	
@@ -205,7 +225,7 @@ do "$do/00_dir_setting.do"
 	*/
 	
 
-	// anc_*_visit <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<, this part need to be improve 
+	// anc_*_visit 
 	local places home hosp pc rhc ehoc ehom vill othp
 	
 	foreach p in `places' {
@@ -218,14 +238,15 @@ do "$do/00_dir_setting.do"
 	egen anc_who_tot = rowtotal(	anc_who_1 anc_who_2 anc_who_3 anc_who_4 anc_who_5 ///
 									anc_who_6 anc_who_7 anc_who_8 anc_who_9 anc_who_10 ///
 									anc_who_11 anc_who_888)
-	replace anc_who_tot = .m if anc_yn != 1
+	replace anc_who_tot = .m if mi(anc_yn) // anc_yn != 1
 	tab anc_who_tot, m 
 	
 	egen anc_all_visit_tot = rowtotal(	anc_home_visit anc_hosp_visit anc_pc_visit ///
 										anc_rhc_visit anc_ehoc_visit anc_ehom_visit ///
 										anc_vill_visit anc_othp_visit)
 	replace anc_all_visit_tot = round(anc_all_visit_tot / anc_who_tot, 1)
-	replace anc_all_visit_tot = .m if anc_yn != 1
+	replace anc_all_visit_tot = 0 if anc_yn == 0
+	replace anc_all_visit_tot = .m if mi(anc_yn) // anc_yn != 1
 	
 	tab anc_all_visit_tot, m 
 	
@@ -243,6 +264,7 @@ do "$do/00_dir_setting.do"
 	foreach n in `numbers' {
 		
 		replace anc_who_visit_`n' 	= anc_all_visit_tot if anc_who_`n' == 1
+		replace anc_who_visit_`n' 	= 0 if anc_who_`n' == 0
 		tab anc_who_visit_`n', m 
 	}
 		
@@ -308,7 +330,6 @@ do "$do/00_dir_setting.do"
 	lab var skilled_battend "Births attended by skilled health personnel"
 	tab skilled_battend, m 
 
-
 	****************************************************************************
 	** Mom PNC **
 	****************************************************************************
@@ -330,11 +351,10 @@ do "$do/00_dir_setting.do"
 									pnc_vill_who`n' pnc_othp_who`n')
 									
 		replace pnc_who_`n' = 1 if pnc_who_`n' > 1
-		replace pnc_who_`n' = .m if pnc_yn != 1
+		replace pnc_who_`n' = .m if mi(pnc_yn) // pnc_yn != 1
 		tab pnc_who_`n' , m 
 	}
 
-	
 	lab var pnc_who_1 	"Specialist"
 	lab var pnc_who_2 	"Doctor"
 	lab var pnc_who_3 	"Nurse"
@@ -351,7 +371,7 @@ do "$do/00_dir_setting.do"
 	gen pnc_who_trained 	= (	pnc_who_1 == 1 | pnc_who_2 == 1 | pnc_who_3 == 1 | ///
 								pnc_who_4 == 1 | pnc_who_5 == 1 | pnc_who_6 == 1 | ///
 								pnc_who_7 == 1 | pnc_who_8 == 1 | pnc_who_9 == 1)
-	replace pnc_who_trained = .m if pnc_yn != 1
+	replace pnc_who_trained = .m if mi(pnc_yn) // pnc_yn != 1
 	lab var pnc_who_trained "PNC with trained health personnel"
 	tab pnc_who_trained, m 
 	
@@ -373,6 +393,27 @@ do "$do/00_dir_setting.do"
 	replace nbc_where = .m if nbc_yn != 1
 	tab nbc_where, m 
 	
+	local nbcwhere 	`""Home" "Government hospital" "Private Clinic" "SRHC-RHC" "EHO Clinic" "EHO clinic mobile team (within village)" "Routine ANC place within village" "Other""'
+						
+	levelsof nbc_where, local(places)
+	
+	local i = 1
+	foreach x in `places' {
+		
+		local label : word `i' of `nbcwhere'
+		
+		gen nbc_where_`x' = (nbc_where == `x')
+		replace nbc_where_`x' = .m if mi(nbc_yn)
+		
+		lab var nbc_where_`x' "`label'"
+		
+		tab nbc_where_`x' , m 
+		
+		local i = `i' + 1
+	}
+	
+	order nbc_where_*, after(nbc_where)
+	
 	// nbc_*_who
 	local numbers 1 2 3 4 5 6 7 8 9 10 11 888
 	
@@ -383,10 +424,9 @@ do "$do/00_dir_setting.do"
 									nbc_vill_who`n' nbc_othp_who`n')
 									
 		replace nbc_who_`n' = 1 if nbc_who_`n' > 1
-		replace nbc_who_`n' = .m if nbc_yn != 1
+		replace nbc_who_`n' = .m if mi(nbc_yn) // nbc_yn != 1
 		tab nbc_who_`n' , m 
 	}
-
 	
 	lab var nbc_who_1 	"Specialist"
 	lab var nbc_who_2 	"Doctor"
@@ -404,7 +444,7 @@ do "$do/00_dir_setting.do"
 	gen nbc_who_trained 	= (	nbc_who_1 == 1 | nbc_who_2 == 1 | nbc_who_3 == 1 | ///
 								nbc_who_4 == 1 | nbc_who_5 == 1 | nbc_who_6 == 1 | ///
 								nbc_who_7 == 1 | nbc_who_8 == 1 | nbc_who_9 == 1)
-	replace nbc_who_trained = .m if nbc_yn != 1
+	replace nbc_who_trained = .m if mi(nbc_yn) // nbc_yn != 1
 	lab var nbc_who_trained "NBC with trained health personnel"
 	tab nbc_who_trained, m 
 	

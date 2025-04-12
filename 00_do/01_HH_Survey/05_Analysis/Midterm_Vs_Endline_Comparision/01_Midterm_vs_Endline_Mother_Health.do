@@ -209,6 +209,8 @@ Modified by			:
 	replace p_anc_yn_all = p_anc_yn_e_all if !mi(p_anc_yn_e_all) & mi(p_anc_yn_m_all)
 	tab p_anc_yn_all, m 
 	
+	conindex anc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	
 	
 	conindex anc_yn , rank(NationalScore) svy wagstaff bounded limits(0 1) compare(midterm_endline)
 	conindex anc_yn , rank(p_anc_yn) svy wagstaff bounded limits(0 1) compare(midterm_endline)
