@@ -1,7 +1,8 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	2nd round data collection: Data analysis - Mother level and Related Modules			
+Purpose				:	2nd round data collection: 
+						Data analysis Mother Health Care			
 Author				:	Nicholus Tint Zaw
 Date				: 	03/01/2023
 Modified by			:
@@ -17,1037 +18,189 @@ do "$do/00_dir_setting.do"
 
 	   
 	****************************************************************************
-	** Mom Dietary Diversity **
+	** Mom Health Services **
 	****************************************************************************
+	use "$dta/pnourish_mom_health_analysis_final.dta", clear    
 
-	use "$dta/pnourish_mom_diet_final.dta", clear 
-	
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
-	
-	drop if _merge == 2 
-	drop _merge 
-	
-	
-	* Add Village Survey Info 
-	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
-						mkt_near_dist_dry mkt_near_dist_rain ///
-						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
-	
-	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
-								keepusing($villinfo) 
-	
-	drop if _merge == 2
-	drop _merge 
-	
-	
-	egen mkt_near_dist = rowmean(mkt_near_dist_dry mkt_near_dist_rain)
-	replace mkt_near_dist = .m if mi(mkt_near_dist_dry) & mi(mkt_near_dist_rain)
-	lab var mkt_near_dist "Nearest Market - hours for round trip"
-	tab mkt_near_dist, m 
-	
-	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
-	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
-	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
-	tab hfc_near_dist, m 
-	
-	gen mkt_distance = .m 
-	replace mkt_distance = 0 if mkt_near_dist_rain == 0
-	replace mkt_distance = 1 if mkt_near_dist_rain > 0 & mkt_near_dist_rain <= 1.5
-	replace mkt_distance = 2 if mkt_near_dist_rain > 1.5 & mkt_near_dist_rain <= 5
-	replace mkt_distance = 3 if mkt_near_dist_rain > 5 & !mi(mkt_near_dist_rain)
-	lab var mkt_distance "Nearest Market - hours for round trip"
-	lab def mkt_distance 0"Market at village" 1"< 1.5 hrs" 2"1.5 - 5 hrs" 3"> 5 hrs"
-	lab val mkt_distance mkt_distance
-	tab mkt_distance, mis
-
-	gen hfc_distance = .m 
-	replace hfc_distance = 0 if hfc_near_dist_rain == 0
-	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
-	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
-	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
-	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
-	lab val hfc_distance hfc_distance
-	lab var hfc_distance "Nearest Health Facility - hours for round trip"
-	tab hfc_distance, mis
-
-	
-	
-	* treated other and monestic education as missing
-	gen resp_highedu_ci = resp_highedu
-	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
-	tab resp_highedu_ci, m 
-	
-	replace resp_highedu = .m if resp_highedu > 7 
-	replace resp_highedu = 4 if resp_highedu > 4 & !mi(resp_highedu)
-	tab resp_highedu, m 
-	
-	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+	
+	
+	** Chapter 8 - CI calculation 
+	* ranking assingment using Health Equity Index score - apply weight 
+	glcurve NationalScore [aw=weight_final], pvar(rank) nograph
+	
+	
+	* F - weight prepration 
+	sum weight_final // identify the longest decimal point 
+	di `r(max)' - floor(`r(max)')
+	
+	gen weight_final_int = weight_final * 10^6 // need integer weight var for fw weight 
+	gen new_weight = int(weight_final_int)
+	
+	** option 1: equation 8.3
+	qui sum anc_yn [fw = new_weight]
+	scalar mean = r(mean)
+	cor anc_yn rank [fw = new_weight], c
+	sca c=(2 / mean) * r(cov_12)
+	sca list c
+	
+	** option 2: equation 8.7 
+	qui sum rank [fw = new_weight]
+	sca var_rank = r(Var)
+	qui sum anc_yn [fw = new_weight]
+	scalar mean = r(mean)
 
-	* generate the interaction variable - stratum Vs quantile 
-	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
+	gen lhs = 2 * var_rank * (anc_yn / mean)
+	regr lhs rank [pw = weight_final], vce(cluster stratum_num) // control culster 
+	sca c = _b[rank]
+	sca list c
 	
 	
-	// stratum_num
-	svy: tab stratum mddw_yes, row
-	svy: mean mddw_score, over(stratum)
+	conindex anc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	
-	// mom_meal_freq
-	svy: mean mom_meal_freq
-
-	svy: mean mom_meal_freq, over(stratum_num)
-	svy: reg mom_meal_freq i.stratum_num
+	* >>>>>>>>>>>>>>>>. got different result 
+	drop rank 
 	
-	svy: mean mom_meal_freq, over(NationalQuintile)
-	svy: reg mom_meal_freq i.NationalQuintile
-
-	svy: mean mom_meal_freq, over(wealth_quintile_ns)
-
-	svy: mean mom_meal_freq, over(wealth_quintile_modify)
+	set logtype text 
+	log using "$do/decomposing_erreygers_CI_sample.text", replace  
 	
+	* ranking assingment using Health Equity Index score - apply weight 
+	glcurve NationalScore [aw=weight_final], pvar(rank) nograph
 	
-	
-	// food groups 
-	svy: mean  mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
-								mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
-								mddw_oth_veg mddw_oth_fruit
-			
-	foreach var of varlist mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
-								mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
-								mddw_oth_veg mddw_oth_fruit {
-									
-			svy: tab stratum_num `var', row //  have same obs 
-
-								}
-	
-	svy: mean 	mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
-				mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
-				mddw_oth_veg mddw_oth_fruit, ///
-				over(stratum_num)
-
-	foreach var of varlist mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
-								mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
-								mddw_oth_veg mddw_oth_fruit {
-									
-			svy: tab NationalQuintile `var', row //  have same obs 
-
-								}
-								
-	svy: mean 	mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
-				mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
-				mddw_oth_veg mddw_oth_fruit, ///
-				over(NationalQuintile)							
-
-				
-	foreach var of varlist 	mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
-							mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
-							mddw_oth_veg mddw_oth_fruit {
-	    
-		di "`var'"
-		
-		svy: tab wealth_quintile_ns `var', row
-	
-	}	
-	
-	
-	// mddw_score
-	svy: mean  mddw_score
-
-	svy: mean mddw_score, over(stratum_num)
-	svy: reg mddw_score i.stratum_num
-	
-	svy: mean mddw_score, over(NationalQuintile)
-	svy: reg mddw_score i.NationalQuintile
-	svy: mean mddw_score, over(wealth_quintile_ns)
-	svy: mean mddw_score, over(wealth_quintile_modify)
-	
-	svy: reg mddw_score wempo_index 
-	
-	svy: reg mom_meal_freq wempo_index 
-
-	
-	
-	// mddw_yes
-	svy: mean  mddw_yes
-	svy: tab stratum_num mddw_yes, row 
-	svy: tab NationalQuintile mddw_yes, row
-	svy: tab wealth_quintile_ns mddw_yes, row
-	svy: tab wealth_quintile_modify mddw_yes, row
-	
-	svy: tab hhitems_phone mddw_yes, row 
-	svy: tab prgexpo_pn mddw_yes, row 	
-	
-	svy: reg mddw_score hhitems_phone
-	svy: reg mddw_score prgexpo_pn
-	
-	svy: reg mddw_yes wempo_index 
-
-
-	// dietary_tot 
-	svy: mean mddw_score, over(hhitems_phone)
-	test _b[c.mddw_score@0bn.hhitems_phone] = _b[c.mddw_score@1bn.hhitems_phone]
-
-	svy: mean mddw_score, over(prgexpo_pn)
-	test _b[c.mddw_score@0bn.prgexpo_pn] = _b[c.mddw_score@1bn.prgexpo_pn]
-
-	svy: mean mddw_score, over(edu_exposure)
-	test _b[c.mddw_score@0bn.edu_exposure] = _b[c.mddw_score@1bn.edu_exposure]
-
-	
-	svy: tab hhitems_phone mddw_yes, row 
-	svy: tab prgexpo_pn mddw_yes, row 
-	svy: tab edu_exposure mddw_yes, row 
-
-	
-	gen stratum_org_inter = stratum * org_name_num  
-	gen KDHW = (stratum_num == 5)
-
-	local outcome mddw_score mom_meal_freq
-	* Concentration Index - relative 
-	foreach v in `outcome' {
-		
-		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
-		di "`v'"
-			if "`v'" == "mddw_score" {
-			    conindex `v', rank(`var') svy wagstaff bounded limits(1 10)
-				
-			}
-			else {
-			    conindex `v', rank(`var') svy wagstaff bounded limits(1 8)
-			}
-			
-		}
-	
-	}	
-	
-	* Concentration Index - absolute
- 	local outcome mddw_score mom_meal_freq
-	foreach v in `outcome' {
-		
-		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
-		
-			di "`v'"	
-			conindex `v', rank(`var') svy truezero generalized
-		}
-	
-	}	
-	
-	foreach v in `outcome' {
-		
-		svy: reg `v' KDHW stratum org_name_num 
-		estimates store `v', title(`v')
-		
-	}
-	
-
-	estout `outcome' using "$out/reg_output/12_mom_diet_score_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-	   legend label varlabels(_cons constant)              ///
-	   stats(r2 df_r bic) replace
-	   
-	foreach v in `outcome' {
-		
-		svy: reg `v' KDHW i.org_name_num##stratum  
-		estimates store `v', title(`v')
-		
-	}
-	
-
-	estout `outcome' using "$out/reg_output/12_mom_diet_score_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-	   legend label varlabels(_cons constant)              ///
-	   stats(r2 df_r bic) replace
-	   
-	foreach v in `outcome' {
-		
-		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
-		estimates store `v', title(`v')
-		
-	}
-	
-
-	estout `outcome' using "$out/reg_output/12_mom_diet_score_table_FINAL.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-	   legend label varlabels(_cons constant)              ///
-	   stats(r2 df_r bic) replace
-	   
-	local outcome 	mddw_yes ///
-					mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
-					mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
-					mddw_oth_veg mddw_oth_fruit
-	
-	* Concentration Index - relative 
-	foreach v in `outcome' {
-		
-		foreach var of varlist NationalQuintile income_lastmonth hh_mem_highedu_all {
-		
-			conindex `v', rank(`var') svy wagstaff bounded limits(0 1)
-		}
-	
-	}
-	
-	
-	* Concentration Index - absolute
- 	local outcome mddw_yes
-	foreach v in `outcome' {
-		
-		foreach var of varlist NationalQuintile /*income_lastmonth hh_mem_highedu_all*/ {
-		
-			di "`v'"	
-			conindex `v', rank(`var') svy truezero generalized
-		}
-	
-	}	
-	
-	foreach v in `outcome' {
-		
-		svy: logit `v' KDHW stratum org_name_num 
-		estimates store `v', title(`v')
-		
-	}
-	
-
-	estout `outcome' using "$out/reg_output/13_mom_fg_table.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-	   legend label varlabels(_cons constant)              ///
-	   stats(r2 df_r bic) replace
-	   
-	   
-	
-	foreach v in `outcome' {
-		
-		svy: logit `v' KDHW i.org_name_num##stratum  
-		estimates store `v', title(`v')
-		
-	}
-	
-
-	estout `outcome' using "$out/reg_output/13_mom_fg_table_m2.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-	   legend label varlabels(_cons constant)              ///
-	   stats(r2 df_r bic) replace	   
-	
-	
-	foreach v in `outcome' {
-		
-		svy: reg `v' wempo_index NationalQuintile stratum NationalQuintile_stratum i.org_name_num
-		estimates store `v', title(`v')
-		
-	}
-	
-
-	estout `outcome' using "$out/reg_output/13_mom_fg_table_FINAL.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-	   legend label varlabels(_cons constant)              ///
-	   stats(r2 df_r bic) replace
-	 
-	 
-	// Model 4
-	local outcome	mddw_score mom_meal_freq
-	
-	foreach v in `outcome' {
-		
-		svy: reg `v' i.NationalQuintile i.org_name_num i.NationalQuintile stratum wempo_index
-		//eststo model_B
-		estimates store `v', title(`v')
-		
-	}
-		
-		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-		   legend label varlabels(_cons constant)              ///
-		   stats(r2 df_r bic) replace	
-		   
-	foreach v in `outcome' {
-		
-		svy: reg `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns stratum wempo_index
-		//eststo model_B
-		estimates store `v', title(`v')
-		
-	}
-		
-		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-		   legend label varlabels(_cons constant)              ///
-		   stats(r2 df_r bic) replace
-		   
-	local outcome	mddw_yes ///
-					mddw_grain mddw_pulses mddw_nut mddw_milk mddw_meat ///
-					mddw_moom_egg mddw_green_veg mddw_vit_vegfruit ///
-					mddw_oth_veg mddw_oth_fruit
-	
-	foreach v in `outcome' {
-		
-		svy: logit `v' i.NationalQuintile i.org_name_num i.NationalQuintile stratum wempo_index
-		//eststo model_B
-		estimates store `v', title(`v')
-		
-	}
-		
-		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4_logistic.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-		   legend label varlabels(_cons constant)              ///
-		   stats(r2 df_r bic) replace	
-		   
-		   
-	foreach v in `outcome' {
-		
-		svy: logit `v' i.wealth_quintile_ns i.org_name_num i.wealth_quintile_ns stratum wempo_index
-		//eststo model_B
-		estimates store `v', title(`v')
-		
-	}
-		
-		estout `outcome' using "$out/reg_output/FINAL_MomDiet_Model_4_logistic_PNDist.xls", cells(b(star fmt(3)) se(par fmt(2)))  ///
-		   legend label varlabels(_cons constant)              ///
-		   stats(r2 df_r bic) replace		
-	
-	
-
-	
-	// FINAL TABLEs
-	local outcomes	mddw_score mom_meal_freq 
-	
-	foreach outcome in `outcomes' {
-	 
-		local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss wempo_category mkt_distance hfc_distance
-		
-		foreach v in `regressor' {
-			
-			putexcel set "$out/reg_output/MDDW_`outcome'_logistic_models.xls", sheet("`v'") modify 
-		
-			if "`v'" != "income_lastmonth" & "`v'" != "wempo_index" {
-				svy: reg `outcome' i.`v'
-			}
-			else {
-				svy: reg `outcome' `v'
-			}
-			
-			estimates store `v', title(`v')
-			
-			putexcel (A1) = etable
-			
-		}
-			
-	}
-	
-
-	local outcomes	mddw_score mom_meal_freq 
-	
-	foreach outcome in `outcomes' {
-	 
-			
-		putexcel set "$out/reg_output/MDDW_`outcome'_logistic_models.xls", sheet("Final_model") modify 
-		
-		svy: reg `outcome' i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum 
-	
-		putexcel (A1) = etable
-			
-	}
-	
-	
-	// mddw_yes
-	local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss wempo_category mkt_distance hfc_distance
-	
-	foreach v in `regressor' {
-		
-		putexcel set "$out/reg_output/MDDW_mddw_yes_logistic_models.xls", sheet("`v'") modify 
-	
-		if "`v'" != "wempo_index" {
-		    svy: logistic mddw_yes i.`v'
-		}
-		else {
-		    svy: logistic mddw_yes `v'
-		}
-		
-		estimates store `v', title(`v')
-		
-		putexcel (A1) = etable
-		
-	}
-	
-	putexcel set "$out/reg_output/MDDW_mddw_yes_logistic_models.xls", sheet("Final_model") modify 
-	
-	svy: logistic mddw_yes /*i.resp_highedu*/ i.NationalQuintile i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum 
-	
-	putexcel (A1) = etable
-	
-	
-	svy: tab progressivenss mddw_yes , row 
-	svy: mean mddw_score , over(progressivenss) 
-	
-	svy: tab resp_highedu mddw_yes , row 
-	svy: mean mddw_score , over(resp_highedu) 
-	
-	svy: tab org_name_num mddw_yes , row 
-	svy: mean mddw_score , over(org_name_num) 
-	
-	
-	// mddw_yes 
-	conindex mddw_yes, rank(NationalScore) svy wagstaff bounded limits(0 1)
-	conindex2 mddw_yes, rank(NationalScore) ///
-						covars(/*i.resp_highedu*/ i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)
-	
-	conindex mddw_yes, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
-	conindex2 mddw_yes, rank(resp_highedu_ci) ///
-						covars(NationalScore i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
-
-	conindex mddw_yes, rank(wempo_index) svy wagstaff bounded limits(0 1)
-	conindex2 mddw_yes, rank(wempo_index) ///
-						covars(NationalScore /*i.resp_highedu*/ i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
-
-	// Food Groups 
-	conindex mddw_score, rank(NationalScore) svy truezero generalized
-	conindex2 mddw_score, rank(NationalScore) ///
-							covars(i.resp_highedu i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy truezero generalized
-
-	conindex mddw_score, rank(NationalScore) svy wagstaff bounded limits(0 10)
-	conindex2 mddw_score, rank(NationalScore) ///
-							covars(i.resp_highedu i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
-
+	** Decomposition of the concentration index ** - Chapter 13					
+	foreach var of varlist resp_highedu /// 
+						mom_age_grp ///
+						respd_chid_num_grp ///
+						hfc_distance ///
+						wempo_category ///
+						org_name_num ///
+						stratum {
+						    
+		tab `var', gen(`var'_)			
 							
-	conindex mddw_score, rank(resp_highedu_ci) svy truezero generalized
-	conindex2 mddw_score, rank(resp_highedu_ci) ///
-							covars(NationalScore i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy truezero generalized	
-	
-	conindex mddw_score, rank(resp_highedu_ci) svy wagstaff bounded limits(0 10)
-	conindex2 mddw_score, rank(resp_highedu_ci) ///
-							covars(NationalScore i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
+						}
+						
+						
+	global X 			resp_highedu_1 resp_highedu_2 resp_highedu_3 resp_highedu_4 /// 
+						mom_age_grp_1 mom_age_grp_2 mom_age_grp_3 ///
+						respd_chid_num_grp_1 respd_chid_num_grp_2 respd_chid_num_grp_3 ///
+						hfc_distance_1 hfc_distance_2 hfc_distance_3 hfc_distance_4 ///
+						wempo_category_1 wempo_category_2 wempo_category_3 ///
+						org_name_num_1 org_name_num_2 org_name_num_3 ///
+						stratum_1 stratum_2
 
-							
-	conindex mddw_score, rank(wempo_index) svy truezero generalized
-	conindex2 mddw_score, rank(wempo_index) ///
-							covars(NationalScore i.resp_highedu i.hfc_distance /*i.org_name_num*/ stratum) svy truezero generalized	
+	conindex anc_yn [aw = weight_final], rank(NationalScore) bounded limits(0 1) erreygers
+	sca CI = r(CI)
 	
-	conindex mddw_score, rank(wempo_index) svy wagstaff bounded limits(0 10)
-	conindex2 mddw_score, rank(wempo_index) ///
-							covars(NationalScore i.resp_highedu i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
-	
-				
-
-	svy: tab wempo_category mddw_yes , row 
-	svy: mean mddw_score , over(wempo_category) 
-	
-	svy: tab hfc_distance mddw_yes , row 
-	svy: mean mddw_score , over(hfc_distance) 
+	reg anc_yn 	$X [pw = weight_final]
+	sum anc_yn [aw = weight_final]
+	sca m_y = r(mean) 
  
-	svy: tab mkt_distance mddw_yes , row 
-	svy: mean mddw_score , over(mkt_distance) 
+	foreach x of varlist $X {
+	    
+		sca b_`x'=_b[`x']
 	
-	* plots for publication 
-    global graph_opts1 ///
-           bgcolor(white) ///
-           graphregion(color(white)) ///
-           legend(region(lc(none) fc(none))) ///
-           ylab(,angle(0) nogrid) ///
-           title(, justification(left) color(black) span pos(11)) ///
-           subtitle(, justification(left) color(black))
-		 
-    global  graph_opts ///
-            title(, justification(left) ///
-            color(black) span pos(11)) ///
-            graphregion(color(white)) ///
-            ylab(,angle(0) nogrid) ///
-            xtit(,placement(left) justification(left)) ///
-            yscale(noline) xscale(noline) ///
-            legend(region(lc(none) fc(none)))
-
-	lab def resp_highedu 1"Illiterate" 2"Primary" 3"Secondary" 4"Higher"
-	lab val resp_highedu resp_highedu
-	
-	// mddw_yes
-	global  pct `" 0 "0%" .2 "20%" .4 "40%" .6 "60%" .8 "80%" "'
-	/*
-	gen mddw_yes_pct = mddw_yes * 100
-	
-	graph bar 	mddw_yes_pct [aweight = weight_final], over(NationalQuintile) ///
-				${graph_opts1} ///
-				blabel(bar, format(%9.1f)) ///
-				ytitle("% of Mothers", size(small) height(-6))								///
-				title("Proportion of Mothers Met Minimum Dietary Diversity" "(by Wealth Quintile)", 		///
-						justification(left) color(black) span pos(11) size(medium)) 							///
-				plotregion(fcolor(white)) 														///
-				graphregion(fcolor(white)) ///
-				note(	"", size(vsmall) span)
-				
-	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_by_Wealth.png", replace
-	*/
-	svy: logistic mddw_yes i.NationalQuintile 
-	margins , over(NationalQuintile)
-	marginsplot, ///
-		recast(scatter) /// 
-		${graph_opts1} ///
-		ylab(${pct}, labsize(small)) ///
-		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
-		xtitle("") ///
-		ytitle("% of Mothers", size(small) height(-6)) ///
-		title("Marginal Effect of Wealth Quintile", 		///
-				justification(left) color(black) span pos(11) size(small)) 							///
-		plotregion(fcolor(white)) 														///
-		graphregion(fcolor(white)) ///
-		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
-		name(MDDW_WQ, replace)
-			
-	lowess 	mddw_yes NationalScore, ///
-			adjust ///
-			lcolor(red) lwidth(medium) ///
-			${graph_opts1} ///
-			mcolor(gs16) ///
-			ylabel(0.0 "0.0" 0.2 "0.2" 0.3680996 "Mean = 0.37" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
-			xlabel(, format(%13.1fc) labsize(small)) ///
-			ytitle("Minimum Dietary Diversity for Women", size(small) height(-6)) ///
-			t1title("", size(small)) ///
-			subtitle("", size(small)) ///
-			xtitle("Wealth Quintile National Scores", size(small)) ///
-			title("LOWESS Smoothing: Mean adjusted smooth", 		///
-				justification(left) color(black) span pos(11) size(small)) 							///
-			plotregion(fcolor(white)) 														///
-			graphregion(fcolor(white)) ///
-			legend(off) ///
-			yline( .3680996, lcolor(navy) lpattern(dash)) ///
-			name(MDDW_LW_MEAN_WQ, replace)
-
-	lowess 	mddw_yes NationalScore, ///
-			logit ///
-			lcolor(red) lwidth(medium) ///
-			${graph_opts1} ///
-			ylabel(-2 "-2" -1 "-1" 0 "0" 0.3680996 "Mean = 0.37" 1 "1" 2 "2", format(%13.1fc) labsize(small)) ///
-			xlabel(, format(%13.1fc) labsize(small)) ///
-			ytitle("", size(small) height(-6)) ///
-			t1title("", size(small)) ///
-			subtitle("", size(small)) ///
-			xtitle("Wealth Quintile National Scores", size(small)) ///
-			title("LOWESS Smoothing: Logit transformed smooth", 		///
-				justification(left) color(black) span pos(11) size(small)) 							///
-			plotregion(fcolor(white)) 														///
-			graphregion(fcolor(white)) ///
-			legend(off) ///
-			yline( .3680996, lcolor(navy) lpattern(dash)) ///
-			name(MDDW_LW_LOGIT_WQ, replace)
-			
-	graph 	combine MDDW_LW_MEAN_WQ MDDW_LW_LOGIT_WQ, cols(2) ///
-			graphregion(color(white)) plotregion(color(white)) ///
-			title("Minimum Dietary Diversity for Women Across the Wealth Spectrum" "U2 Mothers", ///
-			justification(left) color(black) span pos(11) size(small)) ///
-			note(	"Note:" ///
-					" " 	///
-					"Minimum Dietary Diversity for Women: 1 = Met MDD-W, 0 = Not Met"	///
-					"Wealth Quintile National Scores: EquityTool for Myanmar DHS 2015", size(vsmall) span)
-
-	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_WealthQ_Lowess_Compare.png", replace
-	
-			
-	/*
-	graph bar 	mddw_yes_pct [aweight = weight_final], over(resp_highedu) ///
-				${graph_opts1} ///
-				blabel(bar, format(%9.1f)) ///
-				ytitle("% of Mothers", size(small) height(-6))								///
-				title("Proportion of Mothers Met Minimum Dietary Diversity" "(by Respondent's Education)", 		///
-						justification(left) color(black) span pos(11) size(medium)) 							///
-				plotregion(fcolor(white)) 														///
-				graphregion(fcolor(white)) ///
-				note(	"", size(vsmall) span)
-				
-	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_by_Edu.png", replace
-	*/
-
-	svy: logistic mddw_yes i.resp_highedu 
-	margins , over(resp_highedu)
-	marginsplot, ///
-		recast(scatter) /// 
-		${graph_opts1} ///
-		ylab(${pct}, labsize(small)) ///
-		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
-		xtitle("") ///
-		ytitle("", size(small) height(-6)) ///
-		title("Marginal Effect of Respondent's Education", 		///
-				justification(left) color(black) span pos(11) size(small)) 							///
-		plotregion(fcolor(white)) 														///
-		graphregion(fcolor(white)) ///
-		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
-	name(MDDW_EDU, replace)
-	
-	
-	/*
-	graph bar 	mddw_yes_pct [aweight = weight_final], over(wempo_category) ///
-				${graph_opts1} ///
-				blabel(bar, format(%9.1f)) ///
-				ytitle("% of Mothers", size(small) height(-6))								///
-				title("Proportion of Mothers Met Minimum Dietary Diversity" "(by Women Empowerment)", 		///
-						justification(left) color(black) span pos(11) size(medium)) 							///
-				plotregion(fcolor(white)) 														///
-				graphregion(fcolor(white)) ///
-				note(	"", size(vsmall) span)
-				
-	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_by_WomenEmpowerment.png", replace
-	*/
-
-	svy: logistic mddw_yes i.wempo_category 
-	margins , over(wempo_category)
-	marginsplot, ///
-		recast(scatter) /// 
-		${graph_opts1} ///
-		ylab(${pct}, labsize(small)) ///
-		xlabel(, format(%13.0fc) labsize(small) angle(45)) ///
-		xtitle("") ///
-		ytitle("", size(small) height(-6)) ///
-		title("Marginal Effect of Women Empowerment", 		///
-				justification(left) color(black) span pos(11) size(small)) 							///
-		plotregion(fcolor(white)) 														///
-		graphregion(fcolor(white)) ///
-		legend(off) /// //legend(r(1) symxsize(vsmall) symysize(vsmall) position(6) size(small))
-	name(MDDW_WE, replace)  
-			
-	lowess 	mddw_yes wempo_index, ///
-			adjust ///
-			lcolor(red) lwidth(medium) ///
-			${graph_opts1} ///
-			ylabel(0.0 "0.0" 0.2 "0.2" 0.3680996 "Mean = 0.37" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
-			xlabel(, format(%13.1fc) labsize(small)) ///
-			ytitle("", size(small) height(-6)) ///
-			xtitle("Women Empowerment Index (ICW-index)" "< 0: less empower, = 0: neutral, > 0: more empower", size(small)) ///
-			title("Across the Women Empowerment Spectrum (LOWESS Smoothing)", 		///
-				justification(left) color(black) span pos(11) size(small)) 							///
-			plotregion(fcolor(white)) 														///
-			graphregion(fcolor(white)) ///
-			legend(off) ///
-			yline( .3680996, lcolor(navy) lpattern(dash)) ///
-			name(MDDW_LW_WE, replace)
-
-	lowess 	mddw_yes wempo_index, ///
-			adjust ///
-			lcolor(red) lwidth(medium) ///
-			${graph_opts1} ///
-			mcolor(gs16) ///
-			ylabel(0.0 "0.0" 0.2 "0.2" 0.3680996 "Mean = 0.37" 0.4 "0.4" 0.6 "0.6" 0.8 "0.8" 1.0 "1.0", format(%13.1fc) labsize(small)) ///
-			xlabel(, format(%13.1fc) labsize(small)) ///
-			ytitle("Minimum Dietary Diversity for Women", size(small) height(-6)) ///
-			t1title("", size(small)) ///
-			subtitle("", size(small)) ///
-			xtitle("Women Empowerment Index (ICW-index)", size(small)) ///
-			title("LOWESS Smoothing: Mean adjusted smooth", 		///
-				justification(left) color(black) span pos(11) size(small)) 							///
-			plotregion(fcolor(white)) 														///
-			graphregion(fcolor(white)) ///
-			legend(off) ///
-			yline( .3680996, lcolor(navy) lpattern(dash)) ///
-			name(MDDW_LW_MEAN_WE, replace)
-
-	lowess 	mddw_yes wempo_index, ///
-			logit ///
-			lcolor(red) lwidth(medium) ///
-			${graph_opts1} ///
-			ylabel(-1 "-1" -0.5 "-0.5" 0 "0" 0.3680996 "Mean = 0.37" 0.5 "0.5" 1 "1", format(%13.1fc) labsize(small)) ///
-			xlabel(, format(%13.1fc) labsize(small)) ///
-			ytitle("", size(small) height(-6)) ///
-			t1title("", size(small)) ///
-			subtitle("", size(small)) ///
-			xtitle("Women Empowerment Index (ICW-index)", size(small)) ///
-			title("LOWESS Smoothing: Logit transformed smooth", 		///
-				justification(left) color(black) span pos(11) size(small)) 							///
-			plotregion(fcolor(white)) 														///
-			graphregion(fcolor(white)) ///
-			legend(off) ///
-			yline( .3680996, lcolor(navy) lpattern(dash)) ///
-			name(MDDW_LW_LOGIT_WE, replace)
-			
-	graph 	combine MDDW_LW_MEAN_WE MDDW_LW_LOGIT_WE, cols(2) ///
-			graphregion(color(white)) plotregion(color(white)) ///
-			title("Minimum Dietary Diversity for Women Across the Women Empowerment Spectrum" "U2 Mothers", ///
-			justification(left) color(black) span pos(11) size(small)) ///
-			note(	"Note:" ///
-					" " 	///
-					"Minimum Dietary Diversity for Women: 1 = Met MDD-W, 0 = Not Met"	///
-					"Women Empowerment Index (ICW-index): < 0: less empower, = 0: neutral, > 0: more empower", size(vsmall) span)
-
-	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_WEmpower_Lowess_Compare.png", replace
-	
-	
-	graph 	combine MDDW_WQ MDDW_EDU MDDW_WE, cols(3) ///
-			graphregion(color(white)) plotregion(color(white)) ///
-			title("Predicted Probability of Mothers Met Minimum Dietary Diversity", 								///
-			justification(left) color(black) span pos(11) size(small)) ///
-			note("Note"											///
-				"Predictive margins with 95% CIs" ///
-				" " ///
-				"Education level by grade;"					///
-				"Primary education (Under 5th standard)"	///
-				"Secondary education (under 9th standard)"		///
-				"Higher education (till pass matriculation exam)", size(vsmall) span)
-	
-	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Combined.png", replace	
-
-	/*
-	graph 	combine MDDW_LW_WQ MDDW_LW_WE, cols(2) ///
-			graphregion(color(white)) plotregion(color(white)) ///
-			title("Minimum Dietary Diversity for Women of U2 Mothers", ///
-			justification(left) color(black) span pos(11) size(small)) 
-
-	graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Lowess_Combined.png", replace
-	*/
-	
-	
-	/*
-	graph 	combine FIES_WQ FIES_EDU FIES_WE ///
-					EBF_WQ EBF_EDU EBF_WE ///
-					MDD_WQ MDD_EDU MDD_WE ///
-					MDDW_WQ MDDW_EDU MDDW_WE, rows(4) cols(3) ///
-			graphregion(color(white)) plotregion(color(white)) ///
-			title("Proportion of Children Met Minimum Dietary Diversity", 								///
-			justification(left) color(black) span pos(11) size(small)) ///
-			note("Note"											///
-				"Predictive margins with 95% CIs" ///
-				" " ///
-				"Education level by grade;"					///
-				"Primary education (Under 5th standard)"	///
-				"Secondary education (under 9th standard)"		///
-				"Higher education (till pass matriculation exam)", size(vsmall) span)
-	
-	//graph export "$plots/PN_Paper_Child_Nutrition/06_MDDW_Combined.png", replace
-	*/
-	
-	****************************************************************************
-	* Mom Health Module *
-	****************************************************************************
-
-	use "$dta/pnourish_mom_health_final.dta", clear   
-
-	* women empowerment dataset 
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss high_empower)
-	
-	drop if _merge == 2 
-	drop _merge 
-	
-	* respondent info
-	merge m:1 _parent_index using "$dta/pnourish_respondent_info_final.dta", keepusing(respd_age resp_highedu respd_chid_num) 
-	
-	drop if _merge == 2 
-	drop _merge 
-	
-	* treated other and monestic education as missing
-	gen resp_highedu_ci = resp_highedu
-	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
-	tab resp_highedu_ci, m 
-	
-	replace resp_highedu = .m if resp_highedu > 7 
-	replace resp_highedu = 4 if resp_highedu > 4 & !mi(resp_highedu)
-	tab resp_highedu, m 
-	
-	gen mom_age_grp = (respd_age < 25)
-	replace mom_age_grp = 2 if respd_age >= 25 & respd_age < 35 
-	replace mom_age_grp = 3 if respd_age >= 35  
-	replace mom_age_grp = .m if mi(respd_age)
-	lab def mom_age_grp 1"< 25 years old" 2"25 - 34 years old" 3"35+ years old"
-	lab val mom_age_grp mom_age_grp
-	tab mom_age_grp, m 
-	
-	
-	recode respd_chid_num (1 = 1) (2 = 2) (3/15 = 3), gen(respd_chid_num_grp)
-	replace respd_chid_num_grp = .m if mi(respd_chid_num)
-	lab def respd_chid_num_grp 1"Has only one child" 2"Has two children" 3"Has three children & more" 
-	lab val respd_chid_num_grp respd_chid_num_grp 
-	lab var respd_chid_num_grp "Number of Children"
-	tab respd_chid_num_grp, m 
-	
-	* Add Village Survey Info 
-	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
-						mkt_near_dist_dry mkt_near_dist_rain ///
-						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
-	
-	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", ///
-								keepusing($villinfo) 
-	
-	drop if _merge == 2
-	drop _merge 
-	
-	// detach value label - resulted from merging 
-	foreach var of varlist hfc_near_dist_dry hfc_near_dist_rain mkt_near_dist_dry mkt_near_dist_rain {
-		
-		lab val `var'
 	}
 	
-	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
-	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
-	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
-	tab hfc_near_dist, m 
+	local i = 0 
 	
-	tab hfc_vill0, m 
-	gen hfc_vill_yes = (hfc_vill0 == 0)
-	replace hfc_vill_yes = .m if mi(hfc_vill0)
-	lab val hfc_vill_yes yesno 
-	tab hfc_vill_yes, m 
+	foreach x of global X {
+		qui {
+		    
+			//sca b_`x' = _b[`x']    
+			corr rank `x' [aw = weight_final], c
+			sca cov_`x' = r(cov_12)    
+			sum `x' [aw = weight_final]
+			
+			sca elas_`x' = (b_`x'*r(mean))/m_y  
+			
+			conindex `x' [aw=weight_final], rank(NationalScore) bounded limits(0 1) erreygers
+			sca CI_`x' = r(CI)
+			//sca CI_`x' = 2*cov_`x'/r(mean)   
+			
+			sca con_`x' = elas_`x'*CI_`x'
+			sca prcnt_`x' = (con_`x'/CI) * 100
+			
+		}
+		
+		di "`x' elasticity:", elas_`x'
+		di "`x' concentration index:", CI_`x'
+		di "`x' contribution:", con_`x'
+		di "`x' percentage contribution:", prcnt_`x'
+		
+		local i = `i' +  prcnt_`x'
+		
+	}
 	
-	* distance HFC category 
-	gen hfc_distance = .m 
-	replace hfc_distance = 0 if hfc_near_dist_rain == 0
-	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
-	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
-	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
-	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
-	lab val hfc_distance hfc_distance
-	lab var hfc_distance "Nearest Health Facility - hours for round trip"
-	tab hfc_distance, mis
+	log close 
+	
+	di `i'
+	
+	&&
+	
+	* revised code: from STATA forum 
+	* ref : https://www.statalist.org/forums/forum/general-stata-discussion/general/1373417-decomposing-erreygers-concentration-index-stata
+	
+	conindex anc_yn [aw = weight_final], rank(NationalScore) bounded limits(0 1) erreygers
 
+	conindex anc_yn [aw = weight_final], rank(rank) bounded limits(0 1) erreygers
+	sca CI = r(CI)
 	
-	* svy weight apply 
-	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
-
-	* generate the interaction variable - stratum Vs quantile 
-	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
-
+	global X 	hfc_vill_yes progressivenss //stratum
 	
-	* Delivery Month Season *
-	tab hh_mem_dob_str, m 
+	qui sum anc_yn [aw=weight_final]
+	sca m_y=r(mean)
+	qui glm anc_yn $X [aw=weight_final], family(binomial) link(probit)
+	qui margins , dydx(*) post
 	
-	gen delivery_month_season = .m 
-	replace delivery_month_season = 1 if 	(hh_mem_dob_str >= tm(2021m3) & hh_mem_dob_str < tm(2021m6)) | ///
-											(hh_mem_dob_str >= tm(2022m3) & hh_mem_dob_str < tm(2022m6)) | ///
-											(hh_mem_dob_str >= tm(2023m3) & hh_mem_dob_str < tm(2023m4))
-	replace delivery_month_season = 2 if 	(hh_mem_dob_str >= tm(2021m6) & hh_mem_dob_str < tm(2021m11)) | ///
-											(hh_mem_dob_str >= tm(2022m6) & hh_mem_dob_str < tm(2022m11))
-	replace delivery_month_season = 3 if 	(hh_mem_dob_str >= tm(2021m1) & hh_mem_dob_str < tm(2021m3)) | ///
-											(hh_mem_dob_str >= tm(2021m11) & hh_mem_dob_str < tm(2022m3)) | ///
-											(hh_mem_dob_str >= tm(2022m11) & hh_mem_dob_str < tm(2023m3))
-	// lab def delivery_month_season 1"Summer" 2"Raining" 3"Winter"
-	replace delivery_month_season = 1 if delivery_month_season == 3
-	lab def delivery_month_season 1"Dry" 2"Wet"
-	lab val delivery_month_season delivery_month_season
-	tab delivery_month_season, m 
+	foreach x of varlist $X {
+	    
+		sca b_`x'=_b[`x']
 	
-	gen child_dob_year = year(dofm(hh_mem_dob_str))
-	tab child_dob_year, m 
+	}
 	
-	gen child_dob_season_yr = .m 
-	replace child_dob_season_yr = 1 if child_dob_year == 2021 & delivery_month_season == 1
-	replace child_dob_season_yr = 2 if child_dob_year == 2021 & delivery_month_season == 2
-	replace child_dob_season_yr = 3 if child_dob_year == 2021 & delivery_month_season == 3
-	replace child_dob_season_yr = 4 if child_dob_year == 2022 & delivery_month_season == 1
-	replace child_dob_season_yr = 5 if child_dob_year == 2022 & delivery_month_season == 2
-	replace child_dob_season_yr = 6 if child_dob_year == 2022 & delivery_month_season == 3
-	replace child_dob_season_yr = 7 if child_dob_year == 2023 & delivery_month_season == 1
-	replace child_dob_season_yr = 8 if child_dob_year == 2023 & delivery_month_season == 2
-	replace child_dob_season_yr = 9 if child_dob_year == 2023 & delivery_month_season == 3
-	lab def child_dob_season_yr 1"2021 Summer" ///
-								2"2021 Raining" ///
-								3"2021 Winter" ///
-								4"2022 Summer" ///
-								5"2022 Raining" ///
-								6"2022 Winter" ///
-								7"2023 Summer" ///
-								8"2023 Raining" ///
-								9"2023 Winter"
-	lab val child_dob_season_yr child_dob_season_yr
-	tab child_dob_season_yr, m 
+	foreach x of varlist $X {
+	    
+		qui{
+		    
+		conindex `x' [aw=weight_final], rank(rank) bounded limits(0 1) erreygers
+		sca CI_`x' = r(CI)
+		sum `x' [aw=weight_final]
+		sca elas_`x' = 4*(b_`x' * r(mean))
+		sca contri_`x' = elas_`x' * CI_`x'
+		sca prcnt_`x' = (contri_`x'/CI)*100
+		
+		}
+		
+		di "`x' elasticity:", elas_`x'
+		di "`x' concentration index:", CI_`x'
+		di "`x' contribution:", contri_`x'
+		di "`x' percentage contribution:", prcnt_`x'
+		
+	}
+ 
+ 
+ 
+	* code from chapeter 12 
 	
 	
-	* ANC Months Season * 
-	* it will be better to construct # of gestation age month cover by dry or wet season in 2 and 3rd trimester 
-/*	
-			2 and 3 trimester	all trimester		
-	Season	Month	dry	wet	tot	dry	wet	tot
-	dry			1	2	4	6	4	5	9
-	dry			2	3	3	6	4	5	9
-	dry			3	4	2	6	4	5	9
-	dry			4	5	1	6	5	4	9
-	dry			5	6	0	6	6	3	9
-	wet			6	6	0	6	7	2	9
-	wet			7	5	1	6	7	2	9
-	wet			8	4	2	6	7	2	9
-	wet			9	3	3	6	6	3	9
-	wet			10	2	4	6	5	4	9
-	dry			11	1	5	6	4	5	9
-	dry			12	1	5	6	4	5	9
-
-*/
-	gen child_dob_month = month(dofm(hh_mem_dob_str))
+	decompose anc_yn 	$X [pw = weight_final], by(wealth_quintile_ns) detail estimates
+ 
+ 
 	
-	// the whole pregnancy gestation age period 
-	gen anc_month_dry = .m 
-	replace anc_month_dry = 4 if child_dob_month == 1
-	replace anc_month_dry = 4 if child_dob_month == 2
-	replace anc_month_dry = 4 if child_dob_month == 3
-	replace anc_month_dry = 5 if child_dob_month == 4
-	replace anc_month_dry = 6 if child_dob_month == 5
-	replace anc_month_dry = 7 if child_dob_month == 6
-	replace anc_month_dry = 7 if child_dob_month == 7
-	replace anc_month_dry = 7 if child_dob_month == 8
-	replace anc_month_dry = 6 if child_dob_month == 9
-	replace anc_month_dry = 5 if child_dob_month == 10
-	replace anc_month_dry = 4 if child_dob_month == 11
-	replace anc_month_dry = 4 if child_dob_month == 12
-	tab anc_month_dry, m 
-
-	gen anc_month_wet = .m 
-	replace anc_month_wet = 5 if child_dob_month == 1
-	replace anc_month_wet = 5 if child_dob_month == 2
-	replace anc_month_wet = 5 if child_dob_month == 3
-	replace anc_month_wet = 4 if child_dob_month == 4
-	replace anc_month_wet = 3 if child_dob_month == 5
-	replace anc_month_wet = 2 if child_dob_month == 6
-	replace anc_month_wet = 2 if child_dob_month == 7
-	replace anc_month_wet = 2 if child_dob_month == 8
-	replace anc_month_wet = 3 if child_dob_month == 9
-	replace anc_month_wet = 4 if child_dob_month == 10
-	replace anc_month_wet = 5 if child_dob_month == 11
-	replace anc_month_wet = 5 if child_dob_month == 12
-	tab anc_month_wet, m 
-
-
-	// in the last 2 trimesters 
-	gen anc_month_wet_2s = .m 
-	replace anc_month_wet_2s = 4 if child_dob_month == 1
-	replace anc_month_wet_2s = 3 if child_dob_month == 2
-	replace anc_month_wet_2s = 2 if child_dob_month == 3
-	replace anc_month_wet_2s = 1 if child_dob_month == 4
-	replace anc_month_wet_2s = 0 if child_dob_month == 5
-	replace anc_month_wet_2s = 0 if child_dob_month == 6
-	replace anc_month_wet_2s = 1 if child_dob_month == 7
-	replace anc_month_wet_2s = 2 if child_dob_month == 8
-	replace anc_month_wet_2s = 3 if child_dob_month == 9
-	replace anc_month_wet_2s = 4 if child_dob_month == 10
-	replace anc_month_wet_2s = 5 if child_dob_month == 11
-	replace anc_month_wet_2s = 5 if child_dob_month == 12
-	tab anc_month_wet_2s, m 
+	conindex anc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 anc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
 	
-	
-	gen anc_month_dry_2s = .m 
-	replace anc_month_dry_2s = 2 if child_dob_month == 1
-	replace anc_month_dry_2s = 3 if child_dob_month == 2
-	replace anc_month_dry_2s = 4 if child_dob_month == 3
-	replace anc_month_dry_2s = 5 if child_dob_month == 4
-	replace anc_month_dry_2s = 6 if child_dob_month == 5
-	replace anc_month_dry_2s = 6 if child_dob_month == 6
-	replace anc_month_dry_2s = 5 if child_dob_month == 7
-	replace anc_month_dry_2s = 4 if child_dob_month == 8
-	replace anc_month_dry_2s = 3 if child_dob_month == 9
-	replace anc_month_dry_2s = 2 if child_dob_month == 10
-	replace anc_month_dry_2s = 1 if child_dob_month == 11
-	replace anc_month_dry_2s = 1 if child_dob_month == 12
-	tab anc_month_dry_2s, m 
-
-	gen anc_month_2s_season = (anc_month_dry_2s == anc_month_wet_2s)
-	replace anc_month_2s_season = 2 if anc_month_dry_2s > anc_month_wet_2s
-	replace anc_month_2s_season = 3 if anc_month_dry_2s < anc_month_wet_2s
-	replace anc_month_2s_season = .m if mi(anc_month_dry_2s) | mi(anc_month_wet_2s)
-	lab def anc_month_2s_season 1"Same months for Dry and Wet season" ///
-								2"Dry > Wet (# of months)" ///
-								3"Dry < Wet (# of months)"
-	lab val anc_month_2s_season anc_month_2s_season
-	lab var anc_month_2s_season "Number of Gestation month by season (in 2 and 3 trimasters)"
-	tab anc_month_2s_season, m 
-	
-	gen anc_month_season = (anc_month_dry > anc_month_wet)
-	replace anc_month_season = .m if mi(anc_month_dry) | mi(anc_month_wet)
-	lab def anc_month_season 1"Dry > Wet (# of months)" 0"Dry < Wet (# of months)"
-	lab val anc_month_season anc_month_season
-	lab var anc_month_season "Number of Gestation month by season (in all 3 trimasters)"
-	tab anc_month_season, m 
-	
-	* NationalQuintile - adjustment 
-	gen NationalQuintile_recod = NationalQuintile
-	replace NationalQuintile_recod = 4 if NationalQuintile > 4 & !mi(NationalQuintile)
-	lab def NationalQuintile_recod 1"Poorest" 2"Poor" 3"Medium" 4"Wealthy"
-	lab val NationalQuintile_recod NationalQuintile_recod
-	tab NationalQuintile_recod, m 
-	
-	****************************************************************************
-	****************************************************************************
-	
-	** SAVE for analysis dataset **
-	save "$dta/pnourish_mom_health_analysis_final.dta", replace   
-
 	****************************************************************************
 	** Mom (REspondent) Characteristics **
 	****************************************************************************

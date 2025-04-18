@@ -1,7 +1,8 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	Midterm vs Endline Comparision - Mother Health 			
+Purpose				:	Prepare dataset for Midterm vs Endline Comparision: 
+						Mother Health 			
 Author				:	Nicholus Tint Zaw
 Date				: 	03/12/2025
 Modified by			:

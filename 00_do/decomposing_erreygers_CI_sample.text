@@ -1,0 +1,297 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Nicholus Tint Zaw\Documents\GitHub\cpi_proj_nourish_2wave/00_do/decomposing_erreygers_CI_sample.text
+  log type:  text
+ opened on:  16 Apr 2025, 22:52:25
+
+.         
+.         * ranking assingment using Health Equity Index score - apply weight 
+.         glcurve NationalScore [aw=weight_final], pvar(rank) nograph
+new variable rank created
+
+warning: __000001 has 421 values < 0;used in calculations
+
+.         
+.         ** Decomposition of the concentration index ** - Chapter 13                                     
+.         foreach var of varlist resp_highedu /// 
+>                                                 mom_age_grp ///
+>                                                 respd_chid_num_grp ///
+>                                                 hfc_distance ///
+>                                                 wempo_category ///
+>                                                 org_name_num ///
+>                                                 stratum {
+  2.                                                     
+.                 tab `var', gen(`var'_)                  
+  3.                                                         
+.                                                 }
+
+      Household member Highest level of |
+                    education completed |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                             Illiterate |        128       25.45       25.45
+ Primary education (Under 5th standard) |        193       38.37       63.82
+Secondary education (under 9th standard |        136       27.04       90.85
+Higher education (till pass matriculati |         46        9.15      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        503      100.00
+
+      mom_age_grp |      Freq.     Percent        Cum.
+------------------+-----------------------------------
+   < 25 years old |        161       31.63       31.63
+25 - 34 years old |        238       46.76       78.39
+    35+ years old |        110       21.61      100.00
+------------------+-----------------------------------
+            Total |        509      100.00
+
+       Number of Children |      Freq.     Percent        Cum.
+--------------------------+-----------------------------------
+       Has only one child |        165       32.67       32.67
+         Has two children |        143       28.32       60.99
+Has three children & more |        197       39.01      100.00
+--------------------------+-----------------------------------
+                    Total |        505      100.00
+
+   Nearest Health Facility - hours |
+                    for round trip |      Freq.     Percent        Cum.
+-----------------------------------+-----------------------------------
+Health Facility present at village |        153       32.28       32.28
+                      <= 1.5 hours |         93       19.62       51.90
+                    1.6 to 3 hours |         79       16.67       68.57
+                          >3 hours |        149       31.43      100.00
+-----------------------------------+-----------------------------------
+                             Total |        474      100.00
+
+      Women |
+Empowerment |
+ (Category) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+        Low |        161       31.94       31.94
+   Moderate |        160       31.75       63.69
+       High |        183       36.31      100.00
+------------+-----------------------------------
+      Total |        504      100.00
+
+Organizatio |
+     n name |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       KDHW |         48        9.43        9.43
+      KEHOC |        249       48.92       58.35
+       YSDA |        212       41.65      100.00
+------------+-----------------------------------
+      Total |        509      100.00
+
+    Stratum |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        259       50.88       50.88
+          2 |        250       49.12      100.00
+------------+-----------------------------------
+      Total |        509      100.00
+
+.                                                 
+.                                                 
+.         global X                        resp_highedu_1 resp_highedu_2 resp_highedu_3 resp_highedu_4 /// 
+>                                                 mom_age_grp_1 mom_age_grp_2 mom_age_grp_3 ///
+>                                                 respd_chid_num_grp_1 respd_chid_num_grp_2 respd_chid_num_grp_3 ///
+>                                                 hfc_distance_1 hfc_distance_2 hfc_distance_3 hfc_distance_4 ///
+>                                                 wempo_category_1 wempo_category_2 wempo_category_3 ///
+>                                                 org_name_num_1 org_name_num_2 org_name_num_3 ///
+>                                                 stratum_1 stratum_2
+
+. 
+.         conindex anc_yn [aw = weight_final], rank(NationalScore) bounded limits(0 1) erreygers
+------------------------------------------------------------------------------+
+Index:             | No. of obs. | Index value | Std. error        | p-value  |
+-------------------+-------------+-------------+-------------------+----------|
+Erreygers norm. CI | 414         | .49039444   |.04725283          |  0.0000  |
+------------------------------------------------------------------------------+
+
+.         sca CI = r(CI)
+
+.         
+.         reg anc_yn      $X [pw = weight_final]
+(sum of wgt is 3,302.87459111214)
+note: resp_highedu_1 omitted because of collinearity.
+note: mom_age_grp_3 omitted because of collinearity.
+note: respd_chid_num_grp_2 omitted because of collinearity.
+note: hfc_distance_3 omitted because of collinearity.
+note: wempo_category_3 omitted because of collinearity.
+note: org_name_num_2 omitted because of collinearity.
+note: stratum_1 omitted because of collinearity.
+
+Linear regression                               Number of obs     =        374
+                                                F(15, 358)        =      10.40
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.3133
+                                                Root MSE          =     .40469
+
+--------------------------------------------------------------------------------------
+                     |               Robust
+              anc_yn | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+      resp_highedu_1 |          0  (omitted)
+      resp_highedu_2 |   .0657885   .0863871     0.76   0.447    -.1041014    .2356784
+      resp_highedu_3 |   .1248108   .0863862     1.44   0.149    -.0450774     .294699
+      resp_highedu_4 |    .133807   .1025109     1.31   0.193    -.0677923    .3354063
+       mom_age_grp_1 |   .0563326   .0961251     0.59   0.558    -.1327083    .2453735
+       mom_age_grp_2 |   .0617082    .086239     0.72   0.475    -.1078906     .231307
+       mom_age_grp_3 |          0  (omitted)
+respd_chid_num_grp_1 |  -.0261516    .070479    -0.37   0.711    -.1647565    .1124532
+respd_chid_num_grp_2 |          0  (omitted)
+respd_chid_num_grp_3 |  -.1195964   .0747178    -1.60   0.110    -.2665373    .0273446
+      hfc_distance_1 |   .1679287   .0996789     1.68   0.093    -.0281011    .3639585
+      hfc_distance_2 |   .0916977   .1339011     0.68   0.494     -.171634    .3550293
+      hfc_distance_3 |          0  (omitted)
+      hfc_distance_4 |   -.141271   .1137163    -1.24   0.215    -.3649069     .082365
+    wempo_category_1 |   -.133336   .0686728    -1.94   0.053    -.2683889    .0017169
+    wempo_category_2 |  -.0949037   .0700031    -1.36   0.176    -.2325728    .0427653
+    wempo_category_3 |          0  (omitted)
+      org_name_num_1 |  -.0240108   .0528534    -0.45   0.650     -.127953    .0799314
+      org_name_num_2 |          0  (omitted)
+      org_name_num_3 |  -.1757671   .0642812    -2.73   0.007    -.3021833   -.0493509
+           stratum_1 |          0  (omitted)
+           stratum_2 |  -.1706959   .0623026    -2.74   0.006     -.293221   -.0481709
+               _cons |   .8808295   .1301889     6.77   0.000     .6247984    1.136861
+--------------------------------------------------------------------------------------
+
+.         sum anc_yn [aw = weight_final]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      anc_yn |     417  3865.02867    .6790744    .467393          0          1
+
+.         sca m_y = r(mean) 
+
+.  
+.         foreach x of varlist $X {
+  2.             
+.                 sca b_`x'=_b[`x']
+  3.         
+.         }
+
+.         
+.         local i = 0 
+
+.         
+.         foreach x of global X {
+  2.                 qui {
+  3.                     
+.                         //sca b_`x' = _b[`x']    
+.                         corr rank `x' [aw = weight_final], c
+  4.                         sca cov_`x' = r(cov_12)    
+  5.                         sum `x' [aw = weight_final]
+  6.                         
+.                         sca elas_`x' = (b_`x'*r(mean))/m_y  
+  7.                         
+.                         conindex `x' [aw=weight_final], rank(NationalScore) bounded limits(0 1) erreygers
+  8.                         sca CI_`x' = r(CI)
+  9.                         //sca CI_`x' = 2*cov_`x'/r(mean)   
+.                         
+.                         sca con_`x' = elas_`x'*CI_`x'
+ 10.                         sca prcnt_`x' = (con_`x'/CI) * 100
+ 11.                         
+.                 }
+ 12.                 
+.                 di "`x' elasticity:", elas_`x'
+ 13.                 di "`x' concentration index:", CI_`x'
+ 14.                 di "`x' contribution:", con_`x'
+ 15.                 di "`x' percentage contribution:", prcnt_`x'
+ 16.                 
+.                 local i = `i' +  prcnt_`x'
+ 17.                 
+.         }
+resp_highedu_1 elasticity: 0
+resp_highedu_1 concentration index: -.19137846
+resp_highedu_1 contribution: 0
+resp_highedu_1 percentage contribution: 0
+resp_highedu_2 elasticity: .034581
+resp_highedu_2 concentration index: .02621049
+resp_highedu_2 contribution: .00090638
+resp_highedu_2 percentage contribution: .18482774
+resp_highedu_3 elasticity: .04789424
+resp_highedu_3 concentration index: .11001017
+resp_highedu_3 contribution: .00526885
+resp_highedu_3 percentage contribution: 1.0744113
+resp_highedu_4 elasticity: .01935915
+resp_highedu_4 concentration index: .0551578
+resp_highedu_4 contribution: .00106781
+resp_highedu_4 percentage contribution: .21774476
+mom_age_grp_1 elasticity: .02503797
+mom_age_grp_1 concentration index: .12420644
+mom_age_grp_1 contribution: .00310988
+mom_age_grp_1 percentage contribution: .63415828
+mom_age_grp_2 elasticity: .04501284
+mom_age_grp_2 concentration index: -.09929508
+mom_age_grp_2 contribution: -.00446955
+mom_age_grp_2 percentage contribution: -.91142013
+mom_age_grp_3 elasticity: 0
+mom_age_grp_3 concentration index: -.02491136
+mom_age_grp_3 contribution: 0
+mom_age_grp_3 percentage contribution: 0
+respd_chid_num_grp_1 elasticity: -.01207508
+respd_chid_num_grp_1 concentration index: .21222099
+respd_chid_num_grp_1 contribution: -.00256259
+respd_chid_num_grp_1 percentage contribution: -.52255607
+respd_chid_num_grp_2 elasticity: 0
+respd_chid_num_grp_2 concentration index: .09116515
+respd_chid_num_grp_2 contribution: 0
+respd_chid_num_grp_2 percentage contribution: 0
+respd_chid_num_grp_3 elasticity: -.07456491
+respd_chid_num_grp_3 concentration index: -.30338614
+respd_chid_num_grp_3 contribution: .02262196
+respd_chid_num_grp_3 percentage contribution: 4.6130134
+hfc_distance_1 elasticity: .06483057
+hfc_distance_1 concentration index: .25346806
+hfc_distance_1 contribution: .01643248
+hfc_distance_1 percentage contribution: 3.3508698
+hfc_distance_2 elasticity: .02298334
+hfc_distance_2 concentration index: .22690867
+hfc_distance_2 contribution: .00521512
+hfc_distance_2 percentage contribution: 1.0634541
+hfc_distance_3 elasticity: 0
+hfc_distance_3 concentration index: -.02815282
+hfc_distance_3 contribution: 0
+hfc_distance_3 percentage contribution: 0
+hfc_distance_4 elasticity: -.07151006
+hfc_distance_4 concentration index: -.45222391
+hfc_distance_4 contribution: .03233856
+hfc_distance_4 percentage contribution: 6.5943979
+wempo_category_1 elasticity: -.07162889
+wempo_category_1 concentration index: -.21956783
+wempo_category_1 contribution: .0157274
+wempo_category_1 percentage contribution: 3.2070917
+wempo_category_2 elasticity: -.04200206
+wempo_category_2 concentration index: -.04358245
+wempo_category_2 contribution: .00183055
+wempo_category_2 percentage contribution: .3732817
+wempo_category_3 elasticity: 0
+wempo_category_3 concentration index: .26315028
+wempo_category_3 contribution: 0
+wempo_category_3 percentage contribution: 0
+org_name_num_1 elasticity: -.00175497
+org_name_num_1 concentration index: .07995642
+org_name_num_1 contribution: -.00014032
+org_name_num_1 percentage contribution: -.028614
+org_name_num_2 elasticity: 0
+org_name_num_2 concentration index: .19682005
+org_name_num_2 contribution: 0
+org_name_num_2 percentage contribution: 0
+org_name_num_3 elasticity: -.13015391
+org_name_num_3 concentration index: -.27677647
+org_name_num_3 contribution: .03602354
+org_name_num_3 percentage contribution: 7.3458296
+stratum_1 elasticity: 0
+stratum_1 concentration index: .48571012
+stratum_1 contribution: 0
+stratum_1 percentage contribution: 0
+stratum_2 elasticity: -.17798252
+stratum_2 concentration index: -.48571012
+stratum_2 contribution: .08644791
+stratum_2 percentage contribution: 17.62824
+
+.         
+.         log close 
+      name:  <unnamed>
+       log:  C:\Users\Nicholus Tint Zaw\Documents\GitHub\cpi_proj_nourish_2wave/00_do/decomposing_erreygers_CI_sample.text
+  log type:  text
+ closed on:  16 Apr 2025, 22:52:26
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
