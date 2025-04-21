@@ -191,7 +191,7 @@ do "$do/00_dir_setting.do"
 	icw_index	wempo_childcare_d_z wempo_mom_health_d_z wempo_child_health_d_z ///
 				wempo_women_wages_d_z wempo_major_purchase_d_z wempo_visiting_d_z ///
 				wempo_women_health_d_z wempo_child_wellbeing_d_z, gen(wempo_index)
-				
+	
 	lab var wempo_index "Women Empowerment Index (ICW-index)"		
 	tab wempo_index, m 
 	

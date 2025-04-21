@@ -1,35 +1,77 @@
-/*******************************************************************************
+	/*******************************************************************************
 
-Project Name		: 	Project Nourish
-Purpose				:	2nd round data collection: 
-						Data analysis Mother Health Care			
-Author				:	Nicholus Tint Zaw
-Date				: 	03/01/2023
-Modified by			:
+	Project Name		: 	Project Nourish
+	Purpose				:	2nd round data collection: 
+							Data analysis Mother Health Care: Test different calculation of CI approach
+							Bivariate - wealth Vs. Multivariate 
+	Author				:	Nicholus Tint Zaw
+	Date				: 	03/01/2023
+	Modified by			:
 
 
-*******************************************************************************/
+	*******************************************************************************/
 
-********************************************************************************
-** Directory Settings **
-********************************************************************************
+	********************************************************************************
+	** Directory Settings **
+	********************************************************************************
 
-do "$do/00_dir_setting.do"
+	do "$do/00_dir_setting.do"
 
-	   
 	****************************************************************************
 	** Mom Health Services **
 	****************************************************************************
 	use "$dta/pnourish_mom_health_analysis_final.dta", clear    
+	
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", ///
+							keepusing(*_d_z) assert(2 3) keep(matched) nogen 
 
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+	
+	** Revised the Womem empowerment index subcategory ** 
+	* index development // not included the # of groups participate 
+	icw_index	wempo_childcare_d_z wempo_child_health_d_z wempo_child_wellbeing_d_z, gen(wempo_child_index)
+	icw_index	wempo_mom_health_d_z wempo_women_health_d_z , gen(wempo_mom_index)
+	
+	/*wempo_women_wages_d_z wempo_major_purchase_d_z wempo_visiting_d_z */
+				 
+				
+	lab var wempo_child_index "Women Empowerment (Child Care and Health) Index (ICW-index)"		
+	lab var wempo_mom_index "Women Empowerment (Women and Mother Health) Index (ICW-index)"		
+	
+	sum wempo_index wempo_*_index
+
+	&&
+	
+	tab wempo_index, m 
+	
+	
+	* Category - by quintile 
+	xtile wempo_category = wempo_index [pweight=weight_final], nq(3)
+	lab def wempo_category 1"Low" 2"Moderate" 3"High"
+	lab val wempo_category wempo_category
+	lab var wempo_category "Women Empowerment (Category)"
+	tab wempo_category, m 
+	
+	
+	* progressiveness 
+	sum wempo_index, d 
+	gen progressivenss = (wempo_index < `r(p50)')
+	replace progressivenss = .m if mi(wempo_index)
+	lab var progressivenss "Low Women Empowerment (Index < median score)"
+	tab progressivenss, m 
+	
+	gen high_empower = (progressivenss == 0)
+	replace high_empower = .m if mi(progressivenss)
+	lab var high_empower "High Women Empowerment (Index > median score)"
+	tab high_empower, m 
+	
+	
 	
 	
 	** Chapter 8 - CI calculation 
 	* ranking assingment using Health Equity Index score - apply weight 
 	glcurve NationalScore [aw=weight_final], pvar(rank) nograph
-	
 	
 	* F - weight prepration 
 	sum weight_final // identify the longest decimal point 
