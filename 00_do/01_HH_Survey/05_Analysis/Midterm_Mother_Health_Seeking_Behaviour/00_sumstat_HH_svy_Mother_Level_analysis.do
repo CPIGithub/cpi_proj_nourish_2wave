@@ -805,7 +805,10 @@ do "$do/00_dir_setting.do"
 	use "$dta/pnourish_mom_health_final.dta", clear   
 
 	* women empowerment dataset 
-	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss high_empower)
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", ///
+							keepusing(	wempo_index wempo_child_index wempo_mom_index wempo_othd_index ///
+										wempo_category wempo_child_cat wempo_mom_cat ///
+										progressivenss* high_empower*)
 	
 	drop if _merge == 2 
 	drop _merge 
@@ -1094,10 +1097,69 @@ do "$do/00_dir_setting.do"
 			_b[c.wempo_index@3bn.wealth_quintile_ns] = ///
 			_b[c.wempo_index@4bn.wealth_quintile_ns] = ///
 			_b[c.wempo_index@5bn.wealth_quintile_ns]
+
 			
-	svy: mean high_empower
-	svy: mean high_empower, over(wealth_quintile_ns)
+	gen wempo_index_p = wempo_index + 3
+	sum wempo_index_p
+	conindex wempo_index_p, rank(NationalScore) svy wagstaff bounded limits(0 6)
+	
+	
+	svy: mean wempo_child_index 
+	svy: mean wempo_child_index, over(wealth_quintile_ns)
+	conindex wempo_child_index, rank(NationalScore) svy truezero generalized
+	
+	gen wempo_child_index_p = wempo_child_index + 3
+	sum wempo_child_index_p
+	conindex wempo_child_index_p, rank(NationalScore) svy wagstaff bounded limits(0 6)
+	
+	svy: mean wempo_mom_index
+	svy: mean wempo_mom_index, over(wealth_quintile_ns)
+	conindex wempo_mom_index, rank(NationalScore) svy truezero generalized
+
+	gen wempo_mom_index_p = wempo_mom_index + 3
+	sum wempo_mom_index_p
+	conindex wempo_mom_index_p, rank(NationalScore) svy wagstaff bounded limits(0 6)
+
+	svy: mean wempo_othd_index
+	svy: mean wempo_othd_index, over(wealth_quintile_ns)
+	conindex wempo_othd_index, rank(NationalScore) svy truezero generalized
+	
+	gen wempo_othd_index_p = wempo_othd_index + 3
+	sum wempo_othd_index_p
+	conindex wempo_othd_index_p, rank(NationalScore) svy wagstaff bounded limits(0 6)
+	
+	svy: tab progressivenss,ci
+	svy: tab wealth_quintile_ns progressivenss, row 
+	conindex progressivenss, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	
+	svy: tab progressivenss_child,ci
+	svy: tab wealth_quintile_ns progressivenss_child, row 
+	conindex progressivenss_child, rank(NationalScore) svy wagstaff bounded limits(0 1)
+
+	svy: tab progressivenss_mom,ci
+	svy: tab wealth_quintile_ns progressivenss_mom, row 
+	conindex progressivenss_mom, rank(NationalScore) svy wagstaff bounded limits(0 1)
+
+	svy: tab progressivenss_othd,ci
+	svy: tab wealth_quintile_ns progressivenss_othd, row 
+	conindex progressivenss_othd, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	
+	svy: tab high_empower,ci
+	svy: tab wealth_quintile_ns high_empower, row
 	conindex high_empower, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	
+	svy: tab high_empower_child,ci
+	svy: tab wealth_quintile_ns high_empower_child, row
+	conindex high_empower_child, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	
+	svy: tab high_empower_mom,ci
+	svy: tab wealth_quintile_ns high_empower_mom, row
+	conindex high_empower_mom, rank(NationalScore) svy wagstaff bounded limits(0 1)
+
+	svy: tab high_empower_othd,ci
+	svy: tab wealth_quintile_ns high_empower_othd, row
+	conindex high_empower_othd, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	
 	
 	****************************************************************************
 	** Mom ANC **
@@ -1905,6 +1967,14 @@ do "$do/00_dir_setting.do"
 	svy: tab wealth_quintile_ns insti_birth, row
 	svy: tab wealth_quintile_ns skilled_battend, row
 
+	// Institutional Deliveries with skilled Births attended 
+	svy: mean  insti_birth_skilled
+	svy: tab stratum_num insti_birth_skilled, row 
+	
+	svy: tab NationalQuintile insti_birth_skilled, row
+	svy: tab wealth_quintile_ns insti_birth_skilled, row	
+	
+	
 	
 	local outcome 	insti_birth skilled_battend
 	

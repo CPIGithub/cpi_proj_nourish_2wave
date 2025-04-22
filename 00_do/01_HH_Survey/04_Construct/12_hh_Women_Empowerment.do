@@ -195,26 +195,69 @@ do "$do/00_dir_setting.do"
 	lab var wempo_index "Women Empowerment Index (ICW-index)"		
 	tab wempo_index, m 
 	
+	** Revised the Womem empowerment index subcategory ** 
+	icw_index	wempo_childcare_d_z wempo_child_health_d_z wempo_child_wellbeing_d_z, gen(wempo_child_index)
+	icw_index	wempo_mom_health_d_z wempo_women_health_d_z , gen(wempo_mom_index)
+	icw_index	wempo_women_wages_d_z wempo_major_purchase_d_z wempo_visiting_d_z, gen(wempo_othd_index)
+		
+	lab var wempo_child_index "Women Empowerment (Child Care and Health) Index (ICW-index)"		
+	lab var wempo_mom_index "Women Empowerment (Women and Mother Health) Index (ICW-index)"		
+	lab var wempo_othd_index "Women Empowerment (Other Decision Making) Index (ICW-index)"		
+	
+	sum wempo_index wempo_*_index
+	
 	* Category - by quintile 
 	xtile wempo_category = wempo_index [pweight=weight_final], nq(3)
-	lab def wempo_category 1"Low" 2"Moderate" 3"High"
-	lab val wempo_category wempo_category
 	lab var wempo_category "Women Empowerment (Category)"
-	tab wempo_category, m 
+
+	xtile wempo_child_cat = wempo_child_index [pweight=weight_final], nq(3)
+	lab var wempo_child_cat "Women Empowerment: Child Care and Health (Category)"
+	
+	xtile wempo_mom_cat = wempo_mom_index [pweight=weight_final], nq(3)
+	lab var wempo_mom_cat "Women Empowerment: Women and Mother Health (Category)"
+	
+	
+	lab def wempo_category 1"Low" 2"Moderate" 3"High"
+	lab val wempo_category wempo_child_cat wempo_mom_cat wempo_category
+	tab1 wempo_category wempo_child_cat wempo_mom_cat, m 
 	
 	
 	* progressiveness 
-	sum wempo_index, d 
-	gen progressivenss = (wempo_index < `r(p50)')
-	replace progressivenss = .m if mi(wempo_index)
+	foreach var of varlist wempo_index wempo_child_index wempo_mom_index wempo_othd_index {
+		
+		epctile `var' , p(50) svy
+		mat def m = e(b)
+		local median = m[1,1]
+		
+		gen `var'_l = (`var' < `median')
+		replace `var'_l = .m if mi(`var')
+		svy: tab `var'_l
+		
+		gen `var'_h = (`var'_l == 0)
+		replace `var'_h = .m if mi(`var'_l)
+		svy: tab `var'_h
+	}
+	
+	rename wempo_index_l progressivenss 
+	rename wempo_index_h high_empower
+	
 	lab var progressivenss "Low Women Empowerment (Index < median score)"
-	tab progressivenss, m 
-	
-	gen high_empower = (progressivenss == 0)
-	replace high_empower = .m if mi(progressivenss)
 	lab var high_empower "High Women Empowerment (Index > median score)"
-	tab high_empower, m 
 	
+	rename wempo_child_index_l progressivenss_child 
+	rename wempo_child_index_h high_empower_child
+	rename wempo_mom_index_l progressivenss_mom
+	rename wempo_mom_index_h high_empower_mom
+	rename wempo_othd_index_l progressivenss_othd
+	rename wempo_othd_index_h high_empower_othd
+	
+	lab var progressivenss_child "Low Women Empowerment: Child Care and Health (Index < median score)"
+	lab var high_empower_child "High Women Empowerment: Child Care and Health (Index > median score)"
+	lab var progressivenss_mom "Low Women Empowerment: Women and Mother Health (Index < median score)"
+	lab var high_empower_mom "High Women Empowerment: Women and Mother Health (Index > median score)"
+	lab var progressivenss_othd "Low Women Empowerment: Other decision making dimensions (Index < median score)"
+	lab var high_empower_othd "High Women Empowerment: Other decision making dimensions (Index > median score)"
+
 	merge 1:1 respd_id using "$dta/pnourish_FIES_final.dta"
 		 
 	* Check for Missing variable label and variable label 

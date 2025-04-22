@@ -320,8 +320,15 @@ do "$do/00_dir_setting.do"
 	replace skilled_battend 	= .m if mi(deliv_assist)
 	lab var skilled_battend "Births attended by skilled health personnel"
 	tab skilled_battend, m 
-
-
+	
+	// Institutional Deliveries with skilled Births attended 
+	tab insti_birth skilled_battend, row 
+	
+	gen insti_birth_skilled 	= (insti_birth == 1 & skilled_battend == 1)
+	replace insti_birth_skilled	= .m if insti_birth != 1
+	lab var insti_birth_skilled "Institutional Deliveries with skilled Births attended personnel"
+	tab insti_birth_skilled, m 
+	
 	****************************************************************************
 	** Mom PNC **
 	****************************************************************************

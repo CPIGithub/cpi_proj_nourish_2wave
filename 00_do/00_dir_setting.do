@@ -70,6 +70,7 @@ else if "`user'" == "XX" {
 	global	hhcleaning		"$hhdo/03_Cleaning"
 	global	hhconstruct		"$hhdo/04_Construct"
 	global	hhanalysis		"$hhdo/05_Analysis"
+	global 	hhfun			"$hhdo/Function"
 
 	// Village survey
 	global 	villdo			"$do/02_Village_Survey"

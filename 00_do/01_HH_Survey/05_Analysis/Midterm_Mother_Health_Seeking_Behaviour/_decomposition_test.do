@@ -25,7 +25,155 @@ do "$do/00_dir_setting.do"
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 	
+	** CI calculation - using chapeter 8 - formula 8.7 
+	 glcurve NationalScore [aw = weight_final], pvar(rank) nograph
 	
+	* F - weight prepration 
+	sum weight_final // identify the longest decimal point 
+	di `r(max)' - floor(`r(max)')
+	
+	gen weight_final_int = weight_final * 10^6 // need integer weight var for fw weight 
+	gen new_weight = int(weight_final_int)
+	
+	** option 2: equation 8.7 
+	qui sum rank [fw = new_weight]
+	sca var_rank = r(Var)
+	qui sum anc_yn [fw = new_weight]
+	scalar mean = r(mean)
+
+	gen lhs = 2 * var_rank * (anc_yn / mean)
+	regr lhs rank [pw = weight_final], vce(cluster stratum_num) // control culster 
+	sca CI = _b[rank]
+	sca list CI
+
+	** Calculation of Decomposition: Chapter 15 **
+	global all_unfiar "NationalScore income_lastmonth wempo_index i.hfc_near_dist stratum i.org_name_num i.respd_chid_num_grp i.mom_age_grp resp_hhhead i.resp_highedu i.hhhead_highedu"
+	
+	** Decomposition of the concentration index ** - Chapter 13					
+	foreach var of varlist 	stratum org_name_num respd_chid_num_grp ///
+							mom_age_grp resp_hhhead resp_highedu hhhead_highedu {
+						    
+		tab `var', gen(`var'_)			
+							
+				}
+				
+	global X 			/*income_lastmonth*/ wempo_index ///
+						stratum_2 ///
+						org_name_num_2 org_name_num_3 ///
+						respd_chid_num_grp_2 respd_chid_num_grp_3 ///
+						mom_age_grp_2 mom_age_grp_3 ///
+						resp_highedu_2 resp_highedu_3 resp_highedu_4 ///
+						resp_hhhead ///
+						hhhead_highedu_2 hhhead_highedu_3 hhhead_highedu_4 ///
+						/*hhhead_highedu_5*/ hhhead_highedu_6 hhhead_highedu_7 /*hhhead_highedu_8*/
+						
+	/*
+	Note for dropping var 
+	note: hhhead_highedu_5 != 0 predicts failure perfectly;
+		  hhhead_highedu_5 omitted and 1 obs not used.
+	note: hhhead_highedu_8 != 0 predicts failure perfectly;
+		  hhhead_highedu_8 omitted and 1 obs not used.
+	*/
+						
+	svy: probit anc_yn $X 
+	dprobit anc_yn $X [pw = weight_final]
+	
+	foreach z of global X {
+	 gen copy_`z'=`z'
+	 qui sum `z' [aw = weight_final]
+	 replace `z' = r(mean)
+	 }
+	 
+	predict yhat 
+	 
+	foreach z of global X {
+	 replace `z' = copy_`z'
+	 drop copy_`z'
+	 }
+	 
+	sum yhat /*m_yhat*/ [aw = weight_final]
+	gen yst = anc_yn - yhat + r(mean)
+ 
+	
+	dprobit anc_yn $X [pw = weight_final]
+	
+	matrix dfdx = e(dfdx)
+	
+	preserve 
+		clear 
+		tempfile empty 
+		save `empty', emptyok 
+	restore 
+	gen sir					= .m 
+	gen var 				= ""
+	gen elasticity			= .m
+	gen var_ci				= .m
+	gen contribution		= .m
+	gen contribution_pct 	= .m
+	
+	sca need = 0
+	local i = 1
+	 foreach x of global X {
+		 /*qui* {*/
+			mat b_`x' = dfdx[1,"`x'"]
+			sca b_`x' = b_`x'[1,1] 
+			corr rank `x' [aw = weight_final], c
+			sca cov_`x' = r(cov_12)    
+			sum `x' [aw = weight_final]
+			sca m_`x' = r(mean)    
+			sca elas_`x' = (b_`x' * m_`x') / yst // m_y // check and replace from the chapter 13 note
+			sca CI_`x' = 2 * cov_`x' / m_`x'     
+			sca con_`x' = elas_`x' * CI_`x'   
+			sca prcnt_`x' = con_`x' / CI   
+			sca need = need + con_`x'
+		 //}
+		 di "`x' elasticity:", elas_`x'
+		 di "`x' concentration index:", CI_`x'
+		 di "`x' contribution:", con_`x'
+		 di "`x' percentage contribution:", prcnt_`x'
+		 
+		 replace sir				= `i'
+		 replace var 				= "`x'"
+		 replace elasticity			= elas_`x'
+		 replace var_ci				= CI_`x'
+		 replace contribution		= con_`x'
+		 replace contribution_pct 	= prcnt_`x'
+		 
+		 preserve 
+		 
+			 keep sir var elasticity var_ci contribution contribution_pct
+			 
+			 keep if _n == 1
+			 
+			 append using `empty'
+			 
+			 save `empty', replace 
+			 
+		 restore 
+
+		local i = `i' + 1
+	 }
+ 
+
+	di "Inequality due to need factors:", need 
+	//di "Inequality due to non-need factors:", nonneed
+	sca HI = CI - need
+	di "Horizontal Inequity Index:", HI
+	
+	
+	use `empty', clear 
+	
+	gen need_factor 		= need
+	gen ANC_CI 				= CI 
+	gen horizontal_index 	= HI 
+	
+	egen tot_fact_contr = total(contribution)
+	egen tot_fact_contr_pct = total(contribution_pct)
+	
+	gen residual = CI - tot_fact_contr
+	
+ 
+	&&&
 	** Chapter 8 - CI calculation 
 	* ranking assingment using Health Equity Index score - apply weight 
 	glcurve NationalScore [aw=weight_final], pvar(rank) nograph
