@@ -48,7 +48,9 @@
 						svy wagstaff bounded limits(0 1)
 						
 	** Concentration Index (Multivariate) **
-	global all_unfiar "NationalScore income_lastmonth wempo_index hfc_near_dist stratum i.org_name_num i.respd_chid_num_grp i.mom_age_grp resp_hhhead i.resp_highedu i.hhhead_highedu"
+	global all_unfiar "NationalScore income_lastmonth wempo_index hfc_near_dist stratum i.resp_highedu i.hhhead_highedu"
+	
+	global all_fiar "i.org_name_num i.respd_chid_num_grp i.mom_age_grp resp_hhhead"
 
 	global outcomes anc_yn anc_who_trained anc_visit_trained_4times ///
 					insti_birth skilled_battend ///
@@ -60,12 +62,14 @@
 	
 		do "$hhfun/CI_comparision.do"
 		
-		export excel $export_table 	using "$out/CI_Comparision_Table.xlsx", /// 
-									sheet("Women_Health") firstrow(varlabels) keepcellfmt sheetreplace 
+		export excel 	using "$out/CI_Comparision_Table.xlsx", /// 
+						sheet("Women_Health") firstrow(varlabels) keepcellfmt sheetreplace 
+						
+		export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
+						sheet("Women_Health") firstrow(varlabels) keepcellfmt sheetreplace 						
 		
 	restore 
 		
-	
 
 	* Sample code for Multivariate CI 
 	svy: logit anc_yn $all_unfiar 
@@ -78,6 +82,15 @@
 	tab p_anc_quintile, m 
 	
 	svy: tab p_anc_quintile anc_yn, row 
+	&&
+	
+	//lorenz estimate anc_yn, over(p_anc_yn_all)
+	//lorenz graph
+	
+	conindex anc_yn, rank(NationalScore) wagstaff bounded limits(0 1) svy  
+	
+	conindex anc_yn, rank(p_anc_yn_all) truezero svy graph
+	
 	
 	glcurve anc_yn, glvar(gl) pvar(p) sortvar(NationalScore)
 	glcurve anc_yn, glvar(gl_m) pvar(p_m) sortvar(p_anc_quintile)
@@ -99,7 +112,7 @@
         plotregion(margin(zero)) aspectratio(1) scheme(economist)
 
 	graph export "$plots/Lorenz_curve_ANC_MultivarIndex.png", replace
-	
+	*/
 	
 	conindex anc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex anc_yn, rank(p_anc_yn_all) svy wagstaff bounded limits(0 1)

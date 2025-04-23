@@ -1,0 +1,778 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Nicholus Tint Zaw\Documents\GitHub\cpi_proj_nourish_2wave/00_do/anc_decomposition_workflow.text
+  log type:  text
+ opened on:  22 Apr 2025, 14:10:54
+
+.         
+.         ****************************************************************************
+.         ** Mom Health Services **
+.         ****************************************************************************
+.         use "$dta/pnourish_mom_health_analysis_final.dta", clear    
+
+. 
+.         * svy weight apply 
+.         svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+
+Sampling weights: weight_final
+             VCE: linearized
+     Single unit: missing
+        Strata 1: stratum_num
+ Sampling unit 1: geo_vill
+           FPC 1: <zero>
+
+.         
+.         ** CI calculation - using chapeter 8 - formula 8.7 
+.          glcurve NationalScore [aw = weight_final], pvar(rank) nograph
+new variable rank created
+
+warning: __000001 has 421 values < 0;used in calculations
+
+.         
+.         * F - weight prepration 
+.         sum weight_final // identify the longest decimal point 
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+weight_final |        509    9.316244     10.3092   2.659175   162.8792
+
+.         di `r(max)' - floor(`r(max)')
+.87918091
+
+.         
+.         gen weight_final_int = weight_final * 10^6 // need integer weight var for fw weight 
+
+.         gen new_weight = int(weight_final_int)
+
+.         
+.         ** option 2: equation 8.7 
+.         qui sum rank [fw = new_weight]
+
+.         sca var_rank = r(Var)
+
+.         qui sum anc_yn [fw = new_weight]
+
+.         scalar mean = r(mean)
+
+. 
+.         gen lhs = 2 * var_rank * (anc_yn / mean)
+(92 missing values generated)
+
+.         regr lhs rank [pw = weight_final], vce(cluster stratum_num) // control culster 
+(sum of wgt is 3,818.08779644966)
+
+Linear regression                               Number of obs     =        414
+                                                F(1, 4)           =      47.53
+                                                Prob > F          =     0.0023
+                                                R-squared         =     0.2169
+                                                Root MSE          =      .1014
+
+                            (Std. err. adjusted for 5 clusters in stratum_num)
+------------------------------------------------------------------------------
+             |               Robust
+         lhs | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        rank |   .1786803   .0259187     6.89   0.002     .1067185    .2506421
+       _cons |   .0764841   .0230654     3.32   0.029     .0124444    .1405239
+------------------------------------------------------------------------------
+
+.         sca CI = _b[rank]
+
+.         sca list CI
+        CI =  .17868034
+
+. 
+.         ** Calculation of Decomposition: Chapter 15 **
+.         global all_unfiar "NationalScore income_lastmonth wempo_index i.hfc_near_dist stratum i.org_name_num i.respd_chid_num_grp i.mom_age_grp resp_hhhead i.resp_highedu i.hhhead_highedu"
+
+.         
+.         ** Decomposition of the concentration index ** - Chapter 13                                     
+.         foreach var of varlist  stratum org_name_num respd_chid_num_grp ///
+>                                                         mom_age_grp resp_hhhead resp_highedu hhhead_highedu {
+  2.                                                     
+.                 tab `var', gen(`var'_)                  
+  3.                                                         
+.                                 }
+
+    Stratum |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        259       50.88       50.88
+          2 |        250       49.12      100.00
+------------+-----------------------------------
+      Total |        509      100.00
+
+Organizatio |
+     n name |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       KDHW |         48        9.43        9.43
+      KEHOC |        249       48.92       58.35
+       YSDA |        212       41.65      100.00
+------------+-----------------------------------
+      Total |        509      100.00
+
+       Number of Children |      Freq.     Percent        Cum.
+--------------------------+-----------------------------------
+       Has only one child |        165       32.67       32.67
+         Has two children |        143       28.32       60.99
+Has three children & more |        197       39.01      100.00
+--------------------------+-----------------------------------
+                    Total |        505      100.00
+
+      mom_age_grp |      Freq.     Percent        Cum.
+------------------+-----------------------------------
+   < 25 years old |        161       31.63       31.63
+25 - 34 years old |        238       46.76       78.39
+    35+ years old |        110       21.61      100.00
+------------------+-----------------------------------
+            Total |        509      100.00
+
+    Are you |
+  <b><b>the |
+  household |
+head</b></b |
+         >? |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        482       94.70       94.70
+          1 |         27        5.30      100.00
+------------+-----------------------------------
+      Total |        509      100.00
+
+      Household member Highest level of |
+                    education completed |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                             Illiterate |        128       25.45       25.45
+ Primary education (Under 5th standard) |        193       38.37       63.82
+Secondary education (under 9th standard |        136       27.04       90.85
+Higher education (till pass matriculati |         46        9.15      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        503      100.00
+
+      Household member Highest level of |
+                    education completed |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                             Illiterate |        165       33.33       33.33
+ Primary education (Under 5th standard) |        199       40.20       73.54
+Secondary education (under 9th standard |         70       14.14       87.68
+Higher education (till pass matriculati |         18        3.64       91.31
+                   Vocational education |          1        0.20       91.52
+   Graduate level (University/ College) |          8        1.62       93.13
+Monastery Education (No specific standa |         32        6.46       99.60
+                                    888 |          2        0.40      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        495      100.00
+
+.                                 
+.         global X                        /*income_lastmonth*/ wempo_index ///
+>                                                 stratum_2 ///
+>                                                 org_name_num_2 org_name_num_3 ///
+>                                                 respd_chid_num_grp_2 respd_chid_num_grp_3 ///
+>                                                 mom_age_grp_2 mom_age_grp_3 ///
+>                                                 resp_highedu_2 resp_highedu_3 resp_highedu_4 ///
+>                                                 resp_hhhead ///
+>                                                 hhhead_highedu_2 hhhead_highedu_3 hhhead_highedu_4 ///
+>                                                 /*hhhead_highedu_5*/ hhhead_highedu_6 hhhead_highedu_7 /*hhhead_highedu_8*/
+
+.                                                 
+.         /*
+>         Note for dropping var 
+>         note: hhhead_highedu_5 != 0 predicts failure perfectly;
+>                   hhhead_highedu_5 omitted and 1 obs not used.
+>         note: hhhead_highedu_8 != 0 predicts failure perfectly;
+>                   hhhead_highedu_8 omitted and 1 obs not used.
+>         */
+.                                                 
+.         svy: probit anc_yn $X 
+(running probit on estimation sample)
+
+Survey: Probit regression
+
+Number of strata =  5                             Number of obs   =        395
+Number of PSUs   = 72                             Population size = 3,719.0733
+                                                  Design df       =         67
+                                                  F(17, 51)       =      30.38
+                                                  Prob > F        =     0.0000
+
+--------------------------------------------------------------------------------------
+                     |             Linearized
+              anc_yn | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+         wempo_index |   .2662332   .1338844     1.99   0.051    -.0010011    .5334676
+           stratum_2 |  -.6840807   .3074293    -2.23   0.029    -1.297712   -.0704491
+      org_name_num_2 |  -4.584716   .4929669    -9.30   0.000    -5.568682    -3.60075
+      org_name_num_3 |     -5.613   .4750835   -11.81   0.000     -6.56127   -4.664729
+respd_chid_num_grp_2 |  -.1407455   .2545055    -0.55   0.582    -.6487405    .3672495
+respd_chid_num_grp_3 |  -.7397091   .3257208    -2.27   0.026    -1.389851   -.0895677
+       mom_age_grp_2 |   .3876168   .2495907     1.55   0.125    -.1105684     .885802
+       mom_age_grp_3 |   .2773723   .4096726     0.68   0.501    -.5403375    1.095082
+      resp_highedu_2 |   .4303094   .3345472     1.29   0.203    -.2374496    1.098068
+      resp_highedu_3 |   .8131934    .375492     2.17   0.034     .0637083    1.562678
+      resp_highedu_4 |   1.450596   .4991015     2.91   0.005     .4543857    2.446807
+         resp_hhhead |    .751074   .4572202     1.64   0.105    -.1615413    1.663689
+    hhhead_highedu_2 |   .3488468   .2906205     1.20   0.234    -.2312342    .9289278
+    hhhead_highedu_3 |   .4232091   .2181763     1.94   0.057    -.0122726    .8586908
+    hhhead_highedu_4 |   -.216827   .7126227    -0.30   0.762    -1.639228    1.205574
+    hhhead_highedu_6 |  -1.971179   .4774796    -4.13   0.000    -2.924232   -1.018126
+    hhhead_highedu_7 |     .76915   .4997523     1.54   0.128    -.2283597     1.76666
+               _cons |   5.613911   .4062487    13.82   0.000     4.803035    6.424787
+--------------------------------------------------------------------------------------
+Note: 0 failures and 27 successes completely determined.
+
+.         dprobit anc_yn $X [pw = weight_final]
+
+(sum of wgt is 3,719.07328605652)
+Iteration 0:   log pseudolikelihood = -249.03497
+Iteration 1:   log pseudolikelihood = -185.80687
+Iteration 2:   log pseudolikelihood = -180.38076
+Iteration 3:   log pseudolikelihood = -179.83022
+Iteration 4:   log pseudolikelihood = -179.71452
+Iteration 5:   log pseudolikelihood = -179.68057
+Iteration 6:   log pseudolikelihood = -179.67003
+Iteration 7:   log pseudolikelihood = -179.66666
+Iteration 8:   log pseudolikelihood = -179.66557
+Iteration 9:   log pseudolikelihood =  -179.6652
+Iteration 10:  log pseudolikelihood = -179.66508
+Iteration 11:  log pseudolikelihood = -179.66504
+Iteration 12:  log pseudolikelihood = -179.66503
+Iteration 13:  log pseudolikelihood = -179.66503
+Iteration 14:  log pseudolikelihood = -179.66502
+Iteration 15:  log pseudolikelihood = -179.66502
+Iteration 16:  log pseudolikelihood = -179.66502
+Iteration 17:  log pseudolikelihood = -179.66502
+Iteration 18:  log pseudolikelihood = -179.66502
+Iteration 19:  log pseudolikelihood = -179.66502
+Iteration 20:  log pseudolikelihood = -179.66502
+
+Probit regression, reporting marginal effects           Number of obs =    395
+                                                        Wald chi2(16) =      .
+                                                        Prob > chi2   =      .
+Log pseudolikelihood = -179.66502                       Pseudo R2     = 0.2786
+
+------------------------------------------------------------------------------
+         |               Robust
+  anc_yn |      dF/dx   Std. err.      z    P>|z|     x-bar  [    95% C.I.   ]
+---------+--------------------------------------------------------------------
+wempo_i~ |   .0715035   .0416837     1.74   0.082  -.118151  -.010195  .153202
+stratu~2*|  -.1619506   .0475087    -3.30   0.001   .693889  -.255066 -.068835
+org_na~2*|  -.9920611   .0014483        .       .   .389237    -.9949 -.989222
+org_na~3*|  -.9751648    .006961   -26.99   0.000   .563298  -.988808 -.961522
+respd_~2*|  -.0388906     .07873    -0.51   0.612   .266805  -.193199  .115417
+respd_~3*|  -.2047693   .0814037    -2.61   0.009   .442676  -.364318 -.045221
+mom_ag~2*|   .1044676   .0643606     1.61   0.108   .514209  -.021677  .230612
+mom_ag~3*|   .0690413   .0785321     0.80   0.423   .206287  -.084879  .222961
+resp~u_2*|   .1082009    .065946     1.52   0.129   .336005  -.021051  .237453
+resp_h~3*|   .1825319   .0548075     2.73   0.006   .270798   .075111  .289953
+resp_h~4*|   .2183145    .036471     2.91   0.004   .110606   .146833  .289796
+resp_h~d*|   .1426555   .0536564     1.74   0.081   .050123   .037491   .24782
+hhhead~2*|   .0899671   .0619451     1.41   0.159   .374617  -.031443  .211377
+hhhead~3*|   .1005119   .0632858     1.42   0.157   .194888  -.023526   .22455
+hhhead~4*|  -.0634148   .2196531    -0.31   0.756   .027397  -.493927  .367097
+hhhead~6*|  -.6743207   .1210084    -3.74   0.000   .010615  -.911493 -.437149
+hhhead~7*|    .145681   .0605262     1.56   0.118   .057016   .027052   .26431
+---------+--------------------------------------------------------------------
+  obs. P |   .6751542
+ pred. P |   .8131614  (at x-bar)
+------------------------------------------------------------------------------
+(*) dF/dx is for discrete change of dummy variable from 0 to 1
+    z and P>|z| correspond to the test of the underlying coefficient being 0
+
+.         
+.         foreach z of global X {
+  2.          gen copy_`z'=`z'
+  3.          qui sum `z' [aw = weight_final]
+  4.          replace `z' = r(mean)
+  5.          }
+(5 missing values generated)
+(509 real changes made)
+variable stratum_2 was byte now float
+(509 real changes made)
+variable org_name_num_2 was byte now float
+(509 real changes made)
+variable org_name_num_3 was byte now float
+(509 real changes made)
+(4 missing values generated)
+variable respd_chid_num_grp_2 was byte now float
+(509 real changes made)
+(4 missing values generated)
+variable respd_chid_num_grp_3 was byte now float
+(509 real changes made)
+variable mom_age_grp_2 was byte now float
+(509 real changes made)
+variable mom_age_grp_3 was byte now float
+(509 real changes made)
+(6 missing values generated)
+variable resp_highedu_2 was byte now float
+(509 real changes made)
+(6 missing values generated)
+variable resp_highedu_3 was byte now float
+(509 real changes made)
+(6 missing values generated)
+variable resp_highedu_4 was byte now float
+(509 real changes made)
+variable resp_hhhead was byte now float
+(509 real changes made)
+(14 missing values generated)
+variable hhhead_highedu_2 was byte now float
+(509 real changes made)
+(14 missing values generated)
+variable hhhead_highedu_3 was byte now float
+(509 real changes made)
+(14 missing values generated)
+variable hhhead_highedu_4 was byte now float
+(509 real changes made)
+(14 missing values generated)
+variable hhhead_highedu_6 was byte now float
+(509 real changes made)
+(14 missing values generated)
+variable hhhead_highedu_7 was byte now float
+(509 real changes made)
+
+.          
+.         predict yhat 
+(option pr assumed; Pr(anc_yn))
+
+.          
+.         foreach z of global X {
+  2.          replace `z' = copy_`z'
+  3.          drop copy_`z'
+  4.          }
+(509 real changes made, 5 to missing)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made, 4 to missing)
+(509 real changes made, 4 to missing)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made, 6 to missing)
+(509 real changes made, 6 to missing)
+(509 real changes made, 6 to missing)
+(509 real changes made)
+(509 real changes made, 14 to missing)
+(509 real changes made, 14 to missing)
+(509 real changes made, 14 to missing)
+(509 real changes made, 14 to missing)
+(509 real changes made, 14 to missing)
+
+.          
+.         sum yhat /*m_yhat*/ [aw = weight_final]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        yhat |     509  4741.96805     .826457          0    .826457    .826457
+
+.         gen yst = anc_yn - yhat + r(mean)
+(92 missing values generated)
+
+.  
+.         
+.         dprobit anc_yn $X [pw = weight_final]
+
+(sum of wgt is 3,719.07328605652)
+Iteration 0:   log pseudolikelihood = -249.03497
+Iteration 1:   log pseudolikelihood = -185.80687
+Iteration 2:   log pseudolikelihood = -180.38076
+Iteration 3:   log pseudolikelihood = -179.83022
+Iteration 4:   log pseudolikelihood = -179.71452
+Iteration 5:   log pseudolikelihood = -179.68057
+Iteration 6:   log pseudolikelihood = -179.67003
+Iteration 7:   log pseudolikelihood = -179.66666
+Iteration 8:   log pseudolikelihood = -179.66557
+Iteration 9:   log pseudolikelihood =  -179.6652
+Iteration 10:  log pseudolikelihood = -179.66508
+Iteration 11:  log pseudolikelihood = -179.66504
+Iteration 12:  log pseudolikelihood = -179.66503
+Iteration 13:  log pseudolikelihood = -179.66503
+Iteration 14:  log pseudolikelihood = -179.66502
+Iteration 15:  log pseudolikelihood = -179.66502
+Iteration 16:  log pseudolikelihood = -179.66502
+Iteration 17:  log pseudolikelihood = -179.66502
+Iteration 18:  log pseudolikelihood = -179.66502
+Iteration 19:  log pseudolikelihood = -179.66502
+Iteration 20:  log pseudolikelihood = -179.66502
+
+Probit regression, reporting marginal effects           Number of obs =    395
+                                                        Wald chi2(16) =      .
+                                                        Prob > chi2   =      .
+Log pseudolikelihood = -179.66502                       Pseudo R2     = 0.2786
+
+------------------------------------------------------------------------------
+         |               Robust
+  anc_yn |      dF/dx   Std. err.      z    P>|z|     x-bar  [    95% C.I.   ]
+---------+--------------------------------------------------------------------
+wempo_i~ |   .0715035   .0416837     1.74   0.082  -.118151  -.010195  .153202
+stratu~2*|  -.1619506   .0475087    -3.30   0.001   .693889  -.255066 -.068835
+org_na~2*|  -.9920611   .0014483        .       .   .389237    -.9949 -.989222
+org_na~3*|  -.9751648    .006961   -26.99   0.000   .563298  -.988808 -.961522
+respd_~2*|  -.0388906     .07873    -0.51   0.612   .266805  -.193199  .115417
+respd_~3*|  -.2047693   .0814037    -2.61   0.009   .442676  -.364318 -.045221
+mom_ag~2*|   .1044676   .0643606     1.61   0.108   .514209  -.021677  .230612
+mom_ag~3*|   .0690413   .0785321     0.80   0.423   .206287  -.084879  .222961
+resp~u_2*|   .1082009    .065946     1.52   0.129   .336005  -.021051  .237453
+resp_h~3*|   .1825319   .0548075     2.73   0.006   .270798   .075111  .289953
+resp_h~4*|   .2183145    .036471     2.91   0.004   .110606   .146833  .289796
+resp_h~d*|   .1426555   .0536564     1.74   0.081   .050123   .037491   .24782
+hhhead~2*|   .0899671   .0619451     1.41   0.159   .374617  -.031443  .211377
+hhhead~3*|   .1005119   .0632858     1.42   0.157   .194888  -.023526   .22455
+hhhead~4*|  -.0634148   .2196531    -0.31   0.756   .027397  -.493927  .367097
+hhhead~6*|  -.6743207   .1210084    -3.74   0.000   .010615  -.911493 -.437149
+hhhead~7*|    .145681   .0605262     1.56   0.118   .057016   .027052   .26431
+---------+--------------------------------------------------------------------
+  obs. P |   .6751542
+ pred. P |   .8131614  (at x-bar)
+------------------------------------------------------------------------------
+(*) dF/dx is for discrete change of dummy variable from 0 to 1
+    z and P>|z| correspond to the test of the underlying coefficient being 0
+
+.         
+.         matrix dfdx = e(dfdx)
+
+.         
+.         preserve 
+
+.                 clear 
+
+.                 tempfile empty 
+
+.                 save `empty', emptyok 
+(dataset contains 0 observations)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+
+.         restore 
+
+.         gen sir                                 = .m 
+(509 missing values generated)
+
+.         gen var                                 = ""
+(509 missing values generated)
+
+.         gen elasticity                  = .m
+(509 missing values generated)
+
+.         gen var_ci                              = .m
+(509 missing values generated)
+
+.         gen contribution                = .m
+(509 missing values generated)
+
+.         gen contribution_pct    = .m
+(509 missing values generated)
+
+.         
+.         sca need = 0
+
+.         local i = 1
+
+.          foreach x of global X {
+  2.                  qui {
+  3.                         mat b_`x' = dfdx[1,"`x'"]
+  4.                         sca b_`x' = b_`x'[1,1] 
+  5.                         corr rank `x' [aw = weight_final], c
+  6.                         sca cov_`x' = r(cov_12)    
+  7.                         sum `x' [aw = weight_final]
+  8.                         sca m_`x' = r(mean)    
+  9.                         sca elas_`x' = (b_`x' * m_`x') / yst // m_y // check and replace from the chapter 13 note
+ 10.                         sca CI_`x' = 2 * cov_`x' / m_`x'     
+ 11.                         sca con_`x' = elas_`x' * CI_`x'   
+ 12.                         sca prcnt_`x' = con_`x' / CI   
+ 13.                         sca need = need + con_`x'
+ 14.                  }
+ 15.                  di "`x' elasticity:", elas_`x'
+ 16.                  di "`x' concentration index:", CI_`x'
+ 17.                  di "`x' contribution:", con_`x'
+ 18.                  di "`x' percentage contribution:", prcnt_`x'
+ 19.                  
+.                  replace sir                            = `i'
+ 20.                  replace var                            = "`x'"
+ 21.                  replace elasticity                     = elas_`x'
+ 22.                  replace var_ci                         = CI_`x'
+ 23.                  replace contribution           = con_`x'
+ 24.                  replace contribution_pct       = prcnt_`x'
+ 25.                  
+.                  preserve 
+ 26.                  
+.                          keep sir var elasticity var_ci contribution contribution_pct
+ 27.                          
+.                          keep if _n == 1
+ 28.                          
+.                          append using `empty'
+ 29.                          
+.                          save `empty', replace 
+ 30.                          
+.                  restore 
+ 31. 
+.                 local i = `i' + 1
+ 32.          }
+wempo_index elasticity: -.00628569
+wempo_index concentration index: -.76611871
+wempo_index contribution: .00481558
+wempo_index percentage contribution: .02695083
+(509 real changes made)
+variable var was str1 now str11
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+stratum_2 elasticity: -.1146711
+stratum_2 concentration index: -.1689256
+stratum_2 contribution: .01937089
+stratum_2 percentage contribution: .10841084
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+org_name_num_2 elasticity: -.44396472
+org_name_num_2 concentration index: .12449837
+org_name_num_2 contribution: -.05527289
+org_name_num_2 percentage contribution: -.30933949
+(509 real changes made)
+variable var was str11 now str14
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+org_name_num_3 elasticity: -.49035985
+org_name_num_3 concentration index: -.15119321
+org_name_num_3 contribution: .07413908
+org_name_num_3 percentage contribution: .41492578
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+respd_chid_num_grp_2 elasticity: -.01023076
+respd_chid_num_grp_2 concentration index: .08700396
+respd_chid_num_grp_2 contribution: -.00089012
+respd_chid_num_grp_2 percentage contribution: -.00498161
+(509 real changes made)
+variable var was str14 now str20
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+respd_chid_num_grp_3 elasticity: -.08669595
+respd_chid_num_grp_3 concentration index: -.18219163
+respd_chid_num_grp_3 contribution: .01579528
+respd_chid_num_grp_3 percentage contribution: .08839963
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+mom_age_grp_2 elasticity: .05174783
+mom_age_grp_2 concentration index: -.05060109
+mom_age_grp_2 contribution: -.0026185
+mom_age_grp_2 percentage contribution: -.01465464
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+mom_age_grp_3 elasticity: .01400334
+mom_age_grp_3 concentration index: -.03370655
+mom_age_grp_3 contribution: -.000472
+mom_age_grp_3 percentage contribution: -.00264161
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+resp_highedu_2 elasticity: .03862209
+resp_highedu_2 concentration index: .01999008
+resp_highedu_2 contribution: .00077206
+resp_highedu_2 percentage contribution: .00432089
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+resp_highedu_3 elasticity: .04756499
+resp_highedu_3 concentration index: .09692456
+resp_highedu_3 contribution: .00461022
+resp_highedu_3 percentage contribution: .02580147
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+resp_highedu_4 elasticity: .02144902
+resp_highedu_4 concentration index: .14338521
+resp_highedu_4 contribution: .00307547
+resp_highedu_4 percentage contribution: .01721214
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+resp_hhhead elasticity: .00680421
+resp_hhhead concentration index: .22465468
+resp_hhhead contribution: .0015286
+resp_hhhead percentage contribution: .00855493
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+hhhead_highedu_2 elasticity: .03391721
+hhhead_highedu_2 concentration index: -.03097065
+hhhead_highedu_2 contribution: -.00105044
+hhhead_highedu_2 percentage contribution: -.00587887
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+hhhead_highedu_3 elasticity: .01802228
+hhhead_highedu_3 concentration index: -.05147132
+hhhead_highedu_3 contribution: -.00092763
+hhhead_highedu_3 percentage contribution: -.00519156
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+hhhead_highedu_4 elasticity: -.00167802
+hhhead_highedu_4 concentration index: .383892
+hhhead_highedu_4 contribution: -.00064418
+hhhead_highedu_4 percentage contribution: -.00360521
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+hhhead_highedu_6 elasticity: -.0074818
+hhhead_highedu_6 concentration index: -.06543376
+hhhead_highedu_6 contribution: .00048956
+hhhead_highedu_6 percentage contribution: .00273988
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+hhhead_highedu_7 elasticity: .0077784
+hhhead_highedu_7 concentration index: .22568171
+hhhead_highedu_7 contribution: .00175544
+hhhead_highedu_7 percentage contribution: .00982449
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(509 real changes made)
+(508 observations deleted)
+file C:\Users\NICHOL~1\AppData\Local\Temp\ST_514c_000002.tmp saved as .dta format
+
+.  
+. 
+.         di "Inequality due to need factors:", need 
+Inequality due to need factors: .06447642
+
+.         //di "Inequality due to non-need factors:", nonneed
+.         sca HI = CI - need
+
+.         di "Horizontal Inequity Index:", HI
+Horizontal Inequity Index: .11420392
+
+.         
+.         
+.         use `empty', clear 
+
+.         
+.         sort sir 
+
+.         drop sir 
+
+.         
+.         gen need_factor                 = need
+
+.         gen ANC_CI                              = CI 
+
+.         gen horizontal_index    = HI 
+
+.         
+.         egen tot_fact_contr_pct = total(contribution_pct)
+
+.         
+.         gen residual = CI - need_factor
+
+.         
+.         lab var var                             "Unfair factor variable names"
+
+.         lab var elasticity                      "Elasticities" 
+
+.         lab var var_ci                          "CI: Unfair factors"
+
+.         lab var contribution            "Contributions"
+
+.         lab var contribution_pct        "Percentage contributions"
+
+.         lab var need_factor             "Total Unfair factor's contributions"
+
+.         lab var ANC_CI                          "CI: ANC (any)"
+
+.         lab var horizontal_index        "Horizontal inequity index"
+
+.         lab var tot_fact_contr_pct      "Total Percentage contributions"
+
+.         lab var residual                        "Residual"
+
+.         
+.         export excel    using "$out/Decomposition_CI_ANC.xlsx", /// 
+>                                         sheet("ANC_Decomposition") firstrow(varlabels) keepcellfmt sheetreplace 
+file I:\.shortcut-targets-by-id\1qS9e_FKPO2IwvcIAch8aqRrLnWosl6ja\2nd round Project Nourish Survey/02_workflow/03_output/Decomposition_CI_ANC.xlsx saved
+
+.                                                                         
+.         log close 
+      name:  <unnamed>
+       log:  C:\Users\Nicholus Tint Zaw\Documents\GitHub\cpi_proj_nourish_2wave/00_do/anc_decomposition_workflow.text
+  log type:  text
+ closed on:  22 Apr 2025, 14:10:58
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

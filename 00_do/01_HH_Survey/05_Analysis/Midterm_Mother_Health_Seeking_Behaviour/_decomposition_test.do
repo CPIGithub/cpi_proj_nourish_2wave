@@ -16,7 +16,9 @@ Modified by			:
 
 do "$do/00_dir_setting.do"
 
-	   
+	set logtype text 
+	log using "$do/anc_decomposition_workflow.text", replace 
+	
 	****************************************************************************
 	** Mom Health Services **
 	****************************************************************************
@@ -114,7 +116,7 @@ do "$do/00_dir_setting.do"
 	sca need = 0
 	local i = 1
 	 foreach x of global X {
-		 /*qui* {*/
+		 qui {
 			mat b_`x' = dfdx[1,"`x'"]
 			sca b_`x' = b_`x'[1,1] 
 			corr rank `x' [aw = weight_final], c
@@ -126,7 +128,7 @@ do "$do/00_dir_setting.do"
 			sca con_`x' = elas_`x' * CI_`x'   
 			sca prcnt_`x' = con_`x' / CI   
 			sca need = need + con_`x'
-		 //}
+		 }
 		 di "`x' elasticity:", elas_`x'
 		 di "`x' concentration index:", CI_`x'
 		 di "`x' contribution:", con_`x'
@@ -163,17 +165,37 @@ do "$do/00_dir_setting.do"
 	
 	use `empty', clear 
 	
+	sort sir 
+	drop sir 
+	
 	gen need_factor 		= need
 	gen ANC_CI 				= CI 
 	gen horizontal_index 	= HI 
 	
-	egen tot_fact_contr = total(contribution)
 	egen tot_fact_contr_pct = total(contribution_pct)
 	
-	gen residual = CI - tot_fact_contr
+	gen residual = CI - need_factor
+	
+	lab var var 				"Unfair factor variable names"
+	lab var elasticity 			"Elasticities" 
+	lab var var_ci 				"CI: Unfair factors"
+	lab var contribution 		"Contributions"
+	lab var contribution_pct 	"Percentage contributions"
+	lab var need_factor 		"Total Unfair factor's contributions"
+	lab var ANC_CI 				"CI: ANC (any)"
+	lab var horizontal_index 	"Horizontal inequity index"
+	lab var tot_fact_contr_pct 	"Total Percentage contributions"
+	lab var residual			"Residual"
+	
+	export excel 	using "$out/Decomposition_CI_ANC.xlsx", /// 
+					sheet("ANC_Decomposition") firstrow(varlabels) keepcellfmt sheetreplace 
+									
+	log close 
 	
  
 	&&&
+	
+	
 	** Chapter 8 - CI calculation 
 	* ranking assingment using Health Equity Index score - apply weight 
 	glcurve NationalScore [aw=weight_final], pvar(rank) nograph
