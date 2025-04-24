@@ -65,8 +65,8 @@
 		export excel 	using "$out/CI_Comparision_Table.xlsx", /// 
 						sheet("Women_Health") firstrow(varlabels) keepcellfmt sheetreplace 
 						
-		export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
-						sheet("Women_Health") firstrow(varlabels) keepcellfmt sheetreplace 						
+		//export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
+						//sheet("Women_Health") firstrow(varlabels) keepcellfmt sheetreplace 						
 		
 	restore 
 		
@@ -82,41 +82,42 @@
 	tab p_anc_quintile, m 
 	
 	svy: tab p_anc_quintile anc_yn, row 
-	&&
-	
-	//lorenz estimate anc_yn, over(p_anc_yn_all)
-	//lorenz graph
-	
-	conindex anc_yn, rank(NationalScore) wagstaff bounded limits(0 1) svy  
-	
-	conindex anc_yn, rank(p_anc_yn_all) truezero svy graph
-	
-	
-	glcurve anc_yn, glvar(gl) pvar(p) sortvar(NationalScore)
-	glcurve anc_yn, glvar(gl_m) pvar(p_m) sortvar(p_anc_quintile)
-
-    twoway line gl p , sort || line p p , ///
-        xlabel(0(.1)1) ylabel(0(.1)1)      ///
-        xline(0(.1)1) yline(0(.1)1)        ///
-        title("(A) ANC: Health EquityTool Index") ///
-        legend(label(1 "Health EquityTool Index") label(2 "Perfect equality")) ///
-        plotregion(margin(zero)) aspectratio(1) scheme(economist)
-
-	graph export "$plots/Lorenz_curve_ANC_HealthEquity.png", replace
-	
-    twoway line gl_m p_m , sort || line p_m p_m , ///
-        xlabel(0(.1)1) ylabel(0(.1)1)      ///
-        xline(0(.1)1) yline(0(.1)1)        ///
-        title("(B) ANC: Multivariate Unfair Index") ///
-        legend(label(1 "Multivariate Unfair Index") label(2 "Perfect equality")) ///
-        plotregion(margin(zero)) aspectratio(1) scheme(economist)
-
-	graph export "$plots/Lorenz_curve_ANC_MultivarIndex.png", replace
-	*/
 	
 	conindex anc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex anc_yn, rank(p_anc_yn_all) svy wagstaff bounded limits(0 1)
 
+
+
+	//lorenz estimate anc_yn, over(p_anc_yn_all)
+	//lorenz graph
+	
+	** lorenz graph **
+	// error in conindex code for anc_yn, working well for other varaible 
+	//conindex anc_yn, rank(p_anc_yn_all) truezero svy graph
+	//conindex nbc_yn, rank(NationalScore) truezero svy graph
+	
+	glcurve anc_yn [aweight=weight_final], gl(gl) p(p) replace sort(NationalScore) lorenz 
+	glcurve anc_yn [aweight=weight_final], gl(gl_m) p(p_m) replace sort(p_anc_yn_all) lorenz 
+
+    twoway line gl p , sort || line p p , ///
+        xlabel(0(.1)1) ylabel(0(.1)1)      ///
+        xline(0(.1)1) yline(0(.1)1)        ///
+        title("ANC: Lorenz Curve") subtitle("Health EquityTool Index") ///
+        legend(label(1 "Lorenz curve") label(2 "Perfect equality")) ///
+        plotregion(margin(zero)) aspectratio(1) scheme(economist) $graph_opts1
+
+	graph export "$plots/Nairobi_Workshop/Lorenz_curve_ANC_HealthEquity.png", replace
+	
+    twoway line gl_m p_m , sort || line p_m p_m , ///
+        xlabel(0(.1)1) ylabel(0(.1)1)      ///
+        xline(0(.1)1) yline(0(.1)1)        ///
+        title("ANC: Lorenz Curve") subtitle("Multivariate Unfair Index") ///
+        legend(label(1 "Lorenz curve") label(2 "Perfect equality")) ///
+        plotregion(margin(zero)) aspectratio(1) scheme(economist) $graph_opts1
+
+	graph export "$plots/Nairobi_Workshop/Lorenz_curve_ANC_MultivarIndex.png", replace
+	
+	
 
 
 

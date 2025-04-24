@@ -27,15 +27,17 @@ do "$do/00_dir_setting.do"
 
 	graph export "$plots/EquiPlot_Child_Health_Seeking.png", replace
 	
+	****************************************************************************
 	* Equi Plot : Women Health **
 	* ref: https://www.equidade.org/equiplot
+	****************************************************************************
 	import excel using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", sheet("equiplot") firstrow clear 
 	
 	equiplot Poorest Poor Medium Wealthy Wealthiest, over(indicator)
 	
 	equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 				over(indicator) sort(order) dotsize(1.5) ///
-				xtitle("% of Mothers with U2 children ") ///
+				xtitle("% of Mothers with U2 children") ///
 				legtitle("Maternal Health Service Utilization by Wealth Quintile") connected
 
 	graph export "$plots/EquiPlot_Mom_Health_Seeking.png", replace
@@ -54,11 +56,11 @@ do "$do/00_dir_setting.do"
 		
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order) dotsize(1.5) ///
-					xtitle("% of Mothers with U2 children ") ///
+					xtitle("% of Mothers with U2 children") ///
 					legtitle("ANC Service Utilization Across Different Equity Stratifications") connected
 					
-		graph export "$plots/EquiPlot_ANC_DiffQ_Compare.png", replace
-	
+		graph export "$plots/Nairobi_Workshop/EquiPlot_ANC_DiffQ_Compare.png", replace
+			
 	restore 
 	
 	* ANC with two WQ 
@@ -66,13 +68,28 @@ do "$do/00_dir_setting.do"
 	
 		keep if order >= 9 & order <= 10 
 	
-		equiplot 	Poorest Poor Medium, ///
+		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order) dotsize(1.5) ///
-					xtitle("% of Mothers with U2 children ") ///
-					legtitle("ANC Service Utilization by Women Empowerment Level") connected
+					xtitle("% of Mothers with U2 children") ///
+					legtitle("ANC Service Utilization Across Different Wealth Quintiles") connected
 					
-		graph export "$plots/EquiPlot_ANC_Compare.png", replace
+		graph export "$plots/Nairobi_Workshop/EquiPlot_ANC_WQs.png", replace
+		
+		global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
+		
+		encode indicator, gen(indicator_int) 
+		
+		betterbar ///
+			Poorest Poor Medium Wealthy Wealthiest, ///
+			over(indicator_int) ///
+			${graph_opts} ///
+			xlab(${pct}) ///
+			legend(r(1) symxsize(small) symysize(small)) ///
+			title("ANC Service Utilization Across Different Wealth Quintiles") ///
+			xtitle("% of Mothers with U2 children", size(medium) height(-2))  
 	
+		graph export "$plots/Nairobi_Workshop/Bar_ANC_WQs.png", replace
+		
 	restore 
 	
 	* ANC with WEI 
@@ -90,11 +107,24 @@ do "$do/00_dir_setting.do"
 		
 		equiplot 	Poorest Poor Medium,  ///
 					over(indicator) sort(order) dotsize(1.5) ///
-					xtitle("% of Mothers with U2 children ") ///
+					xtitle("% of Mothers with U2 children") ///
 					legtitle("ANC Service Utilization by Women Empowerment Level") connected
 					
-		graph export "$plots/EquiPlot_ANC_WEI.png", replace
+		graph export "$plots/Nairobi_Workshop/EquiPlot_ANC_WEI.png", replace
 	
+		global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
+		
+		betterbar ///
+			Poorest Poor Medium, ///
+			${graph_opts} ///
+			xlab(${pct}) ///
+			legend(r(1) symxsize(small) symysize(small)) ///
+			title("ANC Service Utilization by Women Empowerment Level") ///
+			xtitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+			legend(off) 
+			
+		graph export "$plots/Nairobi_Workshop/Bar_ANC_WEI.png", replace
+		
 	restore 
 	
 	
@@ -114,16 +144,66 @@ do "$do/00_dir_setting.do"
 		
 		equiplot 	Poorest Poor Medium Wealthy, ///
 					over(indicator) sort(order) dotsize(1.5) ///
-					xtitle("% of Mothers with U2 children ") ///
+					xtitle("% of Mothers with U2 children") ///
 					legtitle("ANC Service Utilization by Distance to Health Facility") connected
 					
-		graph export "$plots/EquiPlot_ANC_HFC_Dist.png", replace
+		graph export "$plots/Nairobi_Workshop/EquiPlot_ANC_HFC_Dist.png", replace
+		
+	global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
+	
+    betterbar ///
+        Poorest Poor Medium Wealthy, ///
+        ${graph_opts} ///
+        xlab(${pct}) ///
+        legend(r(1) symxsize(small) symysize(small)) ///
+		title("ANC Service Utilization by Distance to Health Facility") ///
+		xtitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+		legend(off) 	 
+	
+	graph export "$plots/Nairobi_Workshop/Bar_ANC_HFC_Dist.png", replace
 	
 	restore 
 	
+	* ANC with Mother's education 
+	preserve 
 	
+		keep if order == 14
+
+		drop Wealthiest
+
+		lab var Poorest "Illiterate"
+		lab var Poor 	"Primary"
+		lab var Medium	"Secondary"
+		lab var Wealthy	"Higher"
+		
+		replace indicator = "ANC" if indicator == "ANC (HFC Dist.)"
+		
+		equiplot 	Poorest Poor Medium Wealthy, ///
+					over(indicator) sort(order) dotsize(1.5) ///
+					xtitle("% of Mothers with U2 children") ///
+					legtitle("ANC Service Utilization by Mother's Education") connected
+					
+		graph export "$plots/Nairobi_Workshop/EquiPlot_ANC_Mom_Edu.png", replace
+		
+	global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
+	
+    betterbar ///
+        Poorest Poor Medium Wealthy, ///
+        ${graph_opts} ///
+        xlab(${pct}) ///
+        legend(r(1) symxsize(small) symysize(small)) ///
+		title("ANC Service Utilization by Mother's Education") ///
+		xtitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+		legend(off) 	 
+	
+	graph export "$plots/Nairobi_Workshop/Bar_ANC_Mom_Edu.png", replace
+	
+	restore 
+	
+	****************************************************************************
 	* Equi Plot : Nutrition Paper
 	* ref: https://www.equidade.org/equiplot
+	****************************************************************************
 	import excel using "$result/01_sumstat_formatted.xlsx", sheet("CI_WealthQ_Table") firstrow cellrange(B2:K29) clear 
 	
 	sort order2
