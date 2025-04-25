@@ -1,29 +1,50 @@
-/*******************************************************************************
+	/*******************************************************************************
 
-Project Name		: 	Project Nourish
-Purpose				:	2nd round data collection: 
-						Data analysis Mother Health Care			
-Author				:	Nicholus Tint Zaw
-Date				: 	03/01/2023
-Modified by			:
+	Project Name		: 	Project Nourish
+	Purpose				:	2nd round data collection: 
+							Data analysis Mother Health Care			
+	Author				:	Nicholus Tint Zaw
+	Date				: 	03/01/2023
+	Modified by			:
 
 
-*******************************************************************************/
+	*******************************************************************************/
 
-********************************************************************************
-** Directory Settings **
-********************************************************************************
+	********************************************************************************
+	** Directory Settings **
+	********************************************************************************
 
-do "$do/00_dir_setting.do"
+	do "$do/00_dir_setting.do"
 
 	set logtype text 
-	log using "$do/anc_decomposition_workflow.text", replace 
+	//log using "$do/anc_decomposition_workflow.text", replace 
 	
 	****************************************************************************
 	** Mom Health Services **
 	****************************************************************************
 	use "$dta/pnourish_mom_health_analysis_final.dta", clear    
 
+	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", ///
+							keepusing(*_d_z) assert(2 3) keep(matched) nogen 
+							
+							
+	merge m:1 _parent_index using "$dta/pnourish_respondent_info_final.dta", ///
+							keepusing(township_name geo_eho_vt_name geo_eho_vill_name geo_town geo_vt) assert( 2 3) keep(matched) nogen
+
+	order township_name geo_eho_vt_name geo_eho_vill_name geo_town geo_vt, before(geo_vill)
+
+	** Addressing missing issue **
+	count if mi(hfc_near_dist)
+	tab hfc_near_dist, m 
+	
+	replace hfc_near_dist = 1.5 if geo_eho_vt_name == "Kha Nein Hpaw" & stratum == 1 & mi(hfc_near_dist) // 11 obs
+	replace hfc_near_dist = 1.1 if geo_eho_vt_name == "Ka Yit Kyauk Tan" & stratum == 1 & mi(hfc_near_dist)
+	replace hfc_near_dist = 4 if geo_eho_vt_name == "Bo Khar Lay Kho" & stratum == 2 & mi(hfc_near_dist) // 5 obs 
+	replace hfc_near_dist = 4 if geo_eho_vt_name == "Sho Kho" & stratum == 2 & mi(hfc_near_dist)		 // 1 obs
+	replace hfc_near_dist = 1 if geo_eho_vt_name == "Naung Pa Laing" & stratum == 1 & mi(hfc_near_dist)	 // 9 obs 
+	
+	tab hfc_near_dist, m 
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 	
@@ -94,7 +115,8 @@ do "$do/00_dir_setting.do"
 	 }
 	 
 	sum yhat /*m_yhat*/ [aw = weight_final]
-	gen yst = anc_yn - yhat + r(mean)
+	sca m_y = r(mean)
+	gen yst = anc_yn - yhat + m_y
  
 	
 	dprobit anc_yn $X [pw = weight_final]
@@ -106,6 +128,7 @@ do "$do/00_dir_setting.do"
 		tempfile empty 
 		save `empty', emptyok 
 	restore 
+	
 	gen sir					= .m 
 	gen var 				= ""
 	gen elasticity			= .m
@@ -116,18 +139,23 @@ do "$do/00_dir_setting.do"
 	sca need = 0
 	local i = 1
 	 foreach x of global X {
-		 qui {
+		 /*qui*/ {
 			mat b_`x' = dfdx[1,"`x'"]
 			sca b_`x' = b_`x'[1,1] 
+			
 			corr rank `x' [aw = weight_final], c
 			sca cov_`x' = r(cov_12)    
+			
 			sum `x' [aw = weight_final]
 			sca m_`x' = r(mean)    
-			sca elas_`x' = (b_`x' * m_`x') / yst // m_y // check and replace from the chapter 13 note
+			
+			sca elas_`x' = (b_`x' * m_`x') / m_y 
 			sca CI_`x' = 2 * cov_`x' / m_`x'     
 			sca con_`x' = elas_`x' * CI_`x'   
 			sca prcnt_`x' = con_`x' / CI   
 			sca need = need + con_`x'
+			
+			
 		 }
 		 di "`x' elasticity:", elas_`x'
 		 di "`x' concentration index:", CI_`x'
@@ -189,8 +217,10 @@ do "$do/00_dir_setting.do"
 	
 	export excel 	using "$out/Decomposition_CI_ANC.xlsx", /// 
 					sheet("ANC_Decomposition") firstrow(varlabels) keepcellfmt sheetreplace 
-									
-	log close 
+				
+	export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
+					sheet("ANC_Decompose") firstrow(varlabels) keepcellfmt sheetreplace 		
+	//log close 
 	
  
 	&&&

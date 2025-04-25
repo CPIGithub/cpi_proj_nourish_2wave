@@ -80,15 +80,127 @@ do "$do/00_dir_setting.do"
 		encode indicator, gen(indicator_int) 
 		
 		betterbar ///
-			Poorest Poor Medium Wealthy Wealthiest, ///
+			Wealthiest Wealthy Medium Poor Poorest, ///
+			vertical ///
 			over(indicator_int) ///
 			${graph_opts} ///
-			xlab(${pct}) ///
+			ylab(${pct}) ///
 			legend(r(1) symxsize(small) symysize(small)) ///
 			title("ANC Service Utilization Across Different Wealth Quintiles") ///
-			xtitle("% of Mothers with U2 children", size(medium) height(-2))  
+			ytitle("% of Mothers with U2 children", size(medium) height(-2))  
 	
 		graph export "$plots/Nairobi_Workshop/Bar_ANC_WQs.png", replace
+		
+	restore 
+	
+	* ANC with multivariate CI index 
+	preserve 
+	
+		keep if order == 13 
+		
+		replace indicator = "ANC (any)"
+			
+		lab var Poorest 		"Q1"
+		lab var Poor 			"Q2"
+		lab var Medium 			"Q3"
+		lab var Wealthy 		"Q4"
+		lab var Wealthiest 		"Q5"
+		
+		global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
+				
+		betterbar ///
+			Wealthiest Wealthy Medium Poor Poorest, ///
+			vertical ///
+			${graph_opts} ///
+			ylab(${pct}) ///
+			legend(r(1) symxsize(small) symysize(small)) ///
+			title("ANC Service Utilization by Multivariate Unfair Index Quintile") ///
+			ytitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+			legend(off)  
+	
+		graph export "$plots/Nairobi_Workshop/Bar_ANC_MCI_Q.png", replace
+		
+	restore 
+	
+	* ANC with HH Income Quintiles
+	preserve 
+	
+		keep if order == 15
+		
+		replace indicator = "ANC (any)"
+			
+		lab var Poorest 		"Q1"
+		lab var Poor 			"Q2"
+		lab var Medium 			"Q3"
+		lab var Wealthy 		"Q4"
+		lab var Wealthiest 		"Q5"
+		
+		global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
+				
+		betterbar ///
+			Wealthiest Wealthy Medium Poor Poorest, ///
+			vertical ///
+			${graph_opts} ///
+			ylab(${pct}) ///
+			legend(r(1) symxsize(small) symysize(small)) ///
+			title("ANC Service Utilization by HH Income (last month) Quintile") ///
+			ytitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+			legend(off)  
+	
+		graph export "$plots/Nairobi_Workshop/Bar_ANC_HH_Income_Q.png", replace
+		
+	restore 
+	
+	* ANC with FIES Category
+	preserve 
+	
+		keep if order == 16
+		
+		replace indicator = "ANC (any)"
+			
+		lab var Poorest 		"No insecurity"
+		lab var Poor 			"Moderate insecurity"
+		lab var Medium 			"Severe insecurity"
+		
+		global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
+				
+		betterbar ///
+			Medium Poor Poorest, ///
+			vertical ///
+			${graph_opts} ///
+			ylab(${pct}) ///
+			legend(r(1) symxsize(small) symysize(small)) ///
+			title("ANC Service Utilization by Food Insecurity Experience Scale") ///
+			ytitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+			legend(off)  
+	
+		graph export "$plots/Nairobi_Workshop/Bar_ANC_HH_FIES.png", replace
+		
+	restore 
+	
+	* ANC with STRATUM
+	preserve 
+	
+		keep if order == 17
+		
+		replace indicator = "ANC (any)"
+			
+		lab var Poorest 		"Easily Accessible Areas"
+		lab var Poor 			"Hard-to-Reach Areas"
+		
+		global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
+				
+		betterbar ///
+			Poor Poorest, ///
+			vertical ///
+			${graph_opts} ///
+			ylab(${pct}) ///
+			legend(r(1) symxsize(small) symysize(small)) ///
+			title("ANC Service Utilization Across Accessibility Stratifications") ///
+			ytitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+			legend(off)  
+	
+		graph export "$plots/Nairobi_Workshop/Bar_ANC_Strarum.png", replace
 		
 	restore 
 	
@@ -115,12 +227,13 @@ do "$do/00_dir_setting.do"
 		global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
 		
 		betterbar ///
-			Poorest Poor Medium, ///
+			Medium Poor Poorest, ///
+			vertical ///
 			${graph_opts} ///
-			xlab(${pct}) ///
+			ylab(${pct}) ///
 			legend(r(1) symxsize(small) symysize(small)) ///
 			title("ANC Service Utilization by Women Empowerment Level") ///
-			xtitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+			ytitle("% of Mothers with U2 children", size(medium) height(-2)) ///
 			legend(off) 
 			
 		graph export "$plots/Nairobi_Workshop/Bar_ANC_WEI.png", replace
@@ -152,12 +265,13 @@ do "$do/00_dir_setting.do"
 	global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
 	
     betterbar ///
-        Poorest Poor Medium Wealthy, ///
+        Wealthy Medium Poor Poorest, ///
+		vertical ///
         ${graph_opts} ///
-        xlab(${pct}) ///
+        ylab(${pct}) ///
         legend(r(1) symxsize(small) symysize(small)) ///
 		title("ANC Service Utilization by Distance to Health Facility") ///
-		xtitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+		ytitle("% of Mothers with U2 children", size(medium) height(-2)) ///
 		legend(off) 	 
 	
 	graph export "$plots/Nairobi_Workshop/Bar_ANC_HFC_Dist.png", replace
@@ -188,12 +302,13 @@ do "$do/00_dir_setting.do"
 	global  pct `" 0 "0%" 25 "25%" 50 "50%" 75 "75%" 100 "100%" "'
 	
     betterbar ///
-        Poorest Poor Medium Wealthy, ///
+        Wealthy Medium Poor Poorest, ///
+		vertical ///
         ${graph_opts} ///
-        xlab(${pct}) ///
+        ylab(${pct}) ///
         legend(r(1) symxsize(small) symysize(small)) ///
 		title("ANC Service Utilization by Mother's Education") ///
-		xtitle("% of Mothers with U2 children", size(medium) height(-2)) ///
+		ytitle("% of Mothers with U2 children", size(medium) height(-2)) ///
 		legend(off) 	 
 	
 	graph export "$plots/Nairobi_Workshop/Bar_ANC_Mom_Edu.png", replace

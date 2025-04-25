@@ -808,7 +808,14 @@ do "$do/00_dir_setting.do"
 	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", ///
 							keepusing(	wempo_index wempo_child_index wempo_mom_index wempo_othd_index ///
 										wempo_category wempo_child_cat wempo_mom_cat ///
-										progressivenss* high_empower*)
+										progressivenss* high_empower* ///
+										income_quintile income_quintile_cust)
+	
+	drop if _merge == 2 
+	drop _merge 
+	
+	* food security 
+	merge m:1 _parent_index using "$dta/pnourish_FIES_final.dta", keepusing(fies_category fies_rawscore) 
 	
 	drop if _merge == 2 
 	drop _merge 
@@ -1160,7 +1167,6 @@ do "$do/00_dir_setting.do"
 	svy: tab wealth_quintile_ns high_empower_othd, row
 	conindex high_empower_othd, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	
-	
 	****************************************************************************
 	** Mom ANC **
 	****************************************************************************
@@ -1179,6 +1185,12 @@ do "$do/00_dir_setting.do"
 	svy: tab wealth_quintile_ns anc_yn, row 
 	svy: tab hh_mem_dob_str anc_yn, row 
 	
+	svy :tab income_quintile anc_yn, row 
+	svy :tab income_quintile_cust anc_yn, row 
+	
+	svy :tab fies_category anc_yn, row 
+	svy :tab stratum anc_yn, row 
+
 	lab var anc_yn "ANC - yes"
 
 	* Create a scatter plot with lowess curves 

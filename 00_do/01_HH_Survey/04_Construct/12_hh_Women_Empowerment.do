@@ -195,6 +195,14 @@ do "$do/00_dir_setting.do"
 	lab var wempo_index "Women Empowerment Index (ICW-index)"		
 	tab wempo_index, m 
 	
+	icw_index	wempo_childcare_d wempo_mom_health_d wempo_child_health_d ///
+				wempo_women_wages_d wempo_major_purchase_d wempo_visiting_d ///
+				wempo_women_health_d wempo_child_wellbeing_d, gen(wempo_index_d)
+	
+	lab var wempo_index_d "Women Empowerment Index (ICW-index) - not z-score"		
+	tab1 wempo_index wempo_index_d, m 
+	sum wempo_index wempo_index_d
+	
 	** Revised the Womem empowerment index subcategory ** 
 	icw_index	wempo_childcare_d_z wempo_child_health_d_z wempo_child_wellbeing_d_z, gen(wempo_child_index)
 	icw_index	wempo_mom_health_d_z wempo_women_health_d_z , gen(wempo_mom_index)
@@ -209,18 +217,34 @@ do "$do/00_dir_setting.do"
 	* Category - by quintile 
 	xtile wempo_category = wempo_index [pweight=weight_final], nq(3)
 	lab var wempo_category "Women Empowerment (Category)"
-
+	
+	gen wempo_category_sd = (wempo_index <= -0.25)
+	replace wempo_category_sd = 2 if (wempo_index > -0.25 & wempo_index < 0.25)
+	replace wempo_category_sd = 3 if wempo_index >= 0.25 &  !mi(wempo_index)
+	replace wempo_category_sd = .m if mi(wempo_index)
+	lab def wempolabel 1 "Low" 2 "Moderate" 3 "High"
+	label values wempo_category_sd wempolabel
+	tab1 wempo_category wempo_category_sd, m 
+	tab wempo_category wempo_category_sd, m 
+	
 	xtile wempo_child_cat = wempo_child_index [pweight=weight_final], nq(3)
 	lab var wempo_child_cat "Women Empowerment: Child Care and Health (Category)"
 	
 	xtile wempo_mom_cat = wempo_mom_index [pweight=weight_final], nq(3)
 	lab var wempo_mom_cat "Women Empowerment: Women and Mother Health (Category)"
 	
-	
 	lab def wempo_category 1"Low" 2"Moderate" 3"High"
 	lab val wempo_category wempo_child_cat wempo_mom_cat wempo_category
 	tab1 wempo_category wempo_child_cat wempo_mom_cat, m 
 	
+	histogram wempo_index, normal ///
+		title("Distribution of ICW Empowerment Index") ///
+		xtitle("ICW Index") ytitle("Frequency")
+	
+	kdensity wempo_index, normal ///
+		title("Kernel Density of ICW Index with Normal Curve") ///
+		xtitle("ICW Index")
+
 	
 	* progressiveness 
 	foreach var of varlist wempo_index wempo_child_index wempo_mom_index wempo_othd_index {
@@ -237,7 +261,7 @@ do "$do/00_dir_setting.do"
 		replace `var'_h = .m if mi(`var'_l)
 		svy: tab `var'_h
 	}
-	
+		
 	rename wempo_index_l progressivenss 
 	rename wempo_index_h high_empower
 	
@@ -265,7 +289,26 @@ do "$do/00_dir_setting.do"
 	
 	iecodebook apply using "$raw/pnourish_WOMEN_EMPOWER_cleaning.xlsx" 
 	
-
+	* Income Quantile
+	xtile income_quintile = income_lastmonth [pweight=weight_final], nq(5)
+	lab var income_quintile "HH Income (Last month) Quintile"
+	
+	
+	* Income Category - 
+	* ref: https://www.tandfonline.com/doi/epdf/10.1080/10095020.2023.2250388?needAccess=true
+	gen income_quintile_cust = (income_lastmonth < 50000)
+	replace income_quintile_cust = 2  if income_lastmonth >= 50000 & income_lastmonth < 100000
+	replace income_quintile_cust = 3  if income_lastmonth >= 100000 & income_lastmonth < 200000
+	replace income_quintile_cust = 4  if income_lastmonth >= 200000 & income_lastmonth < 400000
+	replace income_quintile_cust = 5  if income_lastmonth >= 400000 & !mi(income_lastmonth)
+	replace income_quintile_cust = .m if mi(income_lastmonth)
+	lab def income_quintile_cust 	1"Poorest (< 50000 MMK)" 2"Poor (50000-100000 MMK)" ///
+									3"Medium (100000-200000 MMK)" 4"Wealthy (200000-400000 MMK)" ///
+									5"Wealthiest (>= 400000 MMK)"
+	lab val income_quintile_cust income_quintile_cust
+	lab var income_quintile_cust "Wealth Category (by last month HH income)"
+	tab income_quintile_cust, m 
+	
 	** SAVE for analysis dataset 
 	save "$dta/pnourish_WOMEN_EMPOWER_final.dta", replace  
 
