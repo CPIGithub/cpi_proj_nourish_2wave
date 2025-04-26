@@ -100,8 +100,38 @@
 	conindex wempo_index, rank(NationalScore) svy wagstaff bounded limits(-2.64 .85)
 	conindex hfc_near_dist, rank(NationalScore) svy wagstaff bounded limits(0 25)
 	conindex stratum, rank(NationalScore) svy wagstaff bounded limits(1 2)
-	conindex resp_highedu, rank(NationalScore) svy wagstaff bounded limits(1 4)
+	conindex resp_highedu_ci, rank(NationalScore) svy wagstaff bounded limits(1 7)
 	conindex fies_rawscore, rank(NationalScore) svy wagstaff bounded limits(0 8)
+	
+	* Outcome CI (crude) by different rank varaible
+	
+	foreach var of varlist NationalScore income_lastmonth wempo_index hfc_near_dist stratum resp_highedu_ci fies_rawscore { // resp_highedu_ci use for CI 
+	    
+		di "Rank Var: `var'"
+		
+		* Concentration index 
+		conindex anc_yn, rank(`var') svy wagstaff bounded limits(0 1)
+		
+		scalar CI = r(CI) 
+		
+		sum anc_yn 
+		scalar anc_mean = r(mean)
+		
+		* Achievement index - WB chapter 9 - formula 9.9  (mean * (1 - CI))
+		
+		di "ANC Achievement index (by `var' rank var): " anc_mean * (1 - CI)
+		
+	}
+	
+	conindex anc_yn, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex anc_yn, rank(income_lastmonth) svy wagstaff bounded limits(-2.64 .85)
+	conindex anc_yn, rank(wempo_index) svy wagstaff bounded limits(-2.64 .85)
+	conindex anc_yn, rank(hfc_near_dist) svy wagstaff bounded limits(0 25)
+	conindex anc_yn, rank(stratum) svy wagstaff bounded limits(1 2)
+	conindex anc_yn, rank(resp_highedu) svy wagstaff bounded limits(1 4)
+	conindex anc_yn, rank(fies_rawscore) svy wagstaff bounded limits(0 8)
+	
+	
 
 	preserve 
 	
