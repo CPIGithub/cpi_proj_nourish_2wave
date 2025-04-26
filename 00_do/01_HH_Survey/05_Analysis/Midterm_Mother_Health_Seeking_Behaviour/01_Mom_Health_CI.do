@@ -69,7 +69,6 @@
 						svy wagstaff bounded limits(0 1)
 						
 	** Concentration Index (Multivariate) **
-	
 	sum NationalScore income_lastmonth wempo_index hfc_near_dist stratum resp_highedu anc_yn 
 	
 	count if mi(NationalScore) & !mi(anc_yn) // 3 obs 
@@ -81,7 +80,10 @@
 	
 	count if 	!mi(NationalScore) & !mi(income_lastmonth) & !mi(wempo_index) & ///
 				!mi(hfc_near_dist) & !mi(stratum) & !mi(resp_highedu) & ///
-				!mi(anc_yn)
+				!mi(anc_yn) // 404 obs with no missing in anc + covaraite 
+				
+	count if 	!mi(NationalScore) & !mi(income_lastmonth) & !mi(wempo_index) & ///
+				!mi(hfc_near_dist) & !mi(stratum) & !mi(resp_highedu) // 494 obs with no obs covariate 
 	
 	global all_unfiar "NationalScore income_lastmonth wempo_index hfc_near_dist stratum i.resp_highedu"
 	
@@ -92,6 +94,14 @@
 					pnc_yn pnc_who_trained nbc_yn nbc_who_trained
 
 	gen bivar_rank = NationalScore
+	
+	* CI for ranking varaible
+	// NationalScore income_lastmonth wempo_index hfc_near_dist stratum resp_highedu fies_rawscore
+	conindex wempo_index, rank(NationalScore) svy wagstaff bounded limits(-2.64 .85)
+	conindex hfc_near_dist, rank(NationalScore) svy wagstaff bounded limits(0 25)
+	conindex stratum, rank(NationalScore) svy wagstaff bounded limits(1 2)
+	conindex resp_highedu, rank(NationalScore) svy wagstaff bounded limits(1 4)
+	conindex fies_rawscore, rank(NationalScore) svy wagstaff bounded limits(0 8)
 
 	preserve 
 	
