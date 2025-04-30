@@ -316,6 +316,22 @@ do "$do/00_dir_setting.do"
 	restore 
 	
 	****************************************************************************
+	* Donut Plot : Women Health **
+	****************************************************************************
+	import excel using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", sheet("decompos_donut") firstrow clear 
+	
+	gen anc_pos = anc_yn
+	replace anc_pos = 0 if anc_pos < 0
+
+
+	graph pie anc_pos, over(regressor) ///
+	title("Decomposition of Inequality in ANC Service Utilization") ///
+	plabel(_all percent, size(vsmall)) ///
+	legend(position(6) cols(1)) 
+
+
+
+	****************************************************************************
 	* Equi Plot : Nutrition Paper
 	* ref: https://www.equidade.org/equiplot
 	****************************************************************************
