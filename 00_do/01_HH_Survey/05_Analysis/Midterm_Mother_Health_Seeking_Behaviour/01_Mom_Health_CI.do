@@ -172,12 +172,16 @@
 	
 	sum NationalScore* wempo_index*
 	
+	local var_label : var label income_lastmonth
+	gen logincome = ln(income_lastmonth)
+	lab var logincome "ln(): `var_label'"
+	
 	global outcomes anc_yn anc_who_trained anc_visit_trained_4times ///
 					insti_birth skilled_battend ///
 					pnc_yn pnc_who_trained nbc_yn nbc_who_trained 
 					
 	* Original unfiar list 
-	global X_raw		NationalScore income_lastmonth ///
+	global X_raw		NationalScore logincome ///
 						wempo_index ///
 						hfc_near_dist ///
 						stratum_1 ///
@@ -218,7 +222,7 @@
 
 	
 	* moving min to ZERO 
-	global X_raw		NationalScore_m0 income_lastmonth ///
+	global X_raw		NationalScore_m0 logincome ///
 						wempo_index_m0 ///
 						hfc_near_dist ///
 						stratum_1 ///
@@ -258,7 +262,7 @@
 	}
 	
 	* positive/negative sign flipped	
-	global X_raw		NationalScore_rev income_lastmonth ///
+	global X_raw		NationalScore_rev logincome ///
 						wempo_index_rev ///
 						hfc_near_dist ///
 						stratum_1 ///
@@ -302,7 +306,7 @@
 	global X_raw		wealth_quintile_ns_2 wealth_quintile_ns_3 wealth_quintile_ns_4 wealth_quintile_ns_5 ///
 						income_quintile_cust_2 income_quintile_cust_3 income_quintile_cust_4 income_quintile_cust_5 ////
 						wempo_category_2 wempo_category_3 ///
-						hfc_distance_2 hfc_distance_3 hfc_distance_4 ///
+						hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
 						stratum_1 ///
 						resp_highedu_2 resp_highedu_3 resp_highedu_4
 
