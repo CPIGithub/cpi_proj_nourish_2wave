@@ -17,7 +17,8 @@
 
 	foreach var in  biv_N biv_CI biv_SE biv_pval ///
 					mulv_N mulv_CI mulv_SE mulv_pval ///
-					z_test z_Pval {
+					z_test z_Pval ///
+					total_N percent_mean achi_index {
 		gen `var' = 0
 		label var `var' "`var'"
 	}
@@ -43,6 +44,18 @@
 			tab  var_name, m 
 			di "`label'"
 
+			* Outcoe Mean
+			quietly svy: mean `var'
+			matrix m = e(b)
+			scalar MEAN = m[1,1]
+			
+			global total_N 			= `e(N)'
+			replace total_N			= $total_N in `i'
+		
+			global percent_mean 	= round(MEAN, 0.0001)
+			replace percent_mean 	= $percent_mean in `i'
+		
+		
 			** CI calculation << start here ** 
 			* Bivariate CI 
 			quietly conindex `var', rank(bivar_rank) svy wagstaff bounded limits(0 1)
@@ -76,6 +89,10 @@
 
 			scalar df_multi = (r(N_units) - r(N_strata))
 			scalar p_t_multi = 2 * ttail(df_multi, abs(z_multi))
+			
+			* Achievement index - WB chapter 9 - formula 9.9  (mean * (1 - CI))
+			global achi_index 	= ($percent_mean * (1 - ci_multi))
+			replace achi_index 	= $achi_index in `i'
 			
 			* Z test: bivariate CI vs Multivariate CI 
 			scalar diff = ci_biv - ci_multi
@@ -115,7 +132,8 @@
 	keep 	var_df var_name ///
 			biv_N biv_CI biv_SE biv_pval ///
 			mulv_N mulv_CI mulv_SE mulv_pval ///
-			z_test z_Pval 
+			z_test z_Pval ///
+			total_N percent_mean achi_index ///
 
 
 

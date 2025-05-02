@@ -115,9 +115,9 @@
 	}
 	
 	
-	global all_unfiar "NationalScore income_lastmonth wempo_index hfc_near_dist stratum i.resp_highedu_ci"
+	global all_unfiar "NationalScore income_lastmonth wempo_index hfc_near_dist stratum i.resp_highedu"
 	
-	global all_fiar "i.org_name_num i.respd_chid_num_grp i.mom_age_grp resp_hhhead"
+	//global all_fiar "i.org_name_num i.respd_chid_num_grp i.mom_age_grp resp_hhhead"
 
 	global outcomes anc_yn anc_who_trained anc_visit_trained_4times ///
 					insti_birth skilled_battend ///
@@ -138,218 +138,8 @@
 	restore 
 	
 	****************************************************************************
-	** Decomposition of the concentration index ** - Chapter 13	
-	****************************************************************************
-	* creating the dummy varaibles 
-	foreach var of varlist 	stratum resp_highedu wealth_quintile_ns wempo_category ///
-							income_quintile_cust hfc_distance{
-						    
-		tab `var', gen(`var'_)			
-							
-				}
-			
-	* to address the negative value of elasticity
-	** reverse the sign (multiple by - 1)
-	foreach var of varlist NationalScore wempo_index {
-		
-		local var_label : var label `var'
-		
-		gen `var'_rev = `var' * -1 
-		lab var `var'_rev "`var_label': flipped"
-		
-	}
-	
-	** moving min to ZERO 
-	foreach var of varlist NationalScore wempo_index {
-		
-		local var_label : var label `var'
-		
-		sum `var'
-		gen `var'_m0 = `var' + abs(r(min))
-		lab var `var'_m0 "`var_label': min ZERO"
-		
-	}
-	
-	sum NationalScore* wempo_index*
-	
-	local var_label : var label income_lastmonth
-	gen logincome = ln(income_lastmonth)
-	lab var logincome "ln(): `var_label'"
-	
-	global outcomes anc_yn anc_who_trained anc_visit_trained_4times ///
-					insti_birth skilled_battend ///
-					pnc_yn pnc_who_trained nbc_yn nbc_who_trained 
-					
-	* Original unfiar list 
-	global X_raw		NationalScore logincome ///
-						wempo_index ///
-						hfc_near_dist ///
-						stratum_1 ///
-						resp_highedu_2 resp_highedu_3 resp_highedu_4
-					
-	foreach var of global outcomes {
-		
-		preserve 
-		
-			global outcome_var `var'
-			
-			gen weight_var = weight_final
-			
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
-
-			local names	= subinstr("`names'", "_cons", "", 1)
-			local names	= subinstr("`names'", "$outcome_var:", " ", .)
-			di "`names'"
-			
-			* redefine the unfair var set without omitted var 
-			global X "`names'"
-	
-			svy: logit $outcome_var $X
-			predict rank, pr
-		
-			do "$hhfun/CI_decomposition.do"
-				
-			export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
-							sheet("D_`var'") firstrow(varlabels) keepcellfmt sheetreplace 	
-		
-		restore 
-		
-	}
-
-	
-	* moving min to ZERO 
-	global X_raw		NationalScore_m0 logincome ///
-						wempo_index_m0 ///
-						hfc_near_dist ///
-						stratum_1 ///
-						resp_highedu_2 resp_highedu_3 resp_highedu_4
-					
-	foreach var of global outcomes {
-		
-		preserve 
-		
-			global outcome_var `var'
-			
-			gen weight_var = weight_final
-			
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
-
-			local names	= subinstr("`names'", "_cons", "", 1)
-			local names	= subinstr("`names'", "$outcome_var:", " ", .)
-			di "`names'"
-			
-			* redefine the unfair var set without omitted var 
-			global X "`names'"
-	
-			svy: logit $outcome_var $X
-			predict rank, pr
-		
-			do "$hhfun/CI_decomposition.do"
-				
-			export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
-							sheet("D_`var'") firstrow(varlabels) cell(A12) keepcellfmt sheetmodify 	
-		
-		restore 
-		
-	}
-	
-	* positive/negative sign flipped	
-	global X_raw		NationalScore_rev logincome ///
-						wempo_index_rev ///
-						hfc_near_dist ///
-						stratum_1 ///
-						resp_highedu_2 resp_highedu_3 resp_highedu_4
-					
-	foreach var of global outcomes {
-		
-		preserve 
-		
-			global outcome_var `var'
-			
-			gen weight_var = weight_final
-			
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
-
-			local names	= subinstr("`names'", "_cons", "", 1)
-			local names	= subinstr("`names'", "$outcome_var:", " ", .)
-			di "`names'"
-			
-			* redefine the unfair var set without omitted var 
-			global X "`names'"
-	
-			svy: logit $outcome_var $X
-			predict rank, pr
-		
-			do "$hhfun/CI_decomposition.do"
-				
-			export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
-							sheet("D_`var'") firstrow(varlabels) cell(A23) keepcellfmt sheetmodify 	
-		
-		restore 
-		
-	}
-
-
-	** All unfiar binary 
-	global X_raw		wealth_quintile_ns_2 wealth_quintile_ns_3 wealth_quintile_ns_4 wealth_quintile_ns_5 ///
-						income_quintile_cust_2 income_quintile_cust_3 income_quintile_cust_4 income_quintile_cust_5 ////
-						wempo_category_2 wempo_category_3 ///
-						hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
-						stratum_1 ///
-						resp_highedu_2 resp_highedu_3 resp_highedu_4
-
-					
-	foreach var of global outcomes {
-		
-		preserve 
-		
-			global outcome_var `var'
-			
-			gen weight_var = weight_final
-			
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
-
-			local names	= subinstr("`names'", "_cons", "", 1)
-			local names	= subinstr("`names'", "$outcome_var:", " ", .)
-			di "`names'"
-			
-			* redefine the unfair var set without omitted var 
-			global X "`names'"
-	
-			svy: logit $outcome_var $X
-			predict rank, pr
-		
-			do "$hhfun/CI_decomposition.do"
-				
-			export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
-							sheet("D_`var'") firstrow(varlabels) cell(A34) keepcellfmt sheetmodify 	
-		
-		restore 
-		
-	}
-
-	* Achievement index - WB chapter 9 - formula 9.9  (mean * (1 - CI))
-	
-	&&
-	
-	
 	* Sample code for Multivariate CI 
+	****************************************************************************
 	svy: logit anc_yn $all_unfiar 
 	
 	predict p_anc_yn_all, pr
@@ -472,10 +262,7 @@
 		plotregion(margin(zero)) aspectratio(1) scheme(economist) $graph_opts1
 		
 	graph export "$plots/Nairobi_Workshop/Lorenz_curve_ANC_Compare_Index_With_Perfect_Equality.png", replace
-	
 
-
-	
 	
 // END HERE 
 
