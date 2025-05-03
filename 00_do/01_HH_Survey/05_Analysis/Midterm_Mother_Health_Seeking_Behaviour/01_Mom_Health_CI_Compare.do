@@ -177,6 +177,22 @@
 
 	graph export "$plots/Nairobi_Workshop/Lorenz_curve_ANC_Income.png", replace
 	
+	* CI - using glcurve - WB chapter 8
+	glcurve income_lastmonth [aw=weight_final], pvar(rank) nograph
+
+	* F - weight prepration 
+	sum weight_final // identify the longest decimal point 
+	di `r(max)' - floor(`r(max)')
+	
+	gen weight_final_int = weight_final * 10^6 // need integer weight var for fw weight 
+	gen new_weight = int(weight_final_int)
+	
+	qui sum anc_yn [fw=new_weight]
+	scalar mean=r(mean)
+	cor anc_yn rank [fw=new_weight], c
+	sca c=(2/mean)*r(cov_12)
+	sca list c
+	 
 	** FIES Score ** 
 	glcurve anc_yn [aweight=weight_final], gl(gl_m) p(p_m) replace sort(fies_rawscore) lorenz
 	

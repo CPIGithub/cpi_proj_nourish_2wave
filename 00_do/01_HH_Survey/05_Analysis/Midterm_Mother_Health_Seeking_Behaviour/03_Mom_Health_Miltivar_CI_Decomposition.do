@@ -98,8 +98,7 @@
 		preserve 
 		
 			global outcome_var `var'
-			
-			
+				
 			gen weight_var = weight_final
 			
 			* Estimate full model and detect omitted variables
