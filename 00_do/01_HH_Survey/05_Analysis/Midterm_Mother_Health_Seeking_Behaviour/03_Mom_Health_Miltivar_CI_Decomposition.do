@@ -118,7 +118,7 @@
 			svy: logit $outcome_var $X
 			predict rank, pr
 		
-			do "$hhfun/CI_decomposition_simple_CI_forula.do"
+			do "$hhfun/CI_decomposition_simple_CI_formula.do"
 				
 			export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
 							sheet("FD_`var'") firstrow(varlabels) keepcellfmt sheetmodify 
