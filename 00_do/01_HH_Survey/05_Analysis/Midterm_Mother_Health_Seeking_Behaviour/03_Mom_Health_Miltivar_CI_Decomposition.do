@@ -59,7 +59,7 @@
 	
 	* creating the dummy varaibles 
 	foreach var of varlist 	stratum resp_highedu wealth_quintile_ns wempo_category ///
-							income_quintile_cust hfc_distance{
+							income_quintile_cust hfc_distance {
 						    
 		tab `var', gen(`var'_)			
 							
@@ -92,7 +92,7 @@
 						stratum_1 ///
 						resp_highedu_2 resp_highedu_3 resp_highedu_4
 	
-	
+	&
 	foreach var of global outcomes {
 		
 		preserve 
