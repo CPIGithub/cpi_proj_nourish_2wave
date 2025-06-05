@@ -183,7 +183,7 @@ do "$do/00_dir_setting.do"
 	sum NationalScore
 	
 	****************************************************************************
-	** Unfari var missing check ** 
+	** Unfari var missing check and Prepration ** 
 	****************************************************************************
 	sum stratum resp_highedu wealth_quintile_ns wempo_category hfc_distance 
 		
@@ -218,18 +218,26 @@ do "$do/00_dir_setting.do"
 					mixmf bof cbf isssf ///
 					mdd mmf mad 
 
-
-					
+	
 	global X_raw		NationalScore_m0 logincome ///
 						wempo_index_m0 ///
 						hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
 						stratum_1 ///
 						resp_highedu_2 resp_highedu_3 resp_highedu_4
-						
+					
+	
+	/*				
+	global X_raw		NationalScore logincome ///
+						wempo_index ///
+						hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
+						stratum_1 ///
+						resp_highedu_2 resp_highedu_3 resp_highedu_4
+	*/
+	
 	****************************************************************************
 	** CI - single and multivar - by each survey **	
 	****************************************************************************
-	&&
+	
 	** (1): Bivariate CI and Achievement Index
 	levelsof midterm_endline, local(dta_svy)
 	
@@ -237,14 +245,12 @@ do "$do/00_dir_setting.do"
 					
 		preserve 
 		
-			svyset [pweight = weight_respective], strata(stratum_num) vce(linearized) psu(geo_vill)
+			keep if mid_end_compare == 1 & midterm_endline == `p' // keep only respective survey data
 			
-			keep if midterm_endline == `p' // keep only respective survey data
+			svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 			
 			gen rank_var = NationalScore // rank var for bivariate CI
-			
-			//keep $outcomes rank_var weight_respective
-				
+							
 			do "$hhfun/CI_Export_Table.do"
 				
 			export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
@@ -262,12 +268,10 @@ do "$do/00_dir_setting.do"
 					
 		preserve 
 		
-			svyset [pweight = weight_respective], strata(stratum_num) vce(linearized) psu(geo_vill)
-		
-			keep if midterm_endline == `p' // keep only respective survey data
+			keep if mid_end_compare == 1 & midterm_endline == `p' // keep only respective survey data
+			
+			svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 						
-			//keep $outcomes rank_var weight_respective
-
 			do "$hhfun/Multivar_CI_Export_Table.do"
 				
 			export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
@@ -289,269 +293,53 @@ do "$do/00_dir_setting.do"
 		gen rank_var = NationalScore // rank var for bivariate CI
 		
 		gen group_var = midterm_endline
-		
-		//keep $outcomes rank_var weight_respective
-			
+					
 		do "$hhfun/Compare_Two_CI_Export_Table.do"
 			
 		export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
 						sheet("B_2_CI") firstrow(varlabels) keepcellfmt sheetmodify 
 						
 	restore 
-	
-	&&
-	
-	
-	foreach p in `dta_svy' {
+
+	** (4): Compare Multivariate CI 	
+	preserve 
 		
-		foreach var of global outcomes {
-			
-		preserve 
-					
-			keep if midterm_endline == `p' // keep only respective survey data
-			
-			global outcome_var `var'
-
-			* Estimate full model and detect omitted variables
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
-
-			* Initialize clean list
-			local clean_names
-
-			* Loop through all names
-			foreach v of local names {
-				
-				* Remove outcome prefix
-				local stripped = subinstr("`v'", "$outcome_var:", "", .)
-				
-				* Skip _cons and omitted regressors (with "o.")
-				if strpos("`stripped'", "_cons") == 0 & strpos("`stripped'", "o.") == 0 {
-					local clean_names `clean_names' `stripped'
-				}
-			}
-
-			* Display cleaned variable list
-			di "`clean_names'"
-
-			* redefine the unfair var set without omitted var 
-			global X "`clean_names'"
-	
-			capture svy: logit $outcome_var $X
-			
-			if _rc == 403 {
-				
-				di "convergence not achieved: `var' | midterm_endline == `p' "
-				
-			}
-			if !_rc { 
-				
-				predict rank_var, pr
-			
-				do "$hhfun/CI_Export_Table.do"
-					
-				export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
-								sheet("M_CI_`var'_`p'") firstrow(varlabels) keepcellfmt sheetmodify 
+		keep if mid_end_compare == 1 // midterm vs endline comparision
+		
+		svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 							
-			}
-
-		restore 
+		gen group_var = midterm_endline
+					
+		do "$hhfun/Compare_Two_Multivar_CI_Export_Table.do"
 			
-		}
-		
-	}	
+		export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
+						sheet("M_2_CI") firstrow(varlabels) keepcellfmt sheetmodify 
+						
+	restore 
 	
-	&&
-	
-
-	foreach var of global outcomes {
-		
-		preserve 
-		
-			global outcome_var `var'
-				
-			gen weight_var = weight_final
-			
-			* Estimate full model and detect omitted variables
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
-
-			* Initialize clean list
-			local clean_names
-
-			* Loop through all names
-			foreach v of local names {
-				
-				* Remove outcome prefix
-				local stripped = subinstr("`v'", "$outcome_var:", "", .)
-				
-				* Skip _cons and omitted regressors (with "o.")
-				if strpos("`stripped'", "_cons") == 0 & strpos("`stripped'", "o.") == 0 {
-					local clean_names `clean_names' `stripped'
-				}
-			}
-
-			* Display cleaned variable list
-			di "`clean_names'"
-
-			//local names	= subinstr("`names'", "_cons", "", 1)
-			//local names	= subinstr("`names'", "$outcome_var:", " ", .)
-			//di "`names'"
-			
-			* redefine the unfair var set without omitted var 
-			global X "`clean_names'"
-	
-			svy: logit $outcome_var $X
-			predict rank, pr
-		
-			do "$hhfun/CI_decomposition_simple_CI_formula.do"
-				
-			export excel 	using "$result/IYCF_Multivar_CI/01_Multivar_CI_combined_midline_and_endline.xlsx", /// 
-							sheet("FD_`var'") firstrow(varlabels) keepcellfmt sheetmodify 
-							
-
-		restore 
-		
-	}
-
-	
-	&&
-	
-	****************************************************************************
-	** CI - single and multivar - by each survey **	
-	****************************************************************************
-	svyset [pweight = weight_respective], strata(stratum_num) vce(linearized) psu(geo_vill)
-
-	
-	
-	&&
-	* svy weight apply 
-	svyset [pweight = weight_respective], strata(stratum_num) vce(linearized) psu(geo_vill)
 
 	****************************************************************************
 	** Decomposition of the concentration index ** - Chapter 13	
 	****************************************************************************
-					
-	global all_unfiar "NationalScore income_lastmonth wempo_index hfc_near_dist stratum i.resp_highedu_ci"
-	
-	//global all_fiar "i.org_name_num i.respd_chid_num_grp i.mom_age_grp resp_hhhead"
-	
-	* creating the dummy varaibles 
-	foreach var of varlist 	stratum resp_highedu wealth_quintile_ns wempo_category ///
-							hfc_distance {
-						    
-		tab `var', gen(`var'_)			
-							
-				}
-	
-	** moving min to ZERO 
-	foreach var of varlist NationalScore wempo_index {
-		
-		local var_label : var label `var'
-		
-		sum `var'
-		gen `var'_m0 = `var' + abs(r(min))
-		lab var `var'_m0 "`var_label': min ZERO"
-		
-	}
-	
-	sum NationalScore* wempo_index*
-	
-	* Final set of unfiar var 
-	* combination of moving min to ZERO (for z score type var) and 
-	* binary dummy var for categegory var 
-	
+
 	global outcomes	eibf ebf pre_bf ///
-					mixmf bof cbf isssf ///
+					/*mixmf*/ bof cbf isssf ///
 					mdd mmf mad 
 
-				
-	global X_raw		NationalScore_m0 logincome ///
-						wempo_index_m0 ///
-						hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
-						stratum_1 ///
-						resp_highedu_2 resp_highedu_3 resp_highedu_4
-	
-	
+					
 	** (1): All Combined Midterm + Endline 
-	foreach var of global outcomes {
+	levelsof midterm_endline, local(dta_svy)
+
+	foreach p in `dta_svy' {
 		
-		preserve 
-		
-			global outcome_var `var'
-				
-			gen weight_var = weight_final
+		foreach var of global outcomes {
 			
-			* Estimate full model and detect omitted variables
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
-
-			* Initialize clean list
-			local clean_names
-
-			* Loop through all names
-			foreach v of local names {
-				
-				* Remove outcome prefix
-				local stripped = subinstr("`v'", "$outcome_var:", "", .)
-				
-				* Skip _cons and omitted regressors (with "o.")
-				if strpos("`stripped'", "_cons") == 0 & strpos("`stripped'", "o.") == 0 {
-					local clean_names `clean_names' `stripped'
-				}
-			}
-
-			* Display cleaned variable list
-			di "`clean_names'"
-
-			//local names	= subinstr("`names'", "_cons", "", 1)
-			//local names	= subinstr("`names'", "$outcome_var:", " ", .)
-			//di "`names'"
-			
-			* redefine the unfair var set without omitted var 
-			global X "`clean_names'"
-	
-			svy: logit $outcome_var $X
-			predict rank, pr
-		
-			do "$hhfun/CI_decomposition_simple_CI_formula.do"
-				
-			export excel 	using "$result/IYCF_Multivar_CI/01_Multivar_CI_combined_midline_and_endline.xlsx", /// 
-							sheet("FD_`var'") firstrow(varlabels) keepcellfmt sheetmodify 
-							
-
-		restore 
-		
-	}
-	
-	/*
-	error - svy: logit ebf $X if midterm_endline == 1
-	error - svy: logit mixmf $X if midterm_endline == 1 / 0 in both case 
-	
-	**(2): Midterm + Endline Seperately
-	
-	tab midterm_endline_str, m 
-	
-	levelsof midterm_endline_str, local(points)
-	
-	foreach var of global outcomes {
-		
-		
-		foreach p in `points' {
-		    
 			preserve 
 			
-				keep if midterm_endline_str == "`p'"
+				keep if mid_end_compare == 1 & midterm_endline == `p' // keep only respective survey data
 				
+				svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+			
 				global outcome_var `var'
 					
 				gen weight_var = weight_final
@@ -580,10 +368,6 @@ do "$do/00_dir_setting.do"
 
 				* Display cleaned variable list
 				di "`clean_names'"
-
-				//local names	= subinstr("`names'", "_cons", "", 1)
-				//local names	= subinstr("`names'", "$outcome_var:", " ", .)
-				//di "`names'"
 				
 				* redefine the unfair var set without omitted var 
 				global X "`clean_names'"
@@ -593,36 +377,15 @@ do "$do/00_dir_setting.do"
 			
 				do "$hhfun/CI_decomposition_simple_CI_formula.do"
 					
-				export excel 	using "$result/IYCF_Multivar_CI/01_Multivar_CI_`p'.xlsx", /// 
-								sheet("FD_`var'") firstrow(varlabels) keepcellfmt sheetmodify 
+				export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
+								sheet("FD_`var'_`p'") firstrow(varlabels) keepcellfmt sheetmodify 
 								
 
 			restore 
-
-		
+			
 		}
-		
+	
 	}
-	
-	*/
-	
-	&&&&&&&
-
-	global outcomes	eibf ebf pre_bf cbf ///
-					isssf ///
-					mdd mad  // dietary_tot
-					 
-					
-	foreach var in $outcomes {
-	    
-		di "`var'"
-		conindex `var' , rank(wealth_quintile_ns) svy wagstaff bounded limits(0 1) compare(midterm_endline)
-		
-	}				
-	
-	
-	conindex dietary_tot, rank(wealth_quintile_ns) svy wagstaff bounded limits(0 8) compare(midterm_endline)
-	
 	
 // END HERE 
 

@@ -54,12 +54,8 @@
 			scalar CI_D 	= r(Diff)
 			scalar SE_D 	= r(Diffse)
 			scalar Z_D 		= r(z)
-			* Replace with actual degrees of freedom (df = #PSUs - #strata)
-			svydescribe
-			return list
 
-			scalar DF_D 	= (r(N_units) - r(N_strata))
-			scalar DF_Pval 	= 2 * ttail(DF_D, abs(Z_D))
+			scalar DF_Pval 	= 2 * normal( -abs(Z_D) ) 
 						
 			* Assigned values to export varaibles 
 			replace diff_N 		= N_D in `i'
