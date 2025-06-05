@@ -73,7 +73,7 @@ do "$do/00_dir_setting.do"
 
 	use "$dta/grp_hh_clean.dta", clear
 	
-	keep	_parent_index roster_index hh_mem_head hh_mem_marital hh_mem_highedu hh_mem_occup hh_mem_highedu_all
+	keep	_parent_index roster_index hh_mem_head hh_mem_marital hh_mem_highedu hh_mem_occup hh_mem_highedu_all hh_mem_u5num hh_mem_u2num calc_0to5_child_count calc_u5child_count
 	
 	keep if roster_index == 1
 
@@ -90,7 +90,7 @@ do "$do/00_dir_setting.do"
 	merge 1:1 _parent_index using `grp_hh'
 	
 	keep if _merge == 3
-	
+	&
 	drop _merge 
 	
 	order resp_hhhead-resp_occup, after(respd_age)

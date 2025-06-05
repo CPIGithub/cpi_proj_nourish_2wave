@@ -15,9 +15,8 @@
 	gen var_df = ""
 		label var var_df "Variable Name"
 
-	foreach var in  biv_N biv_CI biv_SE biv_pval ///
-					total_N percent_mean achi_index {
-		gen `var' = 0
+	foreach var in  diff_N diff_ci diff_se diff_pval {
+		gen `var' = .m
 		label var `var' "`var'"
 	}
 
@@ -41,18 +40,6 @@
 
 			tab  var_name, m 
 			di "`label'"
-
-			* Outcome Mean
-			quietly svy: mean `var'
-			matrix m = e(b)
-			scalar MEAN = m[1,1]
-			
-			global total_N 			= `e(N)'
-			replace total_N			= $total_N in `i'
-		
-			global percent_mean 	= round(MEAN, 0.0001)
-			replace percent_mean 	= $percent_mean in `i'
-		
 		
 			** CI calculation << start here ** 
 			* Bivariate CI 
@@ -61,29 +48,25 @@
 			local var_min = r(min)
 			local var_max = r(max)
 			
-			quietly conindex `var', rank(rank_var) svy wagstaff bounded limits(`var_min' `var_max')
+			quietly conindex `var', rank(rank_var) svy wagstaff bounded limits(`var_min' `var_max') compare(group_var)
 
-			scalar N_biv	= r(N)
-			scalar ci_biv 	= r(CI)
-			scalar se_biv 	= r(CIse)
-			scalar z_biv 	= ci_biv / se_biv
+			scalar N_D		= r(N)
+			scalar CI_D 	= r(Diff)
+			scalar SE_D 	= r(Diffse)
+			scalar Z_D 		= r(z)
 			* Replace with actual degrees of freedom (df = #PSUs - #strata)
 			svydescribe
 			return list
 
-			scalar df_biv = (r(N_units) - r(N_strata))
-			scalar p_t_biv = 2 * ttail(df_biv, abs(z_biv))
-			
-			* Achievement index - WB chapter 9 - formula 9.9  (mean * (1 - CI))
-			global achi_index 	= ($percent_mean * (1 - ci_biv))
-			replace achi_index 	= $achi_index in `i'
-			
+			scalar DF_D 	= (r(N_units) - r(N_strata))
+			scalar DF_Pval 	= 2 * ttail(DF_D, abs(Z_D))
+						
 			* Assigned values to export varaibles 
-			replace biv_N 		= round(N_biv, 0.0001) in `i'
-			replace biv_CI 		= round(ci_biv, 0.0001) in `i'
-			replace biv_SE 		= round(se_biv, 0.0001) in `i'
-			replace biv_pval 	= round(p_t_biv, 0.0001) in `i'
-			
+			replace diff_N 		= N_D in `i'
+			replace diff_ci 	= round(CI_D, 0.01) in `i'
+			replace diff_se 	= round(SE_D, 0.01) in `i'
+			replace diff_pval 	= round(DF_Pval, 0.0001) in `i'
+			 
 
 		}
 		
@@ -94,10 +77,9 @@
 	}
 
 
-	drop if biv_N == 0     // get rid of extra raws
+	drop if diff_N == 0     // get rid of extra raws
 	keep 	var_df var_name ///
-			biv_N biv_CI biv_SE biv_pval ///
-			total_N percent_mean achi_index ///
+			diff_N diff_ci diff_se diff_pval
 
 
 
