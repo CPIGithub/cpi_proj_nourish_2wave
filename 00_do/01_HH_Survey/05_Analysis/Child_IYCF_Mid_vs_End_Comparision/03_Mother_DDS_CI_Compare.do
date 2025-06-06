@@ -1,7 +1,7 @@
 /*******************************************************************************
 
 Project Name		: 	Project Nourish
-Purpose				:	Midtern vs Endline - HH level - FIES		
+Purpose				:	Midtern vs Endline - Mother level - DDS		
 Author				:	Nicholus Tint Zaw
 Date				: 	05/31/2024
 Modified by			:
@@ -14,55 +14,54 @@ Modified by			:
 ********************************************************************************
 
 do "$do/00_dir_setting.do"
+
+	   
+	****************************************************************************
+	** Mom Dietary Diversity **
+	****************************************************************************
 	
-	****************************************************************************
-	** FIES **
-	****************************************************************************
-
 	** Midterm vs endline 
+	
 	* Midterm 
-	use "$dta/pnourish_FIES_final.dta", clear   
-
+	use "$dta/pnourish_mom_diet_final.dta", clear 
+	
 	merge m:1 _parent_index using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
 	
 	drop if _merge == 2 
 	drop _merge 
 	
-	
 	* Add Village Survey Info 
-	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
-						mkt_near_dist_dry mkt_near_dist_rain ///
+	global villinfo 	geo_town geo_vt geo_vill ///
+						township_name geo_eho_vt_name geo_eho_vill_name ///
 						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
-	
+						
 	merge m:1 geo_vill using 	"$dta/PN_Village_Survey_FINAL_Constructed.dta", /// 
-								keepusing($villinfo) 
+								keepusing($villinfo) 	
+	
+	gen midterm_endline = 0 
 	
 	drop if _merge == 2
 	drop _merge 
 
-	gen midterm_endline = 0 
-	
 	tempfile midterm 
 	save `midterm', replace 
+		
+	* endline 
+	use "$dta/endline/pnourish_mom_diet_final.dta", clear  
 	
-	
-	* endline	
-	use "$dta/endline/pnourish_FIES_final.dta", clear   
-
 	merge m:1 _parent_index using "$dta/endline/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index wempo_category progressivenss)
 	
 	drop if _merge == 2 
 	drop _merge 
 	
-	
 	* Add Village Survey Info 
-	global villinfo 	hfc_near_dist_dry hfc_near_dist_rain ///
-						mkt_near_dist_dry mkt_near_dist_rain ///
+	global villinfo 	geo_town geo_vt geo_vill ///
+						township_name geo_eho_vt_name geo_eho_vill_name ///
 						hfc_vill1 hfc_vill2 hfc_vill3 hfc_vill4 hfc_vill5 hfc_vill6 hfc_vill888 hfc_vill0 
 	
 	merge m:1 geo_vill using 	"$dta/endline/PN_Village_Survey_Endline_FINAL_Constructed.dta", /// 
 								keepusing($villinfo) 
-	
+								
 	drop if _merge == 2
 	drop _merge 
 	
@@ -73,12 +72,13 @@ do "$do/00_dir_setting.do"
 	tab midterm_endline, m 
 
 	drop weight_final
-	
+		
 	merge m:1 midterm_endline geo_vill using "$dta/endline/pnourish_midterm_vs_endline_hh_comparision_weight_final.dta", keepusing(weight_final)   
 
 	tab midterm_endline _merge // un-matched come from the inaccessible village at endline (from midterm sample)
 	keep if _merge == 3
 	drop _merge 
+	
 	
 	* prepare covariate 
 	* geo and stratum 
@@ -126,6 +126,13 @@ do "$do/00_dir_setting.do"
 	lab var caregiver_chidnum_grp "Caregiver Number of Children"
 	tab caregiver_chidnum_grp, m 
 	
+	* HH info 
+	local var_label : var label income_lastmonth
+	gen logincome = ln(income_lastmonth)
+	lab var logincome "ln(): `var_label'"
+	
+	sum income_lastmonth logincome NationalScore
+	
 	* Village level info
 	* proximity to health facility 
 	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
@@ -134,14 +141,19 @@ do "$do/00_dir_setting.do"
 	tab hfc_near_dist, m 
 	
 	// replace with same village tract or startum value 
-	replace hfc_near_dist = 1.5 if geo_eho_vt_name == "Kha Nein Hpaw" & stratum == 1 & mi(hfc_near_dist) & midterm_endline == 0 // 10 obs
-	replace hfc_near_dist = 1.1 if geo_eho_vt_name == "Ka Yit Kyauk Tan" & stratum == 1 & mi(hfc_near_dist) & midterm_endline == 0 // 10 obs 
-	replace hfc_near_dist = 4 if geo_eho_vt_name == "Bo Khar Lay Kho" & stratum == 2 & mi(hfc_near_dist) & midterm_endline == 0 // 5 obs 
-	replace hfc_near_dist = 4 if geo_eho_vt_name == "Sho Kho" & stratum == 2 & mi(hfc_near_dist) & midterm_endline == 0		 // 1 obs
-	replace hfc_near_dist = 1 if geo_eho_vt_name == "Naung Pa Laing" & stratum == 1 & mi(hfc_near_dist) & midterm_endline == 0	 // 9 obs 
+	sort midterm_endline stratum geo_town geo_vt geo_vill 
+	bysort midterm_endline stratum geo_town geo_vt: egen avg_hfc_d_vt = mean(hfc_near_dist) if hfc_near_dist != 0 
+	bysort midterm_endline stratum geo_town geo_vt: egen avg_hfc_dist_vt = max(avg_hfc_d_vt)
 	
-	replace hfc_near_dist = 1.8 if stratum == 1 & mi(hfc_near_dist) & midterm_endline == 1	 // endline stratum 1 mean dist (exclude hfc village)
-	replace hfc_near_dist = 2.8 if stratum == 2 & mi(hfc_near_dist) & midterm_endline == 1	 // endline stratum 1 mean dist (exclude hfc village)
+	bysort midterm_endline stratum geo_town : egen avg_hfc_d_stratum = mean(hfc_near_dist) if hfc_near_dist != 0 
+	bysort midterm_endline stratum geo_town : egen avg_hfc_dist_stratum = max(avg_hfc_d_stratum)
+
+	bysort midterm_endline stratum : egen avg_hfc_d_st = mean(hfc_near_dist) if hfc_near_dist != 0 
+	bysort midterm_endline stratum : egen avg_hfc_dist_st = max(avg_hfc_d_st)
+
+	replace hfc_near_dist = avg_hfc_dist_vt if mi(hfc_near_dist) & !mi(avg_hfc_dist_vt)
+	replace hfc_near_dist = avg_hfc_dist_stratum if mi(hfc_near_dist) & !mi(avg_hfc_dist_stratum)
+	replace hfc_near_dist = avg_hfc_dist_st if mi(hfc_near_dist) & !mi(avg_hfc_dist_st)
 
 	tab hfc_near_dist, mis
 	
@@ -193,30 +205,6 @@ do "$do/00_dir_setting.do"
 	lab def mkt_distance 0"Market at village" 1"< 1.5 hrs" 2"1.5 - 5 hrs" 3"> 5 hrs"
 	lab val mkt_distance mkt_distance
 	tab mkt_distance, mis
-
-
-	* HH info 
-	local var_label : var label income_lastmonth
-	gen logincome = ln(income_lastmonth)
-	lab var logincome "ln(): `var_label'"
-	
-	sum income_lastmonth logincome NationalScore
-	
-	* FIES - food insecurity dummy outcome * 
-	* cutoffs for the raw score of 4+ = food insecurity 
-	gen fies_insecurity = (fies_rawscore >= 4) 
-	replace fies_insecurity = .m if mi(fies_rawscore)
-	lab def fies_insecurity 0"Food secure" 1"Food insecue"
-	lab var fies_insecurity "Food Insecurity"
-	lab val fies_insecurity fies_insecurity
-	tab fies_insecurity, m 
-	
-	// women empowerment 
-	gen women_empo_yes = (progressivenss == 0)
-	replace women_empo_yes = .m if mi(progressivenss)
-	lab var women_empo_yes "High Women Empowerment (Index > median score)"
-	tab women_empo_yes, m 
-	
 	
 	****************************************************************************
 	** Unfari var missing check and Prepration ** 
@@ -227,7 +215,7 @@ do "$do/00_dir_setting.do"
 		
 	* creating the dummy varaibles 
 	foreach var of varlist 	stratum resp_highedu wealth_quintile_ns wempo_category ///
-							hfc_distance mkt_distance women_empo_yes {
+							hfc_distance mkt_distance {
 						    
 		tab `var', gen(`var'_)			
 							
@@ -250,7 +238,7 @@ do "$do/00_dir_setting.do"
 	* combination of moving min to ZERO (for z score type var) and 
 	* binary dummy var for categegory var 
 	
-	global outcomes	fies_insecurity
+	global outcomes	mddw_yes
 
 	
 	global X_raw		NationalScore_m0 logincome ///
@@ -288,7 +276,7 @@ do "$do/00_dir_setting.do"
 			do "$hhfun/CI_Export_Table.do"
 				
 			export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
-							sheet("B_CI_FIES_`p'") firstrow(varlabels) keepcellfmt sheetmodify 
+							sheet("B_CI_WDDS_`p'") firstrow(varlabels) keepcellfmt sheetmodify 
 							
 		restore 
 		
@@ -309,7 +297,7 @@ do "$do/00_dir_setting.do"
 			do "$hhfun/Multivar_CI_Export_Table.do"
 				
 			export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
-							sheet("M_CI_FIES_`p'") firstrow(varlabels) keepcellfmt sheetmodify 
+							sheet("M_CI_WDDS_`p'") firstrow(varlabels) keepcellfmt sheetmodify 
 							
 		restore 
 		
@@ -331,7 +319,7 @@ do "$do/00_dir_setting.do"
 		do "$hhfun/Compare_Two_CI_Export_Table.do"
 			
 		export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
-						sheet("B_2_FIES_CI") firstrow(varlabels) keepcellfmt sheetmodify 
+						sheet("B_2_WDDS_CI") firstrow(varlabels) keepcellfmt sheetmodify 
 						
 	restore 
 
@@ -347,7 +335,7 @@ do "$do/00_dir_setting.do"
 		do "$hhfun/Compare_Two_Multivar_CI_Export_Table.do"
 			
 		export excel 	using "$result/IYCF_Multivar_CI/IYCF_CI_Results_SUMMARY.xlsx", /// 
-						sheet("M_2_FIES_CI") firstrow(varlabels) keepcellfmt sheetmodify 
+						sheet("M_2_WDDS_CI") firstrow(varlabels) keepcellfmt sheetmodify 
 						
 	restore 
 	
@@ -355,13 +343,7 @@ do "$do/00_dir_setting.do"
 	****************************************************************************
 	** Decomposition of the concentration index ** - Chapter 13	
 	****************************************************************************
-	global X_raw		NationalScore_m0 logincome ///
-						women_empo_yes_1 /*wempo_index_m0*/ ///
-						mkt_distance_1 mkt_distance_2 mkt_distance_3 ///
-						stratum_1 ///
-						resp_highedu_2 resp_highedu_3 resp_highedu_4
-						
-						
+
 	** (1): All Combined Midterm + Endline 
 	levelsof midterm_endline, local(dta_svy)
 
@@ -423,6 +405,7 @@ do "$do/00_dir_setting.do"
 		}
 	
 	}
+
 	
 // END HERE 
 
