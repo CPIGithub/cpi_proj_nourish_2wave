@@ -367,7 +367,7 @@ do "$do/00_dir_setting.do"
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order2) dotsize(1.5) /// 
 					xtitle("Percentage of Women with Children Under 5 (%)") ///
-					legtitle("Women's Empowerment Indicators by Wealth Quintile") connected
+					legtitle("(A) Women's Empowerment") connected
 
 		graph export "$plots/EquiPlot_Women_Empowerment.png", replace
 		//graph export "$plots/EquiPlot_Women_Empowerment.gph", replace
@@ -382,7 +382,7 @@ do "$do/00_dir_setting.do"
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order2) dotsize(1.5) /// 
 					xtitle("% of Households with U5 Children") ///
-					legtitle("Coverage of Project Nourish Interventions by Wealth Quintile") connected
+					legtitle("(B) Project Nourish's Coverage") connected
 
 		graph export "$plots/EquiPlot_PN_Coverage.png", replace
 		//graph export "$plots/EquiPlot_PN_Coverage.gph", replace
@@ -397,7 +397,7 @@ do "$do/00_dir_setting.do"
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order2) dotsize(1.5) /// 
 					xtitle("Percent of Population Meeting Indicator (%)") ///
-					legtitle("Food Security and Dietary Diversity Indicators by Wealth Quintile") connected
+					legtitle("(C) Food Security and Dietary Diversity") connected
 
 		graph export "$plots/EquiPlot_Food_Security.png", replace
 		//graph export "$plots/EquiPlot_Food_Security.gph", replace
