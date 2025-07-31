@@ -487,6 +487,9 @@ do "$do/00_dir_setting.do"
 	svy: mean mad_bf 
 	svy: mean mad_nobf 
 	
+	svy: mean mdd if child_bfyest == 1
+	svy: mean mdd if child_bfyest == 0 
+	
 	// dietary_tot 
 	svy: mean dietary_tot, over(stratum_num)
 	svy: reg dietary_tot i.stratum_num
