@@ -31,17 +31,53 @@ do "$do/00_dir_setting.do"
 	* Equi Plot : Women Health **
 	* ref: https://www.equidade.org/equiplot
 	****************************************************************************
-	import excel using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", sheet("equiplot") firstrow clear 
+	import excel using "$result/01_sumstat_formatted_Maternal_Health_Service_U2Mom.xlsx", sheet("equiplot") firstrow clear 
 	
 	equiplot Poorest Poor Medium Wealthy Wealthiest, over(indicator)
-	
-	equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
-				over(indicator) sort(order) dotsize(1.5) ///
-				xtitle("% of Mothers with U2 children") ///
-				legtitle("Maternal Health Service Utilization by Wealth Quintile") connected
 
-	graph export "$plots/EquiPlot_Mom_Health_Seeking.png", replace
 	
+	* Mom Health - by Wealth Quantile 
+	preserve 
+	
+		keep if order < 9
+		
+		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
+					over(indicator) sort(order) dotsize(1.5) ///
+					xtitle("% of Mothers with U2 children") ///
+					legtitle("(C) Maternal Health Service Utilization by Wealth Quintile") connected
+
+		graph export "$plots/EquiPlot_Mom_Health_Seeking.png", replace
+	
+	restore 
+	
+	* Mom Health - by Multi-var Ranking Quantile 
+	preserve 
+	
+		keep if order < 9
+		
+		drop Poorest Poor Medium Wealthy Wealthiest 
+		
+		rename mv_q1	Poorest     
+		rename mv_q2	Poor
+		rename mv_q3	Medium
+		rename mv_q4	Wealthy	
+		rename mv_q5	Wealthiest
+
+		
+		lab var Poorest 		"Q1"
+		lab var Poor 			"Q2"
+		lab var Medium 			"Q3"
+		lab var Wealthy 		"Q4"
+		lab var Wealthiest 		"Q5"
+		
+		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
+					over(indicator) sort(order) dotsize(1.5) ///
+					xtitle("% of Mothers with U2 children") ///
+					legtitle("(D) Maternal Health Service Utilization by Multivariate Unfair Index Quintile") connected
+
+		graph export "$plots/EquiPlot_Mom_Health_Seeking_MVR.png", replace
+	
+	restore 
 	
 	* ANC with two type of Quintile - Wealth vs Multivarite 
 	preserve 
@@ -364,6 +400,12 @@ do "$do/00_dir_setting.do"
 		
 		keep if order2 > 1 & order2 < 14 
 		
+		
+		foreach var of varlist Poorest Poor Medium Wealthy Wealthiest {
+		    
+			replace `var' = `var' * 100
+		}
+		
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order2) dotsize(1.5) /// 
 					xtitle("Percentage of Women with Children Under 5 (%)") ///
@@ -378,6 +420,11 @@ do "$do/00_dir_setting.do"
 	preserve 
 	
 		keep if order2 > 15 & order2 < 22 
+		
+		foreach var of varlist Poorest Poor Medium Wealthy Wealthiest {
+		    
+			replace `var' = `var' * 100
+		}
 		
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order2) dotsize(1.5) /// 

@@ -92,14 +92,92 @@
 						stratum_1 ///
 						resp_highedu_2 resp_highedu_3 resp_highedu_4
 	
-	&
+
+	gen weight_var = weight_final 
+	
+	foreach var of global outcomes {
+				
+			global outcome_var `var'
+				
+			* Estimate full model and detect omitted variables
+			svy: logit $outcome_var $X_raw
+			matrix b = e(b)
+			local names : colfullnames e(b)
+			
+			di "`names'"
+
+			local names	= subinstr("`names'", "_cons", "", 1)
+			local names	= subinstr("`names'", "$outcome_var:", " ", .)
+			di "`names'"
+			
+			* redefine the unfair var set without omitted var 
+			global X "`names'"
+	
+			svy: logit $outcome_var $X
+			predict mvr_$outcome_var, pr
+			
+	}
+	
+	
+	foreach var of varlist 	mvr_anc_yn mvr_anc_who_trained mvr_anc_visit_trained_4times ///
+							mvr_insti_birth mvr_skilled_battend mvr_pnc_yn ///
+							mvr_pnc_who_trained mvr_nbc_yn mvr_nbc_who_trained {
+		
+		xtile `var'_q = `var' [pweight = weight_final], nq(5)
+	}
+					
+	svy: tab mvr_anc_yn_q anc_yn, row 
+	svy: tab mvr_anc_who_trained_q anc_who_trained, row 
+
+	svy: tab mvr_skilled_battend_q skilled_battend, row 
+	svy: tab mvr_insti_birth_q insti_birth, row 
+	
+	svy: tab mvr_pnc_yn_q pnc_yn, row 
+	svy: tab mvr_pnc_who_trained_q pnc_who_trained, row 
+	
+	svy: tab mvr_nbc_yn_q nbc_yn, row 
+	svy: tab mvr_nbc_who_trained_q nbc_who_trained, row 
+
+	* Adj CI - Multivariate index 
+	conindex anc_yn, rank(mvr_anc_yn) svy wagstaff bounded limits(0 1)
+	conindex2 anc_yn, 	rank(mvr_anc_yn) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy wagstaff bounded limits(0 1)
+						
+	
+	foreach var in $outcomes {
+		
+		di "`var'"
+		
+		conindex `var', rank(mvr_`var') svy wagstaff bounded limits(0 1)
+		conindex2 `var', 	rank(mvr_`var') ///
+							covars(	i.resp_highedu ///
+									i.mom_age_grp ///
+									i.respd_chid_num_grp ///
+									hfc_vill_yes ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum ///
+									i.wempo_category) ///
+							svy wagstaff bounded limits(0 1)	
+		
+	}
+	
+	** export decomposition tables ** 
 	foreach var of global outcomes {
 		
 		preserve 
 		
 			global outcome_var `var'
 				
-			gen weight_var = weight_final
+			//gen weight_var = weight_final
 			
 			* Estimate full model and detect omitted variables
 			svy: logit $outcome_var $X_raw
