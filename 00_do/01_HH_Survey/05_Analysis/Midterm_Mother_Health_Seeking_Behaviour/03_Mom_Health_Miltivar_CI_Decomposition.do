@@ -42,6 +42,16 @@
 	replace hfc_near_dist = 1 if geo_eho_vt_name == "Naung Pa Laing" & stratum == 1 & mi(hfc_near_dist)	 // 9 obs 
 	
 	tab hfc_near_dist, m 
+	
+	// update hfc_distance 
+	tab hfc_distance, m 
+	
+	replace hfc_distance = 0 if hfc_near_dist == 0
+	replace hfc_distance = 1 if hfc_near_dist > 0 & hfc_near_dist <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist > 1.5 & hfc_near_dist <= 3
+	replace hfc_distance = 3 if hfc_near_dist > 3 & !mi(hfc_near_dist)
+	tab hfc_distance, mis
+
 
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
@@ -125,7 +135,7 @@
 		
 		xtile `var'_q = `var' [pweight = weight_final], nq(5)
 	}
-					
+			
 	svy: tab mvr_anc_yn_q anc_yn, row 
 	svy: tab mvr_anc_who_trained_q anc_who_trained, row 
 
@@ -198,7 +208,7 @@
 		
 			do "$hhfun/CI_decomposition_simple_CI_formula.do"
 				
-			export excel 	using "$result/01_sumstat_formatted_U2Mom_Sample.xlsx", /// 
+			export excel 	using "$result/01_sumstat_formatted_Maternal_Health_Service_U2Mom.xlsx", /// // 01_sumstat_formatted_U2Mom_Sample
 							sheet("FD_`var'") firstrow(varlabels) keepcellfmt sheetmodify 
 							
 
