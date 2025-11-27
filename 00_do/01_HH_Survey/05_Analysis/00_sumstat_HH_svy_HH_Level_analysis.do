@@ -591,36 +591,70 @@ do "$do/00_dir_setting.do"
 	drop _merge 
 	
 	
-	egen mkt_near_dist = rowmean(mkt_near_dist_dry mkt_near_dist_rain)
-	replace mkt_near_dist = .m if mi(mkt_near_dist_dry) & mi(mkt_near_dist_rain)
-	lab var mkt_near_dist "Nearest Market - hours for round trip"
-	tab mkt_near_dist, m 
 	
+	// Dist to health facility 
 	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
 	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
 	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
 	tab hfc_near_dist, m 
 	
-	gen mkt_distance = .m 
-	replace mkt_distance = 0 if mkt_near_dist_rain == 0
-	replace mkt_distance = 1 if mkt_near_dist_rain > 0 & mkt_near_dist_rain <= 1.5
-	replace mkt_distance = 2 if mkt_near_dist_rain > 1.5 & mkt_near_dist_rain <= 5
-	replace mkt_distance = 3 if mkt_near_dist_rain > 5 & !mi(mkt_near_dist_rain)
-	lab var mkt_distance "Nearest Market - hours for round trip"
-	lab def mkt_distance 0"Market at village" 1"< 1.5 hrs" 2"1.5 - 5 hrs" 3"> 5 hrs"
-	lab val mkt_distance mkt_distance
-	tab mkt_distance, mis
-
+	// Addressing missing issue 
+	count if mi(hfc_near_dist)
+	tab hfc_near_dist, m 
+	
+	replace hfc_near_dist = 1.5 if geo_eho_vt_name == "Kha Nein Hpaw" & stratum == 1 & mi(hfc_near_dist) // 11 obs
+	replace hfc_near_dist = 1.1 if geo_eho_vt_name == "Ka Yit Kyauk Tan" & stratum == 1 & mi(hfc_near_dist) // 10 obs 
+	replace hfc_near_dist = 4 if geo_eho_vt_name == "Bo Khar Lay Kho" & stratum == 2 & mi(hfc_near_dist) // 7 obs 
+	replace hfc_near_dist = 4 if geo_eho_vt_name == "Sho Kho" & stratum == 2 & mi(hfc_near_dist)		 // 1 obs
+	replace hfc_near_dist = 1 if geo_eho_vt_name == "Naung Pa Laing" & stratum == 1 & mi(hfc_near_dist)	 // 11 obs 
+	
+	tab hfc_near_dist, m 
+	
+	// health facility distance category - previously used with hfc_near_dist_rain var 
 	gen hfc_distance = .m 
-	replace hfc_distance = 0 if hfc_near_dist_rain == 0
-	replace hfc_distance = 1 if hfc_near_dist_rain > 0 & hfc_near_dist_rain <= 1.5
-	replace hfc_distance = 2 if hfc_near_dist_rain > 1.5 & hfc_near_dist_rain <= 3
-	replace hfc_distance = 3 if hfc_near_dist_rain > 3 & !mi(hfc_near_dist_rain)
+	replace hfc_distance = 0 if hfc_near_dist == 0
+	replace hfc_distance = 1 if hfc_near_dist > 0 & hfc_near_dist <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist > 1.5 & hfc_near_dist <= 3
+	replace hfc_distance = 3 if hfc_near_dist > 3 & !mi(hfc_near_dist)
 	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
 	lab val hfc_distance hfc_distance
 	lab var hfc_distance "Nearest Health Facility - hours for round trip"
 	tab hfc_distance, mis
 
+
+	* Dist to Market 
+	egen mkt_near_dist = rowmean(mkt_near_dist_dry mkt_near_dist_rain)
+	replace mkt_near_dist = .m if mi(mkt_near_dist_dry) & mi(mkt_near_dist_rain)
+	lab var mkt_near_dist "Nearest Market - hours for round trip"
+	tab mkt_near_dist, m 
+
+	// Addressing missing issue 
+	sort stratum geo_town geo_vt geo_vill 
+	bysort stratum geo_town geo_vt: egen avg_mkt_d_vt = mean(mkt_near_dist) if mkt_near_dist != 0 
+	bysort stratum geo_town geo_vt: egen avg_mkt_dist_vt = max(avg_mkt_d_vt)
+	
+	bysort stratum geo_town : egen avg_mkt_d_stratum = mean(mkt_near_dist) if mkt_near_dist != 0 
+	bysort stratum geo_town : egen avg_mkt_dist_stratum = max(avg_mkt_d_stratum)
+
+	bysort stratum : egen avg_mkt_d_st = mean(mkt_near_dist) if mkt_near_dist != 0 
+	bysort stratum : egen avg_mkt_dist_st = max(avg_mkt_d_st)
+
+	replace mkt_near_dist = avg_mkt_dist_vt if mi(mkt_near_dist) & !mi(avg_mkt_dist_vt)
+	replace mkt_near_dist = avg_mkt_dist_stratum if mi(mkt_near_dist) & !mi(avg_mkt_dist_stratum)
+	replace mkt_near_dist = avg_mkt_dist_st if mi(mkt_near_dist) & !mi(avg_mkt_dist_st)
+
+	tab mkt_near_dist, m 
+
+	// Market distance category - previously used with mkt_near_dist_rain var 
+	gen mkt_distance = .m 
+	replace mkt_distance = 0 if mkt_near_dist == 0
+	replace mkt_distance = 1 if mkt_near_dist > 0 & mkt_near_dist <= 1.5
+	replace mkt_distance = 2 if mkt_near_dist > 1.5 & mkt_near_dist <= 5
+	replace mkt_distance = 3 if mkt_near_dist > 5 & !mi(mkt_near_dist)
+	lab var mkt_distance "Nearest Market - hours for round trip"
+	lab def mkt_distance 0"Market at village" 1"< 1.5 hrs" 2"1.5 - 5 hrs" 3"> 5 hrs"
+	lab val mkt_distance mkt_distance
+	tab mkt_distance, mis
 	
 	* FIES - food insecurity dummy outcome * 
 	* cutoffs for the raw score of 4+ = food insecurity 
@@ -820,6 +854,27 @@ do "$do/00_dir_setting.do"
 	estimates store model4, title(model4)
 	
 	putexcel (A1) = etable
+	
+	* Reviewer comment - interaction - resp education and education 
+	putexcel set "$out/reg_output/FIES_logistic_models.xls", sheet("interaction edu + empower") modify
+	
+	svy: logistic fies_insecurity i.resp_highedu##i.wempo_category i.NationalQuintile i.mkt_distance i.org_name_num /*stratum*/ 
+	
+	estimates store model5, title(model5)
+	
+	putexcel (A1) = etable
+	
+	
+	* two models comparisions 
+	* base - without interaction 
+	svy: logistic fies_insecurity i.resp_highedu i.NationalQuintile i.wempo_category i.mkt_distance i.org_name_num /*stratum*/ 	
+	est store base
+
+	svy: logistic fies_insecurity i.resp_highedu##i.wempo_category i.NationalQuintile i.mkt_distance i.org_name_num /*stratum*/ 	
+	est store full
+
+	testparm i.resp_highedu#i.wempo_category
+	
 	
 	// health equitytools national score as rank 
 	conindex fies_rawscore, rank(NationalScore) svy wagstaff bounded limits(0 8)

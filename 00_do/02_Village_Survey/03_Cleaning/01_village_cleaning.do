@@ -22,6 +22,51 @@ do "$do/00_dir_setting.do"
 	** Village Survey: Main Dataset **
 	use "$dta/pnourish_village_svy_wide.dta", clear 
 	
+	
+	***************************************
+	// check for the replacement villages patterm 
+	
+	preserve 
+	
+		keep geo_vill vill_data_yes
+		
+		tempfile initial 
+		save `initial', replace 
+	
+	restore 
+	
+	preserve 
+	
+		keep if vill_data_yes == 0 
+		keep if rpl_vill_data_yes == 0
+		
+		keep rpl_geo_vill rpl_vill_data_yes
+ 
+		rename rpl_geo_vill geo_vill
+		
+		duplicates drop *, force 
+		
+		tempfile replace 
+		save `replace', replace 
+	
+	restore 	
+	
+	
+	preserve 
+	
+	use `initial', replace 
+	
+	sort geo_vill vill_data_yes
+	
+	bysort geo_vill: keep if _n == _N 
+		
+	merge 1:1 geo_vill using `replace'
+	
+	restore 
+	
+	
+	***************************************
+	
 	// will_participate
 	tab will_participate, m 
 	
