@@ -693,6 +693,18 @@ do "$do/00_dir_setting.do"
 	// stratum_num
 	svy: tab stratum fies_insecurity, row
 	
+	
+	// mkt_distance 
+	tab mkt_distance, gen(mkt_distance_)
+	
+	svy: mean mkt_distance_*
+	
+	// hfc_distance 
+	tab hfc_distance, gen(hfc_distance_) 
+	
+	svy: mean hfc_distance_* 
+	
+	
 	// fies_rawscore
 	svy: mean  fies_rawscore
 

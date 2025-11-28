@@ -1004,14 +1004,14 @@ do "$do/00_dir_setting.do"
 
 	// MDD
 	putexcel set "$out/reg_output/IYCF_mdd_logistic_models.xls", sheet("Final_model") modify 
-	svy: logistic mdd i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance stratum
+	svy: logistic mdd i.resp_highedu i.NationalQuintile /*i.wempo_category*/ i.hfc_distance stratum
 	putexcel (A1) = etable
 	
 	conindex mdd, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 mdd, rank(NationalScore) covars(i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 
 	conindex mdd, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
-	conindex2 mdd, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mdd, rank(resp_highedu_ci) covars(NationalScore /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 
 	conindex mdd, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 mdd, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
@@ -1034,14 +1034,14 @@ do "$do/00_dir_setting.do"
 	
 	// MAD
 	putexcel set "$out/reg_output/IYCF_mad_logistic_models.xls", sheet("Final_model") modify 
-	svy: logistic mad i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance stratum
+	svy: logistic mad i.resp_highedu i.NationalQuintile /*i.wempo_category*/ i.hfc_distance stratum
 	putexcel (A1) = etable
 
 	conindex mad, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 mad, rank(NationalScore) covars(i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 	
 	conindex mad, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
-	conindex2 mad, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mad, rank(resp_highedu_ci) covars(NationalScore /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 
 	conindex dietary_tot, rank(wempo_index) svy truezero generalized
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy truezero generalized	
@@ -1049,21 +1049,21 @@ do "$do/00_dir_setting.do"
 	
 	// Food Groups 
 	putexcel set "$out/reg_output/IYCF_dietary_tot_logistic_models.xls", sheet("Final_model") modify 
-	svy: reg dietary_tot i.resp_highedu i.NationalQuintile i.wempo_category i.hfc_distance stratum
+	svy: reg dietary_tot i.resp_highedu i.NationalQuintile i.wempo_category /*i.hfc_distance*/ stratum
 	putexcel (A1) = etable
 
 	conindex dietary_tot, rank(NationalScore) svy truezero generalized
-	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.wempo_category i.hfc_distance stratum) svy truezero generalized
+	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.wempo_category /*i.hfc_distance*/ stratum) svy truezero generalized
 
 	conindex dietary_tot, rank(NationalScore)  svy wagstaff bounded limits(0 8)
-	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 8)
+	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.wempo_category /*i.hfc_distance*/ stratum) svy wagstaff bounded limits(0 8)
 
 	
 	conindex dietary_tot, rank(resp_highedu_ci) svy truezero generalized
 	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy truezero generalized	
 
 	conindex dietary_tot, rank(resp_highedu_ci) svy wagstaff bounded limits(0 8)
-	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.wempo_category i.hfc_distance stratum) svy wagstaff bounded limits(0 8)	
+	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.wempo_category /*i.hfc_distance*/ stratum) svy wagstaff bounded limits(0 8)	
 
 	
 	
@@ -1071,7 +1071,7 @@ do "$do/00_dir_setting.do"
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy truezero generalized	
 
 	conindex dietary_tot, rank(wempo_index) svy wagstaff bounded limits(0 8)
-	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy wagstaff bounded limits(0 8)	
+	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu /*i.hfc_distance*/ stratum) svy wagstaff bounded limits(0 8)	
 
 	// stratum_num
 	svy: tab stratum ebf, row

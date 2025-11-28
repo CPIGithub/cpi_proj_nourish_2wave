@@ -470,6 +470,7 @@ do "$do/00_dir_setting.do"
 			
 	}
 	
+	svy: reg mddw_score i.resp_highedu i.NationalQuintile i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum 
 	
 	// mddw_yes
 	local regressor  resp_highedu org_name_num stratum NationalQuintile wempo_index progressivenss wempo_category mkt_distance hfc_distance
@@ -493,7 +494,7 @@ do "$do/00_dir_setting.do"
 	
 	putexcel set "$out/reg_output/MDDW_mddw_yes_logistic_models.xls", sheet("Final_model") modify 
 	
-	svy: logistic mddw_yes /*i.resp_highedu*/ i.NationalQuintile i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum 
+	svy: logistic mddw_yes /*i.resp_highedu*/ i.NationalQuintile i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum 
 	
 	putexcel (A1) = etable
 	
@@ -511,15 +512,15 @@ do "$do/00_dir_setting.do"
 	// mddw_yes 
 	conindex mddw_yes, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 mddw_yes, rank(NationalScore) ///
-						covars(/*i.resp_highedu*/ i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)
+						covars(/*i.resp_highedu*/ i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)
 	
 	conindex mddw_yes, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 mddw_yes, rank(resp_highedu_ci) ///
-						covars(NationalScore i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
+						covars(NationalScore i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
 
 	conindex mddw_yes, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 mddw_yes, rank(wempo_index) ///
-						covars(NationalScore /*i.resp_highedu*/ i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
+						covars(NationalScore /*i.resp_highedu*/ /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
 
 	// Food Groups 
 	conindex mddw_score, rank(NationalScore) svy truezero generalized
@@ -528,7 +529,7 @@ do "$do/00_dir_setting.do"
 
 	conindex mddw_score, rank(NationalScore) svy wagstaff bounded limits(0 10)
 	conindex2 mddw_score, rank(NationalScore) ///
-							covars(i.resp_highedu i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
+							covars(i.resp_highedu i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
 
 							
 	conindex mddw_score, rank(resp_highedu_ci) svy truezero generalized
@@ -537,7 +538,7 @@ do "$do/00_dir_setting.do"
 	
 	conindex mddw_score, rank(resp_highedu_ci) svy wagstaff bounded limits(0 10)
 	conindex2 mddw_score, rank(resp_highedu_ci) ///
-							covars(NationalScore i.wempo_category i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
+							covars(NationalScore i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
 
 							
 	conindex mddw_score, rank(wempo_index) svy truezero generalized
@@ -546,7 +547,7 @@ do "$do/00_dir_setting.do"
 	
 	conindex mddw_score, rank(wempo_index) svy wagstaff bounded limits(0 10)
 	conindex2 mddw_score, rank(wempo_index) ///
-							covars(NationalScore i.resp_highedu i.hfc_distance /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
+							covars(NationalScore i.resp_highedu /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
 	
 				
 
