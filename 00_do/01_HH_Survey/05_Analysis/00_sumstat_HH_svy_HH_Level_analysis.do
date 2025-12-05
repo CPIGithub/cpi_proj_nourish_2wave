@@ -590,7 +590,14 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2
 	drop _merge 
 	
+	merge 1:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
+							keepusing(income_lastmonth_trim jan_incom_status thistime_incom_status) ///
+							assert(3) nogen 
 	
+	** group by income **
+	xtile wealth_quintile_inc = income_lastmonth_trim [pweight=weight_final], nq(5)
+	tab wealth_quintile_inc, m 
+
 	
 	// Dist to health facility 
 	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
@@ -785,7 +792,8 @@ do "$do/00_dir_setting.do"
 	
 	
 	local regressor  	hhitems_phone resp_highedu org_name_num stratum NationalQuintile hh_mem_highedu_all ///
-						resp_hhhead income_lastmonth wempo_index progressivenss wempo_category mkt_distance hfc_distance
+						resp_hhhead income_lastmonth income_lastmonth_trim jan_incom_status thistime_incom_status ///
+						wempo_index progressivenss wempo_category mkt_distance hfc_distance
 	
 	foreach v in `regressor' {
 		
@@ -893,14 +901,21 @@ do "$do/00_dir_setting.do"
 	conindex2 fies_rawscore, rank(NationalScore) ///
 							covars(i.resp_highedu i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance) svy wagstaff bounded limits(0 8)	
 	
+	conindex2 fies_rawscore, rank(NationalScore) ///
+							covars(i.resp_highedu i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance i.wealth_quintile_inc) svy wagstaff bounded limits(0 8)	
+
+							
 	conindex fies_insecurity, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 fies_insecurity, rank(NationalScore) ///
 								covars(i.resp_highedu i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance) svy wagstaff bounded limits(0 1)
-	
+								
 	// resp edu as rank 
 	conindex fies_rawscore, rank(resp_highedu_ci) svy wagstaff bounded limits(0 8)
 	conindex2 fies_rawscore, rank(resp_highedu_ci) ///
 							covars(NationalScore i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance) svy wagstaff bounded limits(0 8)	
+	
+	conindex2 fies_rawscore, rank(resp_highedu_ci) ///
+							covars(NationalScore i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance i.wealth_quintile_inc) svy wagstaff bounded limits(0 8)	
 	
 	conindex fies_insecurity, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 fies_insecurity, rank(resp_highedu_ci) ///
@@ -911,6 +926,9 @@ do "$do/00_dir_setting.do"
 	conindex fies_rawscore, rank(wempo_index) svy wagstaff bounded limits(0 8)
 	conindex2 fies_rawscore, rank(wempo_index) ///
 							covars(NationalScore i.resp_highedu i.org_name_num /*stratum*/ i.mkt_distance) svy wagstaff bounded limits(0 8)	
+	
+	conindex2 fies_rawscore, rank(wempo_index) ///
+							covars(NationalScore i.resp_highedu i.org_name_num /*stratum*/ i.mkt_distance i.wealth_quintile_inc) svy wagstaff bounded limits(0 8)	
 	
 	conindex fies_insecurity, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 fies_insecurity, rank(wempo_index) ///
@@ -1303,9 +1321,17 @@ do "$do/00_dir_setting.do"
 	merge 1:1 uuid using "$dta/pnourish_WOMEN_EMPOWER_final.dta", keepusing(wempo_index progressivenss)  
 	drop _merge 
 
-	
+	merge 1:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
+							keepusing(income_lastmonth_trim jan_incom_status thistime_incom_status) ///
+							assert(3) nogen 
+							
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+	
+	
+	** group by income **
+	xtile wealth_quintile_inc = income_lastmonth_trim [pweight=weight_final], nq(5)
+	tab wealth_quintile_inc, m 
 	
 	// prgexpo_pn
 	svy: mean  prgexpo_pn
@@ -1520,6 +1546,23 @@ do "$do/00_dir_setting.do"
 	
 	}
 	
+	
+	
+	
+	/*
+	prgexpo_pn prgexpo_join8 prgexpo_join3 prgexpo_join5 prgexpo_join7 prgexpo_join6 prgexpo_join4
+	
+	Project Nourish - Overall
+	MUAC screening
+	Food basket/Cash for food
+	SBCC session
+	Home gardening
+	Mother support group
+	WASH infrastructure support
+	
+	wealth_quintile_inc jan_incom_status thistime_incom_status
+*/
+
 	
 // END HERE 
 

@@ -40,6 +40,10 @@ do "$do/00_dir_setting.do"
 	drop if _merge == 2
 	drop _merge 
 	
+	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
+							keepusing(income_lastmonth_trim jan_incom_status thistime_incom_status) ///
+							assert(2 3) keep(matched) nogen 
+							
 	
 	// Dist to health facility 
 	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
@@ -121,6 +125,9 @@ do "$do/00_dir_setting.do"
 	* generate the interaction variable - stratum Vs quantile 
 	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
 	
+	** group by income **
+	xtile wealth_quintile_inc = income_lastmonth_trim [pweight=weight_final], nq(5)
+	tab wealth_quintile_inc, m 
 	
 	// stratum_num
 	svy: tab stratum mddw_yes, row
@@ -509,18 +516,40 @@ do "$do/00_dir_setting.do"
 	svy: mean mddw_score , over(org_name_num) 
 	
 	
+	// by income var spectrum 
+	svy: tab wealth_quintile_inc mddw_yes , row 
+	svy: mean mddw_score , over(wealth_quintile_inc) 
+	
+	svy: tab jan_incom_status mddw_yes , row 
+	svy: mean mddw_score , over(jan_incom_status) 
+
+	svy: tab thistime_incom_status mddw_yes , row 
+	svy: mean mddw_score , over(thistime_incom_status) 
+
+	
 	// mddw_yes 
 	conindex mddw_yes, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 mddw_yes, rank(NationalScore) ///
 						covars(/*i.resp_highedu*/ i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)
 	
+	conindex2 mddw_yes, rank(NationalScore) ///
+						covars(/*i.resp_highedu*/ i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)
+	
+
 	conindex mddw_yes, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 mddw_yes, rank(resp_highedu_ci) ///
 						covars(NationalScore i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
 
+	conindex2 mddw_yes, rank(resp_highedu_ci) ///
+						covars(NationalScore i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
+
+
 	conindex mddw_yes, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 mddw_yes, rank(wempo_index) ///
 						covars(NationalScore /*i.resp_highedu*/ /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
+
+	conindex2 mddw_yes, rank(wempo_index) ///
+						covars(NationalScore /*i.resp_highedu*/ /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
 	// Food Groups 
 	conindex mddw_score, rank(NationalScore) svy truezero generalized
@@ -531,6 +560,9 @@ do "$do/00_dir_setting.do"
 	conindex2 mddw_score, rank(NationalScore) ///
 							covars(i.resp_highedu i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
 
+	conindex2 mddw_score, rank(NationalScore) ///
+							covars(i.resp_highedu i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 10)
+
 							
 	conindex mddw_score, rank(resp_highedu_ci) svy truezero generalized
 	conindex2 mddw_score, rank(resp_highedu_ci) ///
@@ -540,6 +572,8 @@ do "$do/00_dir_setting.do"
 	conindex2 mddw_score, rank(resp_highedu_ci) ///
 							covars(NationalScore i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
 
+	conindex2 mddw_score, rank(resp_highedu_ci) ///
+							covars(NationalScore i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 10)
 							
 	conindex mddw_score, rank(wempo_index) svy truezero generalized
 	conindex2 mddw_score, rank(wempo_index) ///
@@ -549,6 +583,8 @@ do "$do/00_dir_setting.do"
 	conindex2 mddw_score, rank(wempo_index) ///
 							covars(NationalScore i.resp_highedu /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
 	
+	conindex2 mddw_score, rank(wempo_index) ///
+							covars(NationalScore i.resp_highedu /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 10)
 				
 
 	svy: tab wempo_category mddw_yes , row 

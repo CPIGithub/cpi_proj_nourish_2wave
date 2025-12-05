@@ -127,6 +127,11 @@ do "$do/00_dir_setting.do"
 	drop _merge 
 	
 	
+	merge m:1 _parent_index using "$dta/pnourish_INCOME_WEALTH_final.dta", ///
+							keepusing(income_lastmonth_trim jan_incom_status thistime_incom_status) ///
+							assert(2 3) keep(matched) nogen 
+	
+	
 	// Dist to health facility 
 	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
 	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
@@ -255,6 +260,10 @@ do "$do/00_dir_setting.do"
 	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
+
+	** group by income **
+	xtile wealth_quintile_inc = income_lastmonth_trim [pweight=weight_final], nq(5)
+	tab wealth_quintile_inc, m 
 
 	* generate the interaction variable - stratum Vs quantile 
 	gen NationalQuintile_stratum  =   NationalQuintile*stratum 
@@ -986,6 +995,25 @@ do "$do/00_dir_setting.do"
 	svy: tab org_name_num mad , row 
 	svy: mean dietary_tot , over(org_name_num) 
 	
+	// by income var spectrum 
+	svy: tab wealth_quintile_inc ebf , row 
+	svy: tab wealth_quintile_inc mdd , row 
+	svy: tab wealth_quintile_inc mmf , row 
+	svy: tab wealth_quintile_inc mad , row 
+	svy: mean dietary_tot , over(wealth_quintile_inc) 
+	 
+	svy: tab jan_incom_status ebf , row 
+	svy: tab jan_incom_status mdd , row 
+	svy: tab jan_incom_status mmf , row 
+	svy: tab jan_incom_status mad , row 
+	svy: mean dietary_tot , over(jan_incom_status) 	
+	
+	svy: tab thistime_incom_status ebf , row 
+	svy: tab thistime_incom_status mdd , row 
+	svy: tab thistime_incom_status mmf , row 
+	svy: tab thistime_incom_status mad , row 
+	svy: mean dietary_tot , over(thistime_incom_status) 
+	
 	
 	// EBF 
 	putexcel set "$out/reg_output/IYCF_ebf_logistic_models.xls", sheet("Final_model") modify 
@@ -994,12 +1022,15 @@ do "$do/00_dir_setting.do"
 	
 	conindex ebf, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 ebf, rank(NationalScore) covars(i.resp_highedu i.hfc_distance) svy wagstaff bounded limits(0 1)
+	conindex2 ebf, rank(NationalScore) covars(i.resp_highedu i.hfc_distance i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)
 
 	conindex ebf, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 ebf, rank(resp_highedu_ci) covars(i.hfc_distance) svy wagstaff bounded limits(0 1)	
+	conindex2 ebf, rank(resp_highedu_ci) covars(i.hfc_distance i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
 	conindex ebf, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 ebf, rank(wempo_index) covars(i.resp_highedu i.hfc_distance) svy wagstaff bounded limits(0 1)	
+	conindex2 ebf, rank(wempo_index) covars(i.resp_highedu i.hfc_distance i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
 
 	// MDD
@@ -1009,12 +1040,15 @@ do "$do/00_dir_setting.do"
 	
 	conindex mdd, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 mdd, rank(NationalScore) covars(i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mdd, rank(NationalScore) covars(i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
 	conindex mdd, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 mdd, rank(resp_highedu_ci) covars(NationalScore /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mdd, rank(resp_highedu_ci) covars(NationalScore /*i.wempo_category*/ i.hfc_distance stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
 	conindex mdd, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 mdd, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mdd, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
 
 	// MMF
@@ -1039,12 +1073,15 @@ do "$do/00_dir_setting.do"
 
 	conindex mad, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 mad, rank(NationalScore) covars(i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mad, rank(NationalScore) covars(i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 	
 	conindex mad, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 mad, rank(resp_highedu_ci) covars(NationalScore /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
+	conindex2 mad, rank(resp_highedu_ci) covars(NationalScore /*i.wempo_category*/ i.hfc_distance stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
 	conindex dietary_tot, rank(wempo_index) svy truezero generalized
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy truezero generalized	
+	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum i.wealth_quintile_inc) svy truezero generalized	
 
 	
 	// Food Groups 
@@ -1057,6 +1094,7 @@ do "$do/00_dir_setting.do"
 
 	conindex dietary_tot, rank(NationalScore)  svy wagstaff bounded limits(0 8)
 	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.wempo_category /*i.hfc_distance*/ stratum) svy wagstaff bounded limits(0 8)
+	conindex2 dietary_tot, rank(NationalScore) covars(i.resp_highedu i.wempo_category /*i.hfc_distance*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 8)
 
 	
 	conindex dietary_tot, rank(resp_highedu_ci) svy truezero generalized
@@ -1064,6 +1102,7 @@ do "$do/00_dir_setting.do"
 
 	conindex dietary_tot, rank(resp_highedu_ci) svy wagstaff bounded limits(0 8)
 	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.wempo_category /*i.hfc_distance*/ stratum) svy wagstaff bounded limits(0 8)	
+	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.wempo_category /*i.hfc_distance*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 8)	
 
 	
 	
@@ -1072,6 +1111,7 @@ do "$do/00_dir_setting.do"
 
 	conindex dietary_tot, rank(wempo_index) svy wagstaff bounded limits(0 8)
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu /*i.hfc_distance*/ stratum) svy wagstaff bounded limits(0 8)	
+	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu /*i.hfc_distance*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 8)	
 
 	// stratum_num
 	svy: tab stratum ebf, row
