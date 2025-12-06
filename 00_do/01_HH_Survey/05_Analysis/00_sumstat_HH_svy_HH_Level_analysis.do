@@ -935,6 +935,16 @@ do "$do/00_dir_setting.do"
 								covars(NationalScore i.resp_highedu i.org_name_num /*stratum*/ i.mkt_distance) svy wagstaff bounded limits(0 1)	
 
 	
+	// HH income (last month) as rank 
+	conindex fies_rawscore, rank(income_lastmonth_trim)  svy wagstaff bounded limits(0 8)
+	conindex2 fies_rawscore, rank(income_lastmonth_trim) ///
+							covars(NationalScore i.resp_highedu i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance) svy wagstaff bounded limits(0 8)	
+								
+	conindex fies_insecurity, rank(income_lastmonth_trim) svy wagstaff bounded limits(0 1)
+	conindex2 fies_insecurity, rank(income_lastmonth_trim) ///
+								covars(NationalScore i.resp_highedu i.org_name_num /*stratum*/ /*i.wempo_category*/ i.mkt_distance) svy wagstaff bounded limits(0 1)
+
+								
 	
 	/*
 	Model 3 - adjusted for model 1 vars and [anything else significant a p<0.1 in crude model]

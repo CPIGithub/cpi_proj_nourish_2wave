@@ -1032,6 +1032,8 @@ do "$do/00_dir_setting.do"
 	conindex2 ebf, rank(wempo_index) covars(i.resp_highedu i.hfc_distance) svy wagstaff bounded limits(0 1)	
 	conindex2 ebf, rank(wempo_index) covars(i.resp_highedu i.hfc_distance i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
+	conindex ebf, rank(income_lastmonth_trim) svy wagstaff bounded limits(0 1)
+	conindex2 ebf, rank(income_lastmonth_trim) covars(NationalScore i.resp_highedu i.hfc_distance) svy wagstaff bounded limits(0 1)
 
 	// MDD
 	putexcel set "$out/reg_output/IYCF_mdd_logistic_models.xls", sheet("Final_model") modify 
@@ -1050,6 +1052,8 @@ do "$do/00_dir_setting.do"
 	conindex2 mdd, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 	conindex2 mdd, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
+	conindex mdd, rank(income_lastmonth_trim) svy wagstaff bounded limits(0 1)
+	conindex2 mdd, rank(income_lastmonth_trim) covars(NationalScore i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 
 	// MMF
 	putexcel set "$out/reg_output/IYCF_mmf_logistic_models.xls", sheet("Final_model") modify 
@@ -1065,6 +1069,8 @@ do "$do/00_dir_setting.do"
 	conindex mmf, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 mmf, rank(wempo_index) covars(i.resp_highedu i.hfc_distance i.mkt_distance) svy wagstaff bounded limits(0 1)	
 
+	conindex mmf, rank(income_lastmonth_trim) svy wagstaff bounded limits(0 1)
+	conindex2 mmf, rank(income_lastmonth_trim) covars(NationalScore i.resp_highedu i.hfc_distance i.mkt_distance) svy wagstaff bounded limits(0 1)	
 	
 	// MAD
 	putexcel set "$out/reg_output/IYCF_mad_logistic_models.xls", sheet("Final_model") modify 
@@ -1083,6 +1089,8 @@ do "$do/00_dir_setting.do"
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy truezero generalized	
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum i.wealth_quintile_inc) svy truezero generalized	
 
+	conindex mad, rank(income_lastmonth_trim) svy wagstaff bounded limits(0 1)
+	conindex2 mad, rank(income_lastmonth_trim) covars(NationalScore i.resp_highedu /*i.wempo_category*/ i.hfc_distance stratum) svy wagstaff bounded limits(0 1)	
 	
 	// Food Groups 
 	putexcel set "$out/reg_output/IYCF_dietary_tot_logistic_models.xls", sheet("Final_model") modify 
@@ -1105,13 +1113,16 @@ do "$do/00_dir_setting.do"
 	conindex2 dietary_tot, rank(resp_highedu_ci) covars(NationalScore i.wempo_category /*i.hfc_distance*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 8)	
 
 	
-	
 	conindex dietary_tot, rank(wempo_index) svy truezero generalized
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu i.hfc_distance stratum) svy truezero generalized	
 
 	conindex dietary_tot, rank(wempo_index) svy wagstaff bounded limits(0 8)
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu /*i.hfc_distance*/ stratum) svy wagstaff bounded limits(0 8)	
 	conindex2 dietary_tot, rank(wempo_index) covars(NationalScore i.resp_highedu /*i.hfc_distance*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 8)	
+
+	
+	conindex dietary_tot, rank(income_lastmonth_trim)  svy wagstaff bounded limits(0 8)
+	conindex2 dietary_tot, rank(income_lastmonth_trim) covars(NationalScore i.resp_highedu i.wempo_category /*i.hfc_distance*/ stratum) svy wagstaff bounded limits(0 8)
 
 	// stratum_num
 	svy: tab stratum ebf, row

@@ -551,6 +551,12 @@ do "$do/00_dir_setting.do"
 	conindex2 mddw_yes, rank(wempo_index) ///
 						covars(NationalScore /*i.resp_highedu*/ /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
+						
+	conindex mddw_yes, rank(income_lastmonth_trim) svy wagstaff bounded limits(0 1)
+	conindex2 mddw_yes, rank(income_lastmonth_trim) ///
+						covars(NationalScore i.wempo_category  /*i.resp_highedu*/ /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
+
+						
 	// Food Groups 
 	conindex mddw_score, rank(NationalScore) svy truezero generalized
 	conindex2 mddw_score, rank(NationalScore) ///
@@ -586,7 +592,11 @@ do "$do/00_dir_setting.do"
 	conindex2 mddw_score, rank(wempo_index) ///
 							covars(NationalScore i.resp_highedu /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 10)
 				
+	conindex mddw_score, rank(income_lastmonth_trim) svy wagstaff bounded limits(0 10)
+	conindex2 mddw_score, rank(income_lastmonth_trim) ///
+							covars(NationalScore i.resp_highedu i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 10)
 
+							
 	svy: tab wempo_category mddw_yes , row 
 	svy: mean mddw_score , over(wempo_category) 
 	
