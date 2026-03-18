@@ -138,6 +138,7 @@
 			
 	svy: tab mvr_anc_yn_q anc_yn, row 
 	svy: tab mvr_anc_who_trained_q anc_who_trained, row 
+	svy: tab mvr_anc_visit_trained_4times_q anc_visit_trained_4times, row 
 
 	svy: tab mvr_skilled_battend_q skilled_battend, row 
 	svy: tab mvr_insti_birth_q insti_birth, row 

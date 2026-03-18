@@ -53,7 +53,7 @@ do "$do/00_dir_setting.do"
 	* Mom Health - by Multi-var Ranking Quantile 
 	preserve 
 	
-		keep if order < 9
+		keep if order < 10
 		
 		drop Poorest Poor Medium Wealthy Wealthiest 
 		
@@ -73,7 +73,7 @@ do "$do/00_dir_setting.do"
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order) dotsize(1.5) ///
 					xtitle("% of Mothers with U2 children") ///
-					legtitle("(D) Maternal Health Service Utilization by Multivariate Unfair Index Quintile") connected
+					legtitle("(B) Maternal Health Service Utilization by Multivariate Unfair Index Quintile") connected
 
 		graph export "$plots/EquiPlot_Mom_Health_Seeking_MVR.png", replace
 	
@@ -82,7 +82,7 @@ do "$do/00_dir_setting.do"
 	* ANC with two type of Quintile - Wealth vs Multivarite 
 	preserve 
 	
-		keep if (order >= 9 & order <= 10) |  order == 13
+		keep if (order >= 10 & order <= 11) |  order == 14
 	
 		lab var Poorest 		"Q1"
 		lab var Poor 			"Q2"
@@ -102,7 +102,7 @@ do "$do/00_dir_setting.do"
 	* ANC with two WQ 
 	preserve 
 	
-		keep if order >= 9 & order <= 10 
+		keep if order >= 10 & order <= 11 
 	
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order) dotsize(1.5) ///
@@ -132,7 +132,7 @@ do "$do/00_dir_setting.do"
 	* ANC with multivariate CI index 
 	preserve 
 	
-		keep if order == 13 
+		keep if order == 14 
 		
 		replace indicator = "ANC (any)"
 			
@@ -161,7 +161,7 @@ do "$do/00_dir_setting.do"
 	* ANC with HH Income Quintiles
 	preserve 
 	
-		keep if order == 15
+		keep if order == 16
 		
 		replace indicator = "ANC (any)"
 			
@@ -190,7 +190,7 @@ do "$do/00_dir_setting.do"
 	* ANC with FIES Category
 	preserve 
 	
-		keep if order == 16
+		keep if order == 17
 		
 		replace indicator = "ANC (any)"
 			
@@ -217,7 +217,7 @@ do "$do/00_dir_setting.do"
 	* ANC with STRATUM
 	preserve 
 	
-		keep if order == 17
+		keep if order == 18
 		
 		replace indicator = "ANC (any)"
 			
@@ -243,7 +243,7 @@ do "$do/00_dir_setting.do"
 	* ANC with WEI 
 	preserve 
 	
-		keep if order == 11 
+		keep if order == 12
 
 		drop Wealthy Wealthiest
 		
@@ -280,7 +280,7 @@ do "$do/00_dir_setting.do"
 	* ANC with HFC Distance 
 	preserve 
 	
-		keep if order == 12
+		keep if order == 13
 
 		drop Wealthiest
 		
@@ -317,7 +317,7 @@ do "$do/00_dir_setting.do"
 	* ANC with Mother's education 
 	preserve 
 	
-		keep if order == 14
+		keep if order == 15
 
 		drop Wealthiest
 
