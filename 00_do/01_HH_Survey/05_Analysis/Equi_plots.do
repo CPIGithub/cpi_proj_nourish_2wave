@@ -50,6 +50,36 @@ do "$do/00_dir_setting.do"
 	
 	restore 
 	
+	* Women Empowerment - by Multi-var Ranking Quantile 
+	preserve 
+	
+		keep if order >= 19
+		
+		drop Poorest Poor Medium Wealthy Wealthiest 
+		
+		rename mv_q1	Poorest     
+		rename mv_q2	Poor
+		rename mv_q3	Medium
+		rename mv_q4	Wealthy	
+		rename mv_q5	Wealthiest
+
+		
+		lab var Poorest 		"Q1"
+		lab var Poor 			"Q2"
+		lab var Medium 			"Q3"
+		lab var Wealthy 		"Q4"
+		lab var Wealthiest 		"Q5"
+		
+		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
+					over(indicator) sort(order) dotsize(1.5) ///
+					xtitle("% of Mothers with U2 children") ///
+					legtitle("(A) Women's empowerment indicators by multivariate"  "index of vulnerability quintile") connected ///
+
+		graph export "$plots/EquiPlot_Women_Empowerment_MVR.png", replace
+	
+	restore 
+	
+	
 	* Mom Health - by Multi-var Ranking Quantile 
 	preserve 
 	
@@ -73,7 +103,7 @@ do "$do/00_dir_setting.do"
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order) dotsize(1.5) ///
 					xtitle("% of Mothers with U2 children") ///
-					legtitle("(B) Maternal Health Service Utilization by Multivariate Unfair Index Quintile") connected
+					legtitle("(B) Perinatal health services utilization by multivariate index of vulnerability quintile") connected
 
 		graph export "$plots/EquiPlot_Mom_Health_Seeking_MVR.png", replace
 	

@@ -3435,7 +3435,61 @@ do "$do/00_dir_setting.do"
 	****************************************************************************
 	
 	use "$dta/pnourish_WOMEN_EMPOWER_final.dta", clear  
-
+	
+	* treated other and monestic education as missing
+	gen resp_highedu_ci = resp_highedu
+	replace resp_highedu_ci = .m if resp_highedu_ci > 7 
+	tab resp_highedu_ci, m 
+	
+	replace resp_highedu = .m if resp_highedu > 7 
+	replace resp_highedu = 4 if resp_highedu > 4 & !mi(resp_highedu)
+	tab resp_highedu, m 
+	
+	gen mom_age_grp = (respd_age < 25)
+	replace mom_age_grp = 2 if respd_age >= 25 & respd_age < 35 
+	replace mom_age_grp = 3 if respd_age >= 35  
+	replace mom_age_grp = .m if mi(respd_age)
+	lab def mom_age_grp 1"< 25 years old" 2"25 - 34 years old" 3"35+ years old"
+	lab val mom_age_grp mom_age_grp
+	tab mom_age_grp, m 
+	
+	
+	recode respd_chid_num (1 = 1) (2 = 2) (3/15 = 3), gen(respd_chid_num_grp)
+	replace respd_chid_num_grp = .m if mi(respd_chid_num)
+	lab def respd_chid_num_grp 1"Has only one child" 2"Has two children" 3"Has three children & more" 
+	lab val respd_chid_num_grp respd_chid_num_grp 
+	lab var respd_chid_num_grp "Number of Children"
+	tab respd_chid_num_grp, m 
+	
+	// Dist to health facility 
+	egen hfc_near_dist = rowmean(hfc_near_dist_dry hfc_near_dist_rain)
+	replace hfc_near_dist = .m if mi(hfc_near_dist_dry) & mi(hfc_near_dist_rain)
+	lab var hfc_near_dist "Nearest Health Facility - hours for round trip"
+	tab hfc_near_dist, m 
+	
+	// Addressing missing issue 
+	count if mi(hfc_near_dist)
+	tab hfc_near_dist, m 
+	
+	replace hfc_near_dist = 1.5 if geo_eho_vt_name == "Kha Nein Hpaw" & stratum == 1 & mi(hfc_near_dist) // 11 obs
+	replace hfc_near_dist = 1.1 if geo_eho_vt_name == "Ka Yit Kyauk Tan" & stratum == 1 & mi(hfc_near_dist) // 10 obs 
+	replace hfc_near_dist = 4 if geo_eho_vt_name == "Bo Khar Lay Kho" & stratum == 2 & mi(hfc_near_dist) // 7 obs 
+	replace hfc_near_dist = 4 if geo_eho_vt_name == "Sho Kho" & stratum == 2 & mi(hfc_near_dist)		 // 1 obs
+	replace hfc_near_dist = 1 if geo_eho_vt_name == "Naung Pa Laing" & stratum == 1 & mi(hfc_near_dist)	 // 11 obs 
+	
+	tab hfc_near_dist, m 
+	
+	// health facility distance category - previously used with hfc_near_dist_rain var 
+	gen hfc_distance = .m 
+	replace hfc_distance = 0 if hfc_near_dist == 0
+	replace hfc_distance = 1 if hfc_near_dist > 0 & hfc_near_dist <= 1.5
+	replace hfc_distance = 2 if hfc_near_dist > 1.5 & hfc_near_dist <= 3
+	replace hfc_distance = 3 if hfc_near_dist > 3 & !mi(hfc_near_dist)
+	lab def hfc_distance 0"Health Facility present at village" 1"<= 1.5 hours" 2"1.6 to 3 hours" 3">3 hours"
+	lab val hfc_distance hfc_distance
+	lab var hfc_distance "Nearest Health Facility - hours for round trip"
+	tab hfc_distance, mis
+	
 	* svy weight apply 
 	svyset [pweight = weight_final], strata(stratum_num) vce(linearized) psu(geo_vill)
 
@@ -3630,7 +3684,7 @@ do "$do/00_dir_setting.do"
 	gen wempo_index_rescale = wempo_index + abs(r(min))
 	sum wempo_index wempo_index_rescale
 	
-	conindex wempo_index_rescale, rank(NationalScore) svy wagstaff bounded limits(0 2.500905)
+	conindex wempo_index_rescale, rank(NationalScore) svy wagstaff bounded limits(0 3.500905)
 	
 	
 	svy: mean progressivenss
@@ -3639,8 +3693,218 @@ do "$do/00_dir_setting.do"
 	svy: mean high_empower
 	svy: mean high_empower, over(NationalQuintile)
 	conindex high_empower, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	
+	
+	****************************************************************************
+	** Decomposition of the concentration index ** - Chapter 13	
+	****************************************************************************	
+	global outcomes progressivenss high_empower ///
+					wempo_childcare_w wempo_child_health_w wempo_child_wellbeing_w ///
+					wempo_major_purchase_w wempo_women_wages_w wempo_visiting_w ///
+					wempo_women_health_w wempo_mom_health_w
+	
+	// wempo_index
+	
+	sum $outcomes 				 
+					
+	global all_unfiar "NationalScore income_lastmonth wempo_index hfc_near_dist stratum i.resp_highedu_ci"
+	
+	//global all_fiar "i.org_name_num i.respd_chid_num_grp i.mom_age_grp resp_hhhead"
+	
+	* creating the dummy varaibles 
+	foreach var of varlist 	stratum resp_highedu wealth_quintile_ns /*wempo_category*/ ///
+							income_quintile_cust hfc_distance {
+						    
+		tab `var', gen(`var'_)			
+							
+				}
+	
+	** moving min to ZERO 
+	foreach var of varlist NationalScore /*wempo_index*/ {
+		
+		local var_label : var label `var'
+		
+		sum `var'
+		gen `var'_m0 = `var' + abs(r(min))
+		lab var `var'_m0 "`var_label': min ZERO"
+		
+	}
+	
+	sum NationalScore* // wempo_index*
+	
+	local var_label : var label income_lastmonth
+	gen logincome = ln(income_lastmonth)
+	lab var logincome "ln(): `var_label'"
+	
+	* Final set of unfiar var 
+	* combination of moving min to ZERO (for z score type var) and 
+	* binary dummy var for categegory var 
+	
+	global X_raw		NationalScore_m0 logincome ///
+						/*wempo_index_m0*/ ///
+						hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
+						stratum_1 ///
+						resp_highedu_2 resp_highedu_3 resp_highedu_4
+	
+
+	gen weight_var = weight_final 
+	
+	foreach var of global outcomes {
+				
+			global outcome_var `var'
+				
+			* Estimate full model and detect omitted variables
+			svy: logit $outcome_var $X_raw
+			matrix b = e(b)
+			local names : colfullnames e(b)
+			
+			di "`names'"
+
+			local names	= subinstr("`names'", "_cons", "", 1)
+			local names	= subinstr("`names'", "$outcome_var:", " ", .)
+			di "`names'"
+			
+			* redefine the unfair var set without omitted var 
+			global X "`names'"
+	
+			svy: logit $outcome_var $X
+			predict mvr_$outcome_var, pr
+			
+	}
+	
+	
+	// for continious var 
+	svy: reg wempo_index $X_raw
+	predict mvr_wempo_index_raw, xb
+	glcurve mvr_wempo_index_raw , pvar(mvr_wempo_index) nograph  // rank identification 
+	
+	drop mvr_wempo_index_raw
+	
+	rename mvr_*_w mvr_*
+	
+	foreach var of varlist 	progressivenss high_empower wempo_index  {
+		
+		xtile `var'_q = mvr_`var' [pweight = weight_final], nq(5)
+		
+	}
+		
+	svy: tab progressivenss_q progressivenss, row
+	svy: tab high_empower_q high_empower, row
+	svy: mean wempo_index, over(wempo_index_q)
+	 
+	foreach var of varlist 	wempo_childcare wempo_child_health wempo_child_wellbeing ///
+							wempo_major_purchase wempo_women_wages wempo_visiting ///
+							wempo_women_health wempo_mom_health  {
+		
+		xtile `var'_q = mvr_`var' [pweight = weight_final], nq(5)
+		
+		di "** VAR `var' **" 
+		svy: tab `var'_q `var'_w, row
+	}
 
 	
+	* keep U2 mom sample - merge with U2 mom dataset 
+	drop _merge 
+	
+	merge 1:m _parent_index using "$dta/pnourish_mom_health_analysis_final.dta", assert(1 3) keep(matched) nogen 
+	
+	
+	svy: tab progressivenss_q progressivenss, row
+	svy: tab high_empower_q high_empower, row
+	svy: mean wempo_index, over(wempo_index_q)
+	 
+	foreach var of varlist 	wempo_childcare wempo_child_health wempo_child_wellbeing ///
+							wempo_major_purchase wempo_women_wages wempo_visiting ///
+							wempo_women_health wempo_mom_health  {
+				
+		di "** VAR `var' **" 
+		svy: tab `var'_q `var'_w, row
+		conindex `var'_w, rank(mvr_`var') svy wagstaff bounded limits(0 1)
+		
+	}
+	
+	
+	
+
+	* Adj CI - Multivariate index 
+	conindex wempo_index, rank(mvr_wempo_index) svy wagstaff bounded limits(-2.64 .9)
+	conindex2 wempo_index, 	rank(mvr_wempo_index) ///
+						covars(	i.resp_highedu ///
+								i.mom_age_grp ///
+								i.respd_chid_num_grp ///
+								hfc_vill_yes ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum) ///
+						svy wagstaff bounded limits(-2.64 .9)
+						
+	
+	foreach var in progressivenss {
+		
+		di "** VAR: `var' **"
+		
+		conindex `var', rank(mvr_`var') svy wagstaff bounded limits(0 1)
+		conindex2 `var', 	rank(mvr_`var') ///
+							covars(	i.resp_highedu ///
+									i.mom_age_grp ///
+									i.respd_chid_num_grp ///
+									hfc_vill_yes ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+							svy wagstaff bounded limits(0 1)	
+		
+	}
+	
+	// Equity Tool rank 
+	conindex progressivenss, rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex2 progressivenss, 	rank(NationalScore) ///
+							covars(	i.resp_highedu ///
+									i.mom_age_grp ///
+									i.respd_chid_num_grp ///
+									hfc_vill_yes ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy wagstaff bounded limits(0 1)
+						
+	// Education as rank
+	conindex progressivenss, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
+	conindex2 progressivenss, 	rank(resp_highedu_ci) ///
+							covars(	/*i.resp_highedu*/ ///
+									i.mom_age_grp ///
+									i.respd_chid_num_grp ///
+									hfc_vill_yes ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy wagstaff bounded limits(0 1)
+						
+	// Equity Tool rank 
+	conindex wempo_index, rank(NationalScore) svy wagstaff bounded limits(-2.64 .9)
+	conindex2 wempo_index, 	rank(NationalScore) ///
+							covars(	i.resp_highedu ///
+									i.mom_age_grp ///
+									i.respd_chid_num_grp ///
+									hfc_vill_yes ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy wagstaff bounded limits(-2.64 .9)
+						
+	// Education as rank
+	conindex wempo_index, rank(resp_highedu_ci) svy wagstaff bounded limits(-2.64 .9)
+	conindex2 wempo_index, 	rank(resp_highedu_ci) ///
+							covars(	/*i.resp_highedu*/ ///
+									i.mom_age_grp ///
+									i.respd_chid_num_grp ///
+									hfc_vill_yes ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy wagstaff bounded limits(-2.64 .9)
+						
+						
 	
 // END HERE 
 
