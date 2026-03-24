@@ -149,13 +149,13 @@
 	svy: tab mvr_nbc_yn_q nbc_yn, row 
 	svy: tab mvr_nbc_who_trained_q nbc_who_trained, row 
 
-	* Adj CI - Multivariate index 
+	* Adj CI - Multivariate index <<< Adam suggest to remove the mom age and child number 
 	conindex anc_yn, rank(mvr_anc_yn) svy wagstaff bounded limits(0 1)
 	conindex2 anc_yn, 	rank(mvr_anc_yn) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -170,9 +170,9 @@
 		conindex `var', rank(mvr_`var') svy wagstaff bounded limits(0 1)
 		conindex2 `var', 	rank(mvr_`var') ///
 							covars(	i.resp_highedu ///
-									i.mom_age_grp ///
-									i.respd_chid_num_grp ///
-									hfc_vill_yes ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
 									i.hfc_distance ///
 									i.org_name_num ///
 									stratum ///

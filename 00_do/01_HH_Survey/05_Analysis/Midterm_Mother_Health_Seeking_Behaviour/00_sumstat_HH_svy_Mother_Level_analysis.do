@@ -1831,7 +1831,7 @@ do "$do/00_dir_setting.do"
 		
 		svy: glm 		`outcome' 	i.resp_highedu /// // svy: logistic 
 									/*i.mom_age_grp*/ ///
-									i.respd_chid_num_grp ///
+									/*i.respd_chid_num_grp*/ ///
 									i.hfc_distance ///
 									i.wealth_quintile_ns ///
 									i.wempo_category ///
@@ -1847,7 +1847,7 @@ do "$do/00_dir_setting.do"
 	conindex2 anc_yn, 	rank(NationalScore) ///
 						covars(	i.resp_highedu ///
 								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
+								/*i.respd_chid_num_grp*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -1858,9 +1858,9 @@ do "$do/00_dir_setting.do"
 	conindex anc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 anc_yn, 	rank(resp_highedu_ci) ///
 						covars(	i.wealth_quintile_ns ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -1872,9 +1872,9 @@ do "$do/00_dir_setting.do"
 	conindex anc_yn, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 anc_yn, 	rank(wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -1891,8 +1891,8 @@ do "$do/00_dir_setting.do"
 		putexcel set "$out/reg_output/ANC_`outcome'_logistic_models.xls", sheet("Final_model") modify 
 		
 		svy: glm 		`outcome' 	/*i.resp_highedu*/ /// // svy: logistic 
-									i.mom_age_grp ///
-									i.respd_chid_num_grp ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
 									i.hfc_distance ///
 									i.wealth_quintile_ns ///
 									/*i.wempo_category*/ ///
@@ -1906,11 +1906,11 @@ do "$do/00_dir_setting.do"
 					
 	conindex anc_who_trained, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 anc_who_trained, 	rank(NationalScore) ///
-						covars(	/*i.resp_highedu*/ /// // svy: logistic 
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
+						covars(	i.resp_highedu /// // svy: logistic 
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
 								i.hfc_distance ///
-								/*i.wempo_category*/ ///
+								i.wempo_category ///
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
@@ -1919,9 +1919,9 @@ do "$do/00_dir_setting.do"
 	conindex anc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 anc_who_trained, 	rank(resp_highedu_ci) ///
 						covars(	i.wealth_quintile_ns ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -1933,9 +1933,9 @@ do "$do/00_dir_setting.do"
 	conindex anc_who_trained, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 anc_who_trained, 	rank(wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -1952,7 +1952,7 @@ do "$do/00_dir_setting.do"
 		
 		svy: glm 		`outcome' 	i.resp_highedu /// // svy: logistic 
 									/*i.mom_age_grp*/ ///
-									i.respd_chid_num_grp ///
+									/*i.respd_chid_num_grp*/ ///
 									i.hfc_distance ///
 									i.wealth_quintile_ns ///
 									i.wempo_category ///
@@ -1968,7 +1968,7 @@ do "$do/00_dir_setting.do"
 	conindex2 anc_visit_trained_4times, 	rank(NationalScore) ///
 									covars(	i.resp_highedu /// // svy: logistic 
 											/*i.mom_age_grp*/ ///
-											i.respd_chid_num_grp ///
+											/*i.respd_chid_num_grp*/ ///
 											i.hfc_distance ///
 											i.wempo_category ///
 											i.org_name_num ///
@@ -1979,9 +1979,9 @@ do "$do/00_dir_setting.do"
 	conindex anc_visit_trained_4times, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 anc_visit_trained_4times, 	rank(resp_highedu_ci) ///
 						covars(	i.wealth_quintile_ns ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -1993,9 +1993,9 @@ do "$do/00_dir_setting.do"
 	conindex anc_visit_trained_4times, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 anc_visit_trained_4times, 	rank(wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -2285,7 +2285,7 @@ do "$do/00_dir_setting.do"
 		
 		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							/*i.mom_age_grp*/ ///
-							i.respd_chid_num_grp ///
+							/*i.respd_chid_num_grp*/ ///
 							/*i.delivery_month_season*/ ///
 							i.hfc_distance ///
 							i.wealth_quintile_ns ///
@@ -2301,11 +2301,11 @@ do "$do/00_dir_setting.do"
 	conindex2 insti_birth, 	rank(NationalScore) ///
 						covars(	i.resp_highedu /// // svy: logistic
 							/*i.mom_age_grp*/ ///
-							i.respd_chid_num_grp ///
+							/*i.respd_chid_num_grp*/ ///
 							/*i.delivery_month_season*/ ///
 							i.hfc_distance ///
-							/*i.wempo_category*/ ///
-							/*i.org_name_num*/ ///
+							i.wempo_category ///
+							i.org_name_num ///
 							stratum) ///
 						svy wagstaff bounded limits(0 1)
 						
@@ -2313,9 +2313,9 @@ do "$do/00_dir_setting.do"
 	conindex insti_birth, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 insti_birth, 	rank(resp_highedu_ci) ///
 						covars(	i.wealth_quintile_ns ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -2327,9 +2327,9 @@ do "$do/00_dir_setting.do"
 	conindex insti_birth, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 insti_birth, 	rank(wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -2346,7 +2346,7 @@ do "$do/00_dir_setting.do"
 		
 		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							/*i.mom_age_grp*/ ///
-							i.respd_chid_num_grp ///
+							/*i.respd_chid_num_grp*/ ///
 							/*i.delivery_month_season*/ ///
 							i.hfc_distance ///
 							i.wealth_quintile_ns ///
@@ -2358,14 +2358,14 @@ do "$do/00_dir_setting.do"
 			
 	}
 							
-	conindex , rank(NationalScore) svy wagstaff bounded limits(0 1)
+	conindex skilled_battend, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 skilled_battend, 	rank(NationalScore) ///
 						covars(	i.resp_highedu /// // svy: logistic
 								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
+								/*i.respd_chid_num_grp*/ ///
 								/*i.delivery_month_season*/ ///
 								i.hfc_distance ///
-								/*i.wempo_category*/ ///
+								i.wempo_category ///
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
@@ -2374,9 +2374,9 @@ do "$do/00_dir_setting.do"
 	conindex skilled_battend, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 skilled_battend, 	rank(resp_highedu_ci) ///
 						covars(	i.wealth_quintile_ns ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -2388,9 +2388,9 @@ do "$do/00_dir_setting.do"
 	conindex skilled_battend, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 skilled_battend, 	rank(wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -2687,7 +2687,7 @@ do "$do/00_dir_setting.do"
 		
 		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							/*i.mom_age_grp*/ ///
-							i.respd_chid_num_grp ///
+							/*i.respd_chid_num_grp*/ ///
 							/*i.delivery_month_season*/ ///
 							i.hfc_distance ///
 							i.wealth_quintile_ns ///
@@ -2703,10 +2703,10 @@ do "$do/00_dir_setting.do"
 	conindex2 pnc_yn, 	rank(NationalScore) ///
 						covars(	i.resp_highedu /// // svy: logistic
 								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
+								/*i.respd_chid_num_grp*/ ///
 								/*i.delivery_month_season*/ ///
 								i.hfc_distance ///
-								/*i.wempo_category*/ ///
+								i.wempo_category ///
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
@@ -2715,9 +2715,9 @@ do "$do/00_dir_setting.do"
 	conindex pnc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 pnc_yn, 	rank(resp_highedu_ci) ///
 						covars(	i.wealth_quintile_ns ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -2729,9 +2729,9 @@ do "$do/00_dir_setting.do"
 	conindex pnc_yn, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 pnc_yn, 	rank(wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -2749,7 +2749,7 @@ do "$do/00_dir_setting.do"
 		
 		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							/*i.mom_age_grp*/ ///
-							i.respd_chid_num_grp ///
+							/*i.respd_chid_num_grp*/ ///
 							/*i.delivery_month_season*/ ///
 							i.hfc_distance ///
 							i.wealth_quintile_ns ///
@@ -2765,11 +2765,11 @@ do "$do/00_dir_setting.do"
 	conindex2 pnc_who_trained, 	rank(NationalScore) ///
 						covars(	i.resp_highedu /// // svy: logistic
 								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
+								/*i.respd_chid_num_grp*/ ///
 								/*i.delivery_month_season*/ ///
 								i.hfc_distance ///
-								/*i.wempo_category*/ ///
-								/*i.org_name_num*/ ///
+								i.wempo_category ///
+								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
 						
@@ -2777,9 +2777,9 @@ do "$do/00_dir_setting.do"
 	conindex pnc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 pnc_who_trained, 	rank(resp_highedu_ci) ///
 						covars(	i.wealth_quintile_ns ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -2791,9 +2791,9 @@ do "$do/00_dir_setting.do"
 	conindex pnc_who_trained, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 pnc_who_trained, 	rank(wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -3139,7 +3139,7 @@ do "$do/00_dir_setting.do"
 		
 		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							/*i.mom_age_grp*/ ///
-							i.respd_chid_num_grp ///
+							/*i.respd_chid_num_grp*/ ///
 							/*i.delivery_month_season*/ ///
 							i.hfc_distance ///
 							i.wealth_quintile_ns ///
@@ -3190,7 +3190,7 @@ do "$do/00_dir_setting.do"
 	conindex2 nbc_yn, 	rank(NationalScore) ///
 						covars(	i.resp_highedu /// // svy: logistic
 								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
+								/*i.respd_chid_num_grp*/ ///
 								/*i.delivery_month_season*/ ///
 								i.hfc_distance ///
 								i.wempo_category ///
@@ -3202,9 +3202,9 @@ do "$do/00_dir_setting.do"
 	conindex nbc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 nbc_yn, 	rank(resp_highedu_ci) ///
 						covars(	i.wealth_quintile_ns ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -3216,9 +3216,9 @@ do "$do/00_dir_setting.do"
 	conindex nbc_yn, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 nbc_yn, 	rank(wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -3235,7 +3235,7 @@ do "$do/00_dir_setting.do"
 		
 		svy: glm `outcome' 	i.resp_highedu /// // svy: logistic
 							/*i.mom_age_grp*/ ///
-							i.respd_chid_num_grp ///
+							/*i.respd_chid_num_grp*/ ///
 							/*i.delivery_month_season*/ ///
 							i.hfc_distance ///
 							i.wealth_quintile_ns ///
@@ -3251,7 +3251,7 @@ do "$do/00_dir_setting.do"
 	conindex2 nbc_who_trained, 	rank(NationalScore) ///
 						covars(	i.resp_highedu /// // svy: logistic
 								/*i.mom_age_grp*/ ///
-								i.respd_chid_num_grp ///
+								/*i.respd_chid_num_grp*/ ///
 								/*i.delivery_month_season*/ ///
 								i.hfc_distance ///
 								i.wempo_category ///
@@ -3263,9 +3263,9 @@ do "$do/00_dir_setting.do"
 	conindex nbc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 nbc_who_trained, 	rank(resp_highedu_ci) ///
 						covars(	i.wealth_quintile_ns ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -3277,9 +3277,9 @@ do "$do/00_dir_setting.do"
 	conindex nbc_who_trained, rank(wempo_index) svy wagstaff bounded limits(0 1)
 	conindex2 nbc_who_trained, 	rank(wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum ///
@@ -3830,9 +3830,9 @@ do "$do/00_dir_setting.do"
 	conindex wempo_index, rank(mvr_wempo_index) svy wagstaff bounded limits(-2.64 .9)
 	conindex2 wempo_index, 	rank(mvr_wempo_index) ///
 						covars(	i.resp_highedu ///
-								i.mom_age_grp ///
-								i.respd_chid_num_grp ///
-								hfc_vill_yes ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
 								i.hfc_distance ///
 								i.org_name_num ///
 								stratum) ///
@@ -3846,9 +3846,9 @@ do "$do/00_dir_setting.do"
 		conindex `var', rank(mvr_`var') svy wagstaff bounded limits(0 1)
 		conindex2 `var', 	rank(mvr_`var') ///
 							covars(	i.resp_highedu ///
-									i.mom_age_grp ///
-									i.respd_chid_num_grp ///
-									hfc_vill_yes ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
 									i.hfc_distance ///
 									i.org_name_num ///
 									stratum) ///
@@ -3860,9 +3860,9 @@ do "$do/00_dir_setting.do"
 	conindex progressivenss, rank(NationalScore) svy wagstaff bounded limits(0 1)
 	conindex2 progressivenss, 	rank(NationalScore) ///
 							covars(	i.resp_highedu ///
-									i.mom_age_grp ///
-									i.respd_chid_num_grp ///
-									hfc_vill_yes ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
 									i.hfc_distance ///
 									i.org_name_num ///
 									stratum) ///
@@ -3872,9 +3872,9 @@ do "$do/00_dir_setting.do"
 	conindex progressivenss, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 progressivenss, 	rank(resp_highedu_ci) ///
 							covars(	/*i.resp_highedu*/ ///
-									i.mom_age_grp ///
-									i.respd_chid_num_grp ///
-									hfc_vill_yes ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
 									i.hfc_distance ///
 									i.org_name_num ///
 									stratum) ///
@@ -3884,9 +3884,9 @@ do "$do/00_dir_setting.do"
 	conindex wempo_index, rank(NationalScore) svy wagstaff bounded limits(-2.64 .9)
 	conindex2 wempo_index, 	rank(NationalScore) ///
 							covars(	i.resp_highedu ///
-									i.mom_age_grp ///
-									i.respd_chid_num_grp ///
-									hfc_vill_yes ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
 									i.hfc_distance ///
 									i.org_name_num ///
 									stratum) ///
@@ -3896,9 +3896,9 @@ do "$do/00_dir_setting.do"
 	conindex wempo_index, rank(resp_highedu_ci) svy wagstaff bounded limits(-2.64 .9)
 	conindex2 wempo_index, 	rank(resp_highedu_ci) ///
 							covars(	/*i.resp_highedu*/ ///
-									i.mom_age_grp ///
-									i.respd_chid_num_grp ///
-									hfc_vill_yes ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
 									i.hfc_distance ///
 									i.org_name_num ///
 									stratum) ///
