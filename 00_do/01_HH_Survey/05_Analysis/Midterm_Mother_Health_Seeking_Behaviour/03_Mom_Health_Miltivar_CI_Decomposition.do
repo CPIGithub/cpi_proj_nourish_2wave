@@ -218,6 +218,91 @@
 	}
 	
 	
+****************************************************************************
+** Wagstaff normalized (bounded) CI decomposition
+****************************************************************************
+	
+	** Step 0: Define variables
+	global outcome_var anc_yn
+
+	global X_raw NationalScore_m0 logincome ///
+				 wempo_index_m0 ///
+				 hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
+				 stratum_1 ///
+				 resp_highedu_2 resp_highedu_3 resp_highedu_4
+	
+	
+	** STEP 1: Mean of outcome
+	sum $outcome_var [aw = weight_var]
+	scalar mu_y = r(mean)
+	
+	** STEP 2: Standard CI (same as your current)
+	corr rank $outcome_var [aw = weight_var], cov
+	scalar cov_y = r(cov_12)
+
+	scalar CI_std = 2 * cov_y / mu_y
+
+	** STEP 3: Wagstaff normalized CI
+	scalar CI_wag = CI_std / (1 - mu_y)
+	
+	** STEP 4: Regression model (same logic)
+	svy: probit $outcome_var $X_raw
+	margins, dydx(*) post
+
+	matrix dfdx = e(b)
+	
+	
+	** STEP 5: Loop over variables
+	tempname results
+	postfile `results' str30 var ///
+		elasticity CI_k contrib_std contrib_wag pct_wag using results_temp, replace
+
+	scalar total_contrib_std = 0
+
+	foreach x of global X_raw {
+
+		* ---- Mean of X ----
+		sum `x' [aw = weight_var]
+		scalar mu_x = r(mean)
+
+		* ---- Marginal effect ----
+		scalar beta = dfdx[1, "`x'"]
+
+		* ---- Elasticity (UNCHANGED) ----
+		scalar elas = (beta * mu_x) / mu_y
+
+		* ---- CI of X ----
+		corr rank `x' [aw = weight_var], cov
+		scalar cov_x = r(cov_12)
+		scalar CI_x = 2 * cov_x / mu_x
+
+		* ---- Standard contribution ----
+		scalar contrib_std = elas * CI_x
+
+		scalar total_contrib_std = total_contrib_std + contrib_std
+
+		* ---- Wagstaff contribution ----
+		scalar contrib_wag = contrib_std / (1 - mu_y)
+
+		* ---- % contribution ----
+		scalar pct_wag = (contrib_wag / CI_wag) * 100
+
+		post `results' ("`x'") (elas) (CI_x) (contrib_std) (contrib_wag) (pct_wag)
+	}
+
+	postclose `results'
+	use results_temp, clear
+	
+	** STEP 6: Residual (Wagstaff)
+	scalar residual_wag = CI_wag - (total_contrib_std / (1 - mu_y))
+
+	gen residual_pct = 100 - sum(pct_wag)
+	
+	
+	
+
+	
+	
 // END HERE 
 
 
