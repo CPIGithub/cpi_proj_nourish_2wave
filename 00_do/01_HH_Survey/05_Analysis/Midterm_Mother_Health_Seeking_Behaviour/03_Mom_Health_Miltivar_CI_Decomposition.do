@@ -223,7 +223,7 @@
 ****************************************************************************
 	
 	** Step 0: Define variables
-	global outcome_var anc_yn
+	global outcome_var insti_birth // anc_yn
 
 	global X_raw NationalScore_m0 logincome ///
 				 wempo_index_m0 ///
@@ -236,6 +236,9 @@
 	sum $outcome_var [aw = weight_var]
 	scalar mu_y = r(mean)
 	
+	svy: logit $outcome_var $X_raw
+	predict rank, pr
+			
 	** STEP 2: Standard CI (same as your current)
 	corr rank $outcome_var [aw = weight_var], cov
 	scalar cov_y = r(cov_12)
