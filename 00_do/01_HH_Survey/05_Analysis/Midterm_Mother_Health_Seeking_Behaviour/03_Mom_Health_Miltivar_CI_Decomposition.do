@@ -105,6 +105,41 @@
 
 	gen weight_var = weight_final 
 	
+	
+	&
+	
+	*****************************
+	
+	global X_raw NationalScore_m0 logincome ///
+				 wempo_index_m0 ///
+				 hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
+				 stratum_1 ///
+				 resp_highedu_2 resp_highedu_3 resp_highedu_4
+
+	hci_decomp_binary anc_yn, ///
+		unfair($X_raw) ///
+		wvar(weight_var) ///
+		model(probit) ///
+		ocitype(relative)
+		
+	// Wagstaff
+	hci_decomp_binary anc_yn, ///
+		unfair($X_raw) ///
+		wvar(weight_var) ///
+		model(probit) ///
+		ocitype(wagstaff)	
+	
+	// Erreygers
+	hci_decomp_binary anc_yn, ///
+		unfair($X_raw) ///
+		wvar(weight_var) ///
+		model(probit) ///
+		ocitype(erreygers)	
+	
+	
+	
+	******************************
+	
 	foreach var of global outcomes {
 				
 			global outcome_var `var'
