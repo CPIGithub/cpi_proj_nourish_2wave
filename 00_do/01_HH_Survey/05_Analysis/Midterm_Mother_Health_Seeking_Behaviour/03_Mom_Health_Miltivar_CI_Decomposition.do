@@ -102,245 +102,47 @@
 						stratum_1 ///
 						resp_highedu_2 resp_highedu_3 resp_highedu_4
 	
-
+	global X			NationalScore_m0 logincome ///
+						wempo_index_m0 ///
+						hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
+						stratum_1 ///
+						resp_highedu_2 resp_highedu_3 resp_highedu_4
+						
 	gen weight_var = weight_final 
 	
 	
 	&
 	
-	*****************************
-	
-	global X_raw NationalScore_m0 logincome ///
-				 wempo_index_m0 ///
-				 hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
-				 stratum_1 ///
-				 resp_highedu_2 resp_highedu_3 resp_highedu_4
-
-	hci_decomp_binary anc_yn, ///
+	ineqdecomp_unfair , ///
+		outcome(skilled_battend) ///
 		unfair($X_raw) ///
 		wvar(weight_var) ///
-		model(probit) ///
-		ocitype(relative)
-		
-	// Wagstaff
-	hci_decomp_binary anc_yn, ///
+		citype(relative) ///
+		rankmodel(logit) ///
+		clear
+	
+	ineqdecomp_unfair , ///
+		outcome(skilled_battend) ///
 		unfair($X_raw) ///
 		wvar(weight_var) ///
-		model(probit) ///
-		ocitype(wagstaff)	
+		citype(wagstaff) ///
+		rankmodel(logit) ///
+		clear
 	
-	// Erreygers
-	hci_decomp_binary anc_yn, ///
+	ineqdecomp_unfair , ///
+		outcome(skilled_battend) ///
 		unfair($X_raw) ///
 		wvar(weight_var) ///
-		model(probit) ///
-		ocitype(erreygers)	
+		citype(erreygers) ///
+		rankmodel(logit) ///
+		clear
 	
 	
-	
-	******************************
-	
-	foreach var of global outcomes {
-				
-			global outcome_var `var'
-				
-			* Estimate full model and detect omitted variables
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
-
-			local names	= subinstr("`names'", "_cons", "", 1)
-			local names	= subinstr("`names'", "$outcome_var:", " ", .)
-			di "`names'"
-			
-			* redefine the unfair var set without omitted var 
-			global X "`names'"
-	
-			svy: logit $outcome_var $X
-			predict mvr_$outcome_var, pr
-			
-	}
-	
-	
-	foreach var of varlist 	mvr_anc_yn mvr_anc_who_trained mvr_anc_visit_trained_4times ///
-							mvr_insti_birth mvr_skilled_battend mvr_pnc_yn ///
-							mvr_pnc_who_trained mvr_nbc_yn mvr_nbc_who_trained {
-		
-		xtile `var'_q = `var' [pweight = weight_final], nq(5)
-	}
-			
-	svy: tab mvr_anc_yn_q anc_yn, row 
-	svy: tab mvr_anc_who_trained_q anc_who_trained, row 
-	svy: tab mvr_anc_visit_trained_4times_q anc_visit_trained_4times, row 
-
-	svy: tab mvr_skilled_battend_q skilled_battend, row 
-	svy: tab mvr_insti_birth_q insti_birth, row 
-	
-	svy: tab mvr_pnc_yn_q pnc_yn, row 
-	svy: tab mvr_pnc_who_trained_q pnc_who_trained, row 
-	
-	svy: tab mvr_nbc_yn_q nbc_yn, row 
-	svy: tab mvr_nbc_who_trained_q nbc_who_trained, row 
-
-	* Adj CI - Multivariate index <<< Adam suggest to remove the mom age and child number 
-	conindex anc_yn, rank(mvr_anc_yn) svy wagstaff bounded limits(0 1)
-	conindex2 anc_yn, 	rank(mvr_anc_yn) ///
-						covars(	i.resp_highedu ///
-								/*i.mom_age_grp*/ ///
-								/*i.respd_chid_num_grp*/ ///
-								/*hfc_vill_yes*/ ///
-								i.hfc_distance ///
-								i.org_name_num ///
-								stratum ///
-								i.wempo_category) ///
-						svy wagstaff bounded limits(0 1)
-						
-	
-	foreach var in $outcomes {
-		
-		di "`var'"
-		
-		conindex `var', rank(mvr_`var') svy wagstaff bounded limits(0 1)
-		conindex2 `var', 	rank(mvr_`var') ///
-							covars(	i.resp_highedu ///
-									/*i.mom_age_grp*/ ///
-									/*i.respd_chid_num_grp*/ ///
-									/*hfc_vill_yes*/ ///
-									i.hfc_distance ///
-									i.org_name_num ///
-									stratum ///
-									i.wempo_category) ///
-							svy wagstaff bounded limits(0 1)	
-		
-	}
-	
-	** export decomposition tables ** 
-	foreach var of global outcomes {
-		
-		preserve 
-		
-			global outcome_var `var'
-				
-			//gen weight_var = weight_final
-			
-			* Estimate full model and detect omitted variables
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
-
-			local names	= subinstr("`names'", "_cons", "", 1)
-			local names	= subinstr("`names'", "$outcome_var:", " ", .)
-			di "`names'"
-			
-			* redefine the unfair var set without omitted var 
-			global X "`names'"
-	
-			svy: logit $outcome_var $X
-			predict rank, pr
-		
-			do "$hhfun/CI_decomposition_simple_CI_formula.do"
-				
-			export excel 	using "$result/01_sumstat_formatted_Maternal_Health_Service_U2Mom.xlsx", /// // 01_sumstat_formatted_U2Mom_Sample
-							sheet("FD_`var'") firstrow(varlabels) keepcellfmt sheetmodify 
-							
-
-		restore 
-		
-	}
-	
-	
-****************************************************************************
-** Wagstaff normalized (bounded) CI decomposition
-****************************************************************************
-	
-	** Step 0: Define variables
-	global outcome_var insti_birth // anc_yn
-
-	global X_raw NationalScore_m0 logincome ///
-				 wempo_index_m0 ///
-				 hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
-				 stratum_1 ///
-				 resp_highedu_2 resp_highedu_3 resp_highedu_4
-	
-	
-	** STEP 1: Mean of outcome
-	sum $outcome_var [aw = weight_var]
-	scalar mu_y = r(mean)
-	
-	svy: logit $outcome_var $X_raw
-	predict rank, pr
-			
-	** STEP 2: Standard CI (same as your current)
-	corr rank $outcome_var [aw = weight_var], cov
-	scalar cov_y = r(cov_12)
-
-	scalar CI_std = 2 * cov_y / mu_y
-
-	** STEP 3: Wagstaff normalized CI
-	scalar CI_wag = CI_std / (1 - mu_y)
-	
-	** STEP 4: Regression model (same logic)
-	svy: probit $outcome_var $X_raw
-	margins, dydx(*) post
-
-	matrix dfdx = e(b)
-	
-	
-	** STEP 5: Loop over variables
-	tempname results
-	postfile `results' str30 var ///
-		elasticity CI_k contrib_std contrib_wag pct_wag using results_temp, replace
-
-	scalar total_contrib_std = 0
-
-	foreach x of global X_raw {
-
-		* ---- Mean of X ----
-		sum `x' [aw = weight_var]
-		scalar mu_x = r(mean)
-
-		* ---- Marginal effect ----
-		scalar beta = dfdx[1, "`x'"]
-
-		* ---- Elasticity (UNCHANGED) ----
-		scalar elas = (beta * mu_x) / mu_y
-
-		* ---- CI of X ----
-		corr rank `x' [aw = weight_var], cov
-		scalar cov_x = r(cov_12)
-		scalar CI_x = 2 * cov_x / mu_x
-
-		* ---- Standard contribution ----
-		scalar contrib_std = elas * CI_x
-
-		scalar total_contrib_std = total_contrib_std + contrib_std
-
-		* ---- Wagstaff contribution ----
-		scalar contrib_wag = contrib_std / (1 - mu_y)
-
-		* ---- % contribution ----
-		scalar pct_wag = (contrib_wag / CI_wag) * 100
-
-		post `results' ("`x'") (elas) (CI_x) (contrib_std) (contrib_wag) (pct_wag)
-	}
-
-	postclose `results'
-	use results_temp, clear
-	
-	** STEP 6: Residual (Wagstaff)
-	scalar residual_wag = CI_wag - (total_contrib_std / (1 - mu_y))
-
-	gen residual_pct = 100 - sum(pct_wag)
-	
-	
+	return list
+	di "`r(unfair_kept)'"
+	di "`r(unfair_dropped)'"
 	
 
-	
-	
 // END HERE 
 
 
