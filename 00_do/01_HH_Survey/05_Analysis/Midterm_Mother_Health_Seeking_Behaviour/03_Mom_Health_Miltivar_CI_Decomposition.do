@@ -14,8 +14,11 @@
 	********************************************************************************
 	** Directory Settings **
 	********************************************************************************
-
+	// Directory 
 	do "$do/00_dir_setting.do"
+	
+	// Function 
+	do "$hhfun/ineqdecomp_unfair.do"
 
 	****************************************************************************
 	** Mom Health Services **
@@ -102,47 +105,70 @@
 						stratum_1 ///
 						resp_highedu_2 resp_highedu_3 resp_highedu_4
 	
-	global X			NationalScore_m0 logincome ///
-						wempo_index_m0 ///
-						hfc_distance_1 hfc_distance_2 hfc_distance_3 ///
-						stratum_1 ///
-						resp_highedu_2 resp_highedu_3 resp_highedu_4
+
 						
-	gen weight_var = weight_final 
+	
+	foreach var of varlist $outcomes {
+
+		// Relative 
+		preserve 
+		
+			ineqdecomp_unfair , ///
+				outcome(`var') ///
+				unfair($X_raw) ///
+				wvar(weight_final) ///
+				citype(relative) ///
+				rankmodel(logit) ///
+				clear	
+				
+			export excel using "$result/01_sumstat_formatted_Maternal_Health_Service_U2Mom.xlsx", /// // 01_sumstat_formatted_U2Mom_Sample
+								sheet("FD_`var'_r") firstrow(varlabels) keepcellfmt sheetmodify 
+		
+		restore 
+		
+		// Wagstaff
+		preserve 
+		
+			ineqdecomp_unfair , ///
+				outcome(`var') ///
+				unfair($X_raw) ///
+				wvar(weight_final) ///
+				citype(wagstaff) ///
+				rankmodel(logit) ///
+				clear
+				
+			export excel using "$result/01_sumstat_formatted_Maternal_Health_Service_U2Mom.xlsx", /// // 01_sumstat_formatted_U2Mom_Sample
+								sheet("FD_`var'_w") firstrow(varlabels) keepcellfmt sheetmodify 
+		
+		restore 
+		
+		// Erreygers
+		preserve 
+
+			ineqdecomp_unfair , ///
+				outcome(`var') ///
+				unfair($X_raw) ///
+				wvar(weight_final) ///
+				citype(erreygers) ///
+				rankmodel(logit) ///
+				clear	
+				
+			export excel using "$result/01_sumstat_formatted_Maternal_Health_Service_U2Mom.xlsx", /// // 01_sumstat_formatted_U2Mom_Sample
+								sheet("FD_`var'_e") firstrow(varlabels) keepcellfmt sheetmodify 
+		
+		restore 
+		
+	}
 	
 	
-	&
-	
-	ineqdecomp_unfair , ///
-		outcome(skilled_battend) ///
-		unfair($X_raw) ///
-		wvar(weight_var) ///
-		citype(relative) ///
-		rankmodel(logit) ///
-		clear
-	
-	ineqdecomp_unfair , ///
-		outcome(skilled_battend) ///
-		unfair($X_raw) ///
-		wvar(weight_var) ///
-		citype(wagstaff) ///
-		rankmodel(logit) ///
-		clear
-	
-	ineqdecomp_unfair , ///
-		outcome(skilled_battend) ///
-		unfair($X_raw) ///
-		wvar(weight_var) ///
-		citype(erreygers) ///
-		rankmodel(logit) ///
-		clear
-	
-	
-	return list
-	di "`r(unfair_kept)'"
-	di "`r(unfair_dropped)'"
+
+
 	
 
 // END HERE 
 
-
+	/*
+	return list
+	di "`r(unfair_kept)'"
+	di "`r(unfair_dropped)'"
+	*/
