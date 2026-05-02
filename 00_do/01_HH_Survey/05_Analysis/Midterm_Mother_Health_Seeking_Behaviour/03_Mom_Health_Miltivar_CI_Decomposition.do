@@ -105,7 +105,7 @@
 						stratum_1 ///
 						resp_highedu_2 resp_highedu_3 resp_highedu_4
 	
-
+&
 						
 	
 	foreach var of varlist $outcomes {
@@ -162,8 +162,132 @@
 	
 	
 
-
+	* CI multivar index ranking 
+	********************************************************************************
+	* Create conindex-style weighted fractional ranks for multiple outcomes
+	* Permanent intermediate variables are created for checking/debugging.
+	********************************************************************************
+	gen weight_var = weight_final  
+	rename anc_visit_trained_4times anc_visit_t4times 
 	
+	global outcomes anc_yn anc_who_trained anc_visit_t4times ///
+					insti_birth skilled_battend ///
+					pnc_yn pnc_who_trained nbc_yn nbc_who_trained 
+
+	foreach y of global outcomes {
+
+		preserve 
+		
+			di as text "--------------------------------------------------"
+			di as text "Creating weighted fractional rank for outcome: `y'"
+			di as text "--------------------------------------------------"
+
+			* Clean old variables if re-running
+			capture drop analytic_`y'
+			capture drop obsid_`y'
+			capture drop rankscore_`y'
+			capture drop wtmp_`y'
+			capture drop cumw_`y'
+			capture drop rank_`y'
+			capture drop rcenter_`y'
+			capture drop wnorm_`y'
+
+			* Common analytic sample
+			gen byte analytic_`y' = !missing(`y', weight_var)
+
+			foreach x of global X_raw {
+				replace analytic_`y' = 0 if missing(`x')
+			}
+
+			keep if analytic_`y' == 1
+			
+			count if analytic_`y' == 1
+			local N_analytic = r(N)
+
+			if `N_analytic' == 0 {
+				di as error "No analytic observations for `y'. Skipping."
+				continue
+			}
+
+			* Preserve original order
+			gen long obsid_`y' = _n
+
+			* Estimate unfairness-score model
+			quietly svy, subpop(analytic_`y'): logit `y' $X_raw
+
+			* Predicted probability = unfairness score
+			predict double rankscore_`y' if e(sample), pr
+
+			* Total analytic sample weight
+			quietly summarize weight_var if analytic_`y' == 1, meanonly
+			scalar total_w_`y' = r(sum)
+
+			if total_w_`y' <= 0 | missing(total_w_`y') {
+				di as error "Total weight is zero/missing for `y'. Skipping."
+				sort obsid_`y'
+				continue
+			}
+
+			* Analytic weight
+			gen double wtmp_`y' = cond(analytic_`y' == 1, weight_var, 0)
+
+			* Sort by predicted probability to create weighted fractional rank
+			sort rankscore_`y' obsid_`y'
+
+			* Cumulative weight ordered by predicted risk
+			gen double cumw_`y' = sum(wtmp_`y')
+
+			* Final weighted fractional rank for conindex
+			gen double rank_`y' = (cumw_`y' - 0.5 * weight_var) / total_w_`y' ///
+				if analytic_`y' == 1
+
+			* Optional supporting variables
+			gen double rcenter_`y' = rank_`y' - 0.5 if analytic_`y' == 1
+			gen double wnorm_`y' = weight_var / total_w_`y' if analytic_`y' == 1
+
+			* Return to original order
+			sort obsid_`y'
+
+			* Quick check
+			summarize rankscore_`y' rank_`y' rcenter_`y' if analytic_`y' == 1
+
+			di as result "Created final conindex rank: rank_`y'"
+			di as result "Analytic N for `y' = `N_analytic'"
+			
+			********************************************************************************
+			* Optional: drop intermediate variables after checking
+			* Keep only final rank_* variables if desired.
+			********************************************************************************
+
+			drop analytic_* obsid_* rankscore_* wtmp_* cumw_* rcenter_* wnorm_*
+		
+			di as text "--------------------------------------------------"
+			di as text "CI for outcome: `y'"
+			di as text "--------------------------------------------------"
+			
+			conindex `y', rank(rank_`y') svy truezero
+			
+			conindexadj `y', 	rank(rank_`y') ///
+								covars(	/*i.resp_highedu*/ ///
+										/*i.mom_age_grp*/ ///
+										/*i.respd_chid_num_grp*/ ///
+										/*hfc_vill_yes*/ ///
+										/*i.hfc_distance*/ ///
+										i.org_name_num ///
+										/*stratum*/) ///
+								svy truezero	
+							
+			xtile `y'_mvq = rank_`y' [pweight = weight_final], nq(5)
+			svy: tab `y'_mvq `y', row
+
+			//conindex `y', rank(rank_`y') svy bounded limits(0 1) wagstaff
+	
+		restore 
+	}
+
+
+
+
 
 // END HERE 
 

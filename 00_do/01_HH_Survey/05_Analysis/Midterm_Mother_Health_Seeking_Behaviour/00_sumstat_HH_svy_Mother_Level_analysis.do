@@ -1854,6 +1854,17 @@ do "$do/00_dir_setting.do"
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
+	conindex anc_yn, rank(NationalScore) svy truezero
+	conindex2 anc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
+						
 	// Education as rank
 	conindex anc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 anc_yn, 	rank(resp_highedu_ci) ///
@@ -1867,6 +1878,17 @@ do "$do/00_dir_setting.do"
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
+	conindex anc_yn, rank(resp_highedu_ci) svy truezero
+	conindex2 anc_yn, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
 						
 	// Women empowerment as rank 
 	conindex anc_yn, rank(wempo_index) svy wagstaff bounded limits(0 1)
@@ -1881,6 +1903,17 @@ do "$do/00_dir_setting.do"
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
 
+	conindex anc_yn, rank(wempo_index) svy truezero
+	conindex2 anc_yn, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy truezero
 						
 	** anc_who_trained 
 	local outcomes	anc_who_trained 
@@ -1914,6 +1947,17 @@ do "$do/00_dir_setting.do"
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
+
+	conindex anc_who_trained, rank(NationalScore) svy truezero
+	conindex2 anc_who_trained, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic 
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum) ///
+						svy truezero
 						
 	// Education as rank
 	conindex anc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
@@ -1928,6 +1972,17 @@ do "$do/00_dir_setting.do"
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
+	conindex anc_who_trained, rank(resp_highedu_ci) svy truezero
+	conindex2 anc_who_trained, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
 						
 	// Women empowerment as rank 
 	conindex anc_who_trained, rank(wempo_index) svy wagstaff bounded limits(0 1)
@@ -1942,6 +1997,18 @@ do "$do/00_dir_setting.do"
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
 	
+	conindex anc_who_trained, rank(wempo_index) svy truezero
+	conindex2 anc_who_trained, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy truezero
+						
 	** anc_visit_trained_4times 
 	local outcomes	anc_visit_trained_4times 
 	
@@ -1974,7 +2041,18 @@ do "$do/00_dir_setting.do"
 											i.org_name_num ///
 											stratum) ///
 									svy wagstaff bounded limits(0 1)
-						
+									
+	conindex anc_visit_trained_4times, rank(NationalScore) svy truezero
+	conindex2 anc_visit_trained_4times, 	rank(NationalScore) ///
+									covars(	i.resp_highedu /// // svy: logistic 
+											/*i.mom_age_grp*/ ///
+											/*i.respd_chid_num_grp*/ ///
+											i.hfc_distance ///
+											i.wempo_category ///
+											i.org_name_num ///
+											stratum) ///
+									svy truezero
+									
 	// Education as rank
 	conindex anc_visit_trained_4times, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 anc_visit_trained_4times, 	rank(resp_highedu_ci) ///
@@ -1988,6 +2066,17 @@ do "$do/00_dir_setting.do"
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
+	conindex anc_visit_trained_4times, rank(resp_highedu_ci) svy truezero
+	conindex2 anc_visit_trained_4times, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
 						
 	// Women empowerment as rank 
 	conindex anc_visit_trained_4times, rank(wempo_index) svy wagstaff bounded limits(0 1)
@@ -2001,6 +2090,18 @@ do "$do/00_dir_setting.do"
 								stratum ///
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
+		
+	conindex anc_visit_trained_4times, rank(wempo_index) svy truezero
+	conindex2 anc_visit_trained_4times, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy truezero
 						
 	****************************************************************************
 	** Mom Deliverty **
@@ -2308,6 +2409,18 @@ do "$do/00_dir_setting.do"
 							i.org_name_num ///
 							stratum) ///
 						svy wagstaff bounded limits(0 1)
+
+	conindex insti_birth, rank(NationalScore) svy truezero
+	conindex2 insti_birth, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+							/*i.mom_age_grp*/ ///
+							/*i.respd_chid_num_grp*/ ///
+							/*i.delivery_month_season*/ ///
+							i.hfc_distance ///
+							i.wempo_category ///
+							i.org_name_num ///
+							stratum) ///
+						svy truezero
 						
 	// Education as rank
 	conindex insti_birth, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
@@ -2322,6 +2435,17 @@ do "$do/00_dir_setting.do"
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
+	conindex insti_birth, rank(resp_highedu_ci) svy truezero
+	conindex2 insti_birth, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
 						
 	// Women empowerment as rank 
 	conindex insti_birth, rank(wempo_index) svy wagstaff bounded limits(0 1)
@@ -2335,6 +2459,18 @@ do "$do/00_dir_setting.do"
 								stratum ///
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
+
+	conindex insti_birth, rank(wempo_index) svy truezero
+	conindex2 insti_birth, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy truezero
 						
 	** skilled_battend
 	local outcomes	skilled_battend  
@@ -2370,6 +2506,18 @@ do "$do/00_dir_setting.do"
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
 
+	conindex skilled_battend, rank(NationalScore) svy truezero
+	conindex2 skilled_battend, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum) ///
+						svy truezero
+						
 	// Education as rank
 	conindex skilled_battend, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 skilled_battend, 	rank(resp_highedu_ci) ///
@@ -2383,6 +2531,17 @@ do "$do/00_dir_setting.do"
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
+	conindex skilled_battend, rank(resp_highedu_ci) svy truezero
+	conindex2 skilled_battend, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
 						
 	// Women empowerment as rank 
 	conindex skilled_battend, rank(wempo_index) svy wagstaff bounded limits(0 1)
@@ -2396,7 +2555,19 @@ do "$do/00_dir_setting.do"
 								stratum ///
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
-							
+	
+	conindex skilled_battend, rank(wempo_index) svy truezero
+	conindex2 skilled_battend, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy truezero
+						
 	****************************************************************************
 	** Mom PNC **
 	****************************************************************************
@@ -2710,6 +2881,18 @@ do "$do/00_dir_setting.do"
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
+	
+	conindex pnc_yn, rank(NationalScore) svy truezero
+	conindex2 pnc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum) ///
+						svy truezero
 						
 	// Education as rank
 	conindex pnc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
@@ -2724,6 +2907,17 @@ do "$do/00_dir_setting.do"
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
+	conindex pnc_yn, rank(resp_highedu_ci) svy truezero
+	conindex2 pnc_yn, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
 						
 	// Women empowerment as rank 
 	conindex pnc_yn, rank(wempo_index) svy wagstaff bounded limits(0 1)
@@ -2738,7 +2932,18 @@ do "$do/00_dir_setting.do"
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
 							
-							
+	conindex pnc_yn, rank(wempo_index) svy truezero
+	conindex2 pnc_yn, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy truezero
+						
 	** pnc_who_trained
 	local outcomes	pnc_who_trained
 	
@@ -2772,6 +2977,18 @@ do "$do/00_dir_setting.do"
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
+
+	conindex pnc_who_trained, rank(NationalScore) svy truezero
+	conindex2 pnc_who_trained, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum) ///
+						svy truezero
 						
 	// Education as rank
 	conindex pnc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
@@ -2785,7 +3002,18 @@ do "$do/00_dir_setting.do"
 								stratum ///
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
-						
+
+	conindex pnc_who_trained, rank(resp_highedu_ci) svy truezero
+	conindex2 pnc_who_trained, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
 						
 	// Women empowerment as rank 
 	conindex pnc_who_trained, rank(wempo_index) svy wagstaff bounded limits(0 1)
@@ -2799,7 +3027,18 @@ do "$do/00_dir_setting.do"
 								stratum ///
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
-							
+	
+	conindex pnc_who_trained, rank(wempo_index) svy truezero
+	conindex2 pnc_who_trained, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy truezero
 							
 	****************************************************************************
 	** Mom NBC **
@@ -3197,6 +3436,18 @@ do "$do/00_dir_setting.do"
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
+		
+	conindex nbc_yn, rank(NationalScore) svy truezero
+	conindex2 nbc_yn, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum) ///
+						svy truezero
 						
 	// Education as rank
 	conindex nbc_yn, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
@@ -3211,6 +3462,17 @@ do "$do/00_dir_setting.do"
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
 						
+	conindex nbc_yn, rank(resp_highedu_ci) svy truezero
+	conindex2 nbc_yn, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
 						
 	// Women empowerment as rank 
 	conindex nbc_yn, rank(wempo_index) svy wagstaff bounded limits(0 1)
@@ -3225,6 +3487,18 @@ do "$do/00_dir_setting.do"
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
 	
+	conindex nbc_yn, rank(wempo_index) svy truezero
+	conindex2 nbc_yn, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy truezero
+						
 	** nbc_who_trained  
 	local outcomes	nbc_who_trained 
 	
@@ -3258,6 +3532,18 @@ do "$do/00_dir_setting.do"
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(0 1)
+	
+	conindex nbc_who_trained, rank(NationalScore) svy truezero
+	conindex2 nbc_who_trained, 	rank(NationalScore) ///
+						covars(	i.resp_highedu /// // svy: logistic
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*i.delivery_month_season*/ ///
+								i.hfc_distance ///
+								i.wempo_category ///
+								i.org_name_num ///
+								stratum) ///
+						svy truezero
 						
 	// Education as rank
 	conindex nbc_who_trained, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
@@ -3271,6 +3557,18 @@ do "$do/00_dir_setting.do"
 								stratum ///
 								i.wempo_category) ///
 						svy wagstaff bounded limits(0 1)
+	
+	conindex nbc_who_trained, rank(resp_highedu_ci) svy truezero
+	conindex2 nbc_who_trained, 	rank(resp_highedu_ci) ///
+						covars(	i.wealth_quintile_ns ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wempo_category) ///
+						svy truezero
 						
 						
 	// Women empowerment as rank 
@@ -3285,6 +3583,18 @@ do "$do/00_dir_setting.do"
 								stratum ///
 								i.wealth_quintile_ns) ///
 						svy wagstaff bounded limits(0 1)
+		
+	conindex nbc_who_trained, rank(wempo_index) svy truezero
+	conindex2 nbc_who_trained, 	rank(wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum ///
+								i.wealth_quintile_ns) ///
+						svy truezero
 						
 	****************************************************************************
 	** ALL MOM HEALTH **
@@ -3776,7 +4086,7 @@ do "$do/00_dir_setting.do"
 	// for continious var 
 	svy: reg wempo_index $X_raw
 	predict mvr_wempo_index_raw, xb
-	glcurve mvr_wempo_index_raw , pvar(mvr_wempo_index) nograph  // rank identification 
+	glcurve mvr_wempo_index_raw [aweight = weight_final], pvar(mvr_wempo_index) nograph  // rank identification 
 	
 	drop mvr_wempo_index_raw
 	
@@ -3837,6 +4147,17 @@ do "$do/00_dir_setting.do"
 								i.org_name_num ///
 								stratum) ///
 						svy wagstaff bounded limits(-2.64 .9)
+				
+	conindex wempo_index, rank(mvr_wempo_index) svy truezero
+	conindex2 wempo_index, 	rank(mvr_wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum) ///
+						svy truezero
 						
 	
 	foreach var in progressivenss {
@@ -3854,6 +4175,17 @@ do "$do/00_dir_setting.do"
 									stratum) ///
 							svy wagstaff bounded limits(0 1)	
 		
+		conindex `var', rank(mvr_`var') svy truezero
+		conindex2 `var', 	rank(mvr_`var') ///
+							covars(	i.resp_highedu ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+							svy truezero	
+							
 	}
 	
 	// Equity Tool rank 
@@ -3867,7 +4199,19 @@ do "$do/00_dir_setting.do"
 									i.org_name_num ///
 									stratum) ///
 						svy wagstaff bounded limits(0 1)
-						
+					
+	
+	conindex progressivenss, rank(NationalScore) svy truezero
+	conindex2 progressivenss, 	rank(NationalScore) ///
+							covars(	i.resp_highedu ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy truezero
+	
 	// Education as rank
 	conindex progressivenss, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 progressivenss, 	rank(resp_highedu_ci) ///
@@ -3879,6 +4223,17 @@ do "$do/00_dir_setting.do"
 									i.org_name_num ///
 									stratum) ///
 						svy wagstaff bounded limits(0 1)
+
+	conindex progressivenss, rank(resp_highedu_ci) svy truezero
+	conindex2 progressivenss, 	rank(resp_highedu_ci) ///
+							covars(	/*i.resp_highedu*/ ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy truezero
 						
 	// Equity Tool rank 
 	conindex wempo_index, rank(NationalScore) svy wagstaff bounded limits(-2.64 .9)
@@ -3891,6 +4246,17 @@ do "$do/00_dir_setting.do"
 									i.org_name_num ///
 									stratum) ///
 						svy wagstaff bounded limits(-2.64 .9)
+
+	conindex wempo_index, rank(NationalScore) svy truezero
+	conindex2 wempo_index, 	rank(NationalScore) ///
+							covars(	i.resp_highedu ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy truezero
 						
 	// Education as rank
 	conindex wempo_index, rank(resp_highedu_ci) svy wagstaff bounded limits(-2.64 .9)
@@ -3904,7 +4270,150 @@ do "$do/00_dir_setting.do"
 									stratum) ///
 						svy wagstaff bounded limits(-2.64 .9)
 						
-						
+	conindex wempo_index, rank(resp_highedu_ci) svy truezero
+	conindex2 wempo_index, 	rank(resp_highedu_ci) ///
+							covars(	/*i.resp_highedu*/ ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy truezero						
+	
+	
+	* CI multivar index ranking 
+	********************************************************************************
+	* Create conindex-style weighted fractional ranks for multiple outcomes
+	* Permanent intermediate variables are created for checking/debugging.
+	********************************************************************************
+	
+	rename wempo_childcare_w			w_childcare_w
+	rename wempo_child_health_w 		w_child_health_w
+	rename wempo_child_wellbeing_w		w_child_wellbeing_w 
+	rename wempo_major_purchase_w 		w_major_purchase_w
+	rename wempo_women_wages_w			w_women_wages_w 
+	rename wempo_visiting_w				w_visiting_w 
+	rename wempo_women_health_w			w_women_health_w 
+	rename wempo_mom_health_w			w_mom_health_w
+					
+					
+	global outcomes progressivenss ///
+					w_childcare_w w_child_health_w w_child_wellbeing_w ///
+					w_major_purchase_w w_women_wages_w w_visiting_w ///
+					w_women_health_w w_mom_health_w
+
+	foreach y of global outcomes {
+
+		preserve 
+		
+			di as text "--------------------------------------------------"
+			di as text "Creating weighted fractional rank for outcome: `y'"
+			di as text "--------------------------------------------------"
+
+			* Clean old variables if re-running
+			capture drop analytic_`y'
+			capture drop obsid_`y'
+			capture drop rankscore_`y'
+			capture drop wtmp_`y'
+			capture drop cumw_`y'
+			capture drop rank_`y'
+			capture drop rcenter_`y'
+			capture drop wnorm_`y'
+
+			* Common analytic sample
+			gen byte analytic_`y' = !missing(`y', weight_var)
+
+			foreach x of global X_raw {
+				replace analytic_`y' = 0 if missing(`x')
+			}
+
+			keep if analytic_`y' == 1
+			
+			count if analytic_`y' == 1
+			local N_analytic = r(N)
+
+			if `N_analytic' == 0 {
+				di as error "No analytic observations for `y'. Skipping."
+				continue
+			}
+
+			* Preserve original order
+			gen long obsid_`y' = _n
+
+			* Estimate unfairness-score model
+			quietly svy, subpop(analytic_`y'): logit `y' $X_raw
+
+			* Predicted probability = unfairness score
+			predict double rankscore_`y' if e(sample), pr
+
+			* Total analytic sample weight
+			quietly summarize weight_var if analytic_`y' == 1, meanonly
+			scalar total_w_`y' = r(sum)
+
+			if total_w_`y' <= 0 | missing(total_w_`y') {
+				di as error "Total weight is zero/missing for `y'. Skipping."
+				sort obsid_`y'
+				continue
+			}
+
+			* Analytic weight
+			gen double wtmp_`y' = cond(analytic_`y' == 1, weight_var, 0)
+
+			* Sort by predicted probability to create weighted fractional rank
+			sort rankscore_`y' obsid_`y'
+
+			* Cumulative weight ordered by predicted risk
+			gen double cumw_`y' = sum(wtmp_`y')
+
+			* Final weighted fractional rank for conindex
+			gen double rank_`y' = (cumw_`y' - 0.5 * weight_var) / total_w_`y' ///
+				if analytic_`y' == 1
+
+			* Optional supporting variables
+			gen double rcenter_`y' = rank_`y' - 0.5 if analytic_`y' == 1
+			gen double wnorm_`y' = weight_var / total_w_`y' if analytic_`y' == 1
+
+			* Return to original order
+			sort obsid_`y'
+
+			* Quick check
+			summarize rankscore_`y' rank_`y' rcenter_`y' if analytic_`y' == 1
+
+			di as result "Created final conindex rank: rank_`y'"
+			di as result "Analytic N for `y' = `N_analytic'"
+			
+			********************************************************************************
+			* Optional: drop intermediate variables after checking
+			* Keep only final rank_* variables if desired.
+			********************************************************************************
+
+			drop analytic_* obsid_* rankscore_* wtmp_* cumw_* rcenter_* wnorm_*
+		
+			di as text "--------------------------------------------------"
+			di as text "CI for outcome: `y'"
+			di as text "--------------------------------------------------"
+			
+			conindex `y', rank(rank_`y') svy truezero
+			
+			conindexadj `y', 	rank(rank_`y') ///
+								covars(	/*i.resp_highedu*/ ///
+										/*i.mom_age_grp*/ ///
+										/*i.respd_chid_num_grp*/ ///
+										/*hfc_vill_yes*/ ///
+										/*i.hfc_distance*/ ///
+										i.org_name_num ///
+										/*stratum*/) ///
+								svy truezero	
+							
+			xtile `y'_mvq = rank_`y' [pweight = weight_final], nq(5)
+			svy: tab `y'_mvq `y', row
+			
+			//conindex `y', rank(rank_`y') svy bounded limits(0 1) wagstaff
+	
+		restore 
+	}
+	
 	
 // END HERE 
 
