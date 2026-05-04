@@ -4251,7 +4251,6 @@ do "$do/00_dir_setting.do"
 						svy wagstaff bounded limits(-2.64 .9)
 				
 	conindex wempo_index, rank(rank_wempo_index) svy truezero
-	conindex wempo_index_m0, rank(rank_wempo_index) svy truezero
 	conindex2 wempo_index, 	rank(rank_wempo_index) ///
 						covars(	i.resp_highedu ///
 								/*i.mom_age_grp*/ ///
@@ -4262,6 +4261,11 @@ do "$do/00_dir_setting.do"
 								stratum) ///
 						svy truezero
 						
+	conindex wempo_index_m0, rank(rank_wempo_index) svy truezero
+	svy: mean wempo_index
+	svy: mean wempo_index, over(wempo_index_mvq)
+	
+	
 	
 	foreach var in progressivenss {
 		
@@ -4290,6 +4294,13 @@ do "$do/00_dir_setting.do"
 							svy truezero	
 							
 	}
+	
+	
+	conindex progressivenss, rank(rank_progressivenss) svy truezero
+	svy: tab progressivenss
+	svy: tab progressivenss_mvq progressivenss, row 
+
+	
 	
 	// Equity Tool rank 
 	conindex progressivenss, rank(NationalScore) svy wagstaff bounded limits(0 1)
@@ -4360,6 +4371,17 @@ do "$do/00_dir_setting.do"
 									i.org_name_num ///
 									stratum) ///
 						svy truezero
+		
+	conindex wempo_index_m0, rank(NationalScore) svy truezero
+	conindex2 wempo_index_m0, 	rank(NationalScore) ///
+							covars(	i.resp_highedu ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy truezero
 						
 	// Education as rank
 	conindex wempo_index, rank(resp_highedu_ci) svy wagstaff bounded limits(-2.64 .9)
@@ -4384,7 +4406,17 @@ do "$do/00_dir_setting.do"
 									stratum) ///
 						svy truezero						
 	
-	
+	conindex wempo_index_m0, rank(resp_highedu_ci) svy truezero
+	conindex2 wempo_index_m0, 	rank(resp_highedu_ci) ///
+							covars(	/*i.resp_highedu*/ ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy truezero	
+						
 	* CI multivar index ranking 
 	// wempo_index
 	conindex wempo_index, rank(rank_wempo_index) svy truezero
@@ -4414,7 +4446,8 @@ do "$do/00_dir_setting.do"
 									i.org_name_num ///
 									/*stratum*/) ///
 							svy truezero	
-						
+		
+		svy: tab `y'
 		svy: tab `y'_mvq `y', row
 			
 	}
