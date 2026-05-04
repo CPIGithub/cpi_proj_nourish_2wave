@@ -3736,9 +3736,7 @@ do "$do/00_dir_setting.do"
 	svy: tab edu_exposure phq9_cat, row 
 	
 	svy: tab wealth_quintile_ns phq9_cat, row 
-	
-	
-	
+
 
 	****************************************************************************
 	** Women Empowerment **
@@ -4007,15 +4005,7 @@ do "$do/00_dir_setting.do"
 	
 	****************************************************************************
 	** Decomposition of the concentration index ** - Chapter 13	
-	****************************************************************************	
-	global outcomes progressivenss high_empower ///
-					wempo_childcare_w wempo_child_health_w wempo_child_wellbeing_w ///
-					wempo_major_purchase_w wempo_women_wages_w wempo_visiting_w ///
-					wempo_women_health_w wempo_mom_health_w
-	
-	// wempo_index
-	
-	sum $outcomes 				 
+	****************************************************************************				 
 					
 	global all_unfiar "NationalScore income_lastmonth wempo_index hfc_near_dist stratum i.resp_highedu_ci"
 	
@@ -4030,7 +4020,7 @@ do "$do/00_dir_setting.do"
 				}
 	
 	** moving min to ZERO 
-	foreach var of varlist NationalScore /*wempo_index*/ {
+	foreach var of varlist NationalScore wempo_index {
 		
 		local var_label : var label `var'
 		
@@ -4046,9 +4036,10 @@ do "$do/00_dir_setting.do"
 	gen logincome = ln(income_lastmonth)
 	lab var logincome "ln(): `var_label'"
 	
+	****************************************************************************
+	****************************************************************************
 	* Final set of unfiar var 
 	* combination of moving min to ZERO (for z score type var) and 
-	* binary dummy var for categegory var 
 	
 	global X_raw		NationalScore_m0 logincome ///
 						/*wempo_index_m0*/ ///
@@ -4059,86 +4050,197 @@ do "$do/00_dir_setting.do"
 
 	gen weight_var = weight_final 
 	
-	foreach var of global outcomes {
-				
-			global outcome_var `var'
-				
-			* Estimate full model and detect omitted variables
-			svy: logit $outcome_var $X_raw
-			matrix b = e(b)
-			local names : colfullnames e(b)
-			
-			di "`names'"
+	****************************************************************************
+	****************************************************************************
 
-			local names	= subinstr("`names'", "_cons", "", 1)
-			local names	= subinstr("`names'", "$outcome_var:", " ", .)
-			di "`names'"
-			
-			* redefine the unfair var set without omitted var 
-			global X "`names'"
-	
-			svy: logit $outcome_var $X
-			predict mvr_$outcome_var, pr
-			
-	}
-	
-	
+	********************************************************************************
+	* Multivariate unfairness rank for continuous outcome: wempo_index
+	********************************************************************************
 	// for continious var 
 	svy: reg wempo_index $X_raw
 	predict mvr_wempo_index_raw, xb
-	glcurve mvr_wempo_index_raw [aweight = weight_final], pvar(mvr_wempo_index) nograph  // rank identification 
-	
-	drop mvr_wempo_index_raw
-	
-	rename mvr_*_w mvr_*
-	
-	foreach var of varlist 	progressivenss high_empower wempo_index  {
-		
-		xtile `var'_q = mvr_`var' [pweight = weight_final], nq(5)
-		
-	}
-		
-	svy: tab progressivenss_q progressivenss, row
-	svy: tab high_empower_q high_empower, row
-	svy: mean wempo_index, over(wempo_index_q)
-	 
-	foreach var of varlist 	wempo_childcare wempo_child_health wempo_child_wellbeing ///
-							wempo_major_purchase wempo_women_wages wempo_visiting ///
-							wempo_women_health wempo_mom_health  {
-		
-		xtile `var'_q = mvr_`var' [pweight = weight_final], nq(5)
-		
-		di "** VAR `var' **" 
-		svy: tab `var'_q `var'_w, row
+	//glcurve mvr_wempo_index_raw [aweight = weight_final], pvar(mvr_wempo_index) nograph  // rank identification 
+
+	global outcome_var wempo_index
+	global X_keep $X_raw
+
+	* 1. Common analytic sample
+	capture drop analytic_wempo_index
+	gen byte analytic_wempo_index = !missing($outcome_var, weight_final)
+
+	foreach x of global X_keep {
+		replace analytic_wempo_index = 0 if missing(`x')
 	}
 
+	count if analytic_wempo_index == 1
+	local N_analytic = r(N)
+
+	* 2. Fit survey-weighted linear model
+	svy, subpop(analytic_wempo_index): regress $outcome_var $X_keep
+
+	* 3. Predicted multivariate unfairness score
+	capture drop mvr_wempo_index_raw
+	predict double raw_mvr_wempo_index if e(sample), xb
+
+	* 4. Build conindex-style weighted fractional rank
+	capture drop obsid_wempo_index
+	capture drop wtmp_wempo_index
+	capture drop cumw_wempo_index
+	capture drop mvr_wempo_index
+
+	gen long obsid_wempo_index = _n
+
+	summ weight_final if analytic_wempo_index == 1, meanonly
+	scalar total_w_wempo_index = r(sum)
+
+	gen double wtmp_wempo_index = cond(analytic_wempo_index == 1, weight_final, 0)
+
+	sort raw_mvr_wempo_index obsid_wempo_index
+
+	gen double cumw_wempo_index = sum(wtmp_wempo_index)
+
+	gen double mvr_wempo_index = ///
+		(cumw_wempo_index - 0.5 * weight_final) / total_w_wempo_index ///
+		if analytic_wempo_index == 1
+
+	sort obsid_wempo_index
+
+	summ raw_mvr_wempo_index mvr_wempo_index if analytic_wempo_index == 1
 	
+	drop raw_mvr_wempo_index
+	
+	rename mvr_wempo_index rank_wempo_index
+
+	* Creat Quintile Var 
+	xtile wempo_index_mvq = rank_wempo_index [pweight = weight_final], nq(5)
+	tab wempo_index_mvq, m 
+	
+	****************************************************************************
+	
+	* CI multivar index ranking 
+	********************************************************************************
+	* Create conindex-style weighted fractional ranks for multiple outcomes
+	* Permanent intermediate variables are created for checking/debugging.
+	********************************************************************************
+	
+	rename wempo_childcare_w			w_childcare_w
+	rename wempo_child_health_w 		w_child_health_w
+	rename wempo_child_wellbeing_w		w_child_wellbeing_w 
+	rename wempo_major_purchase_w 		w_major_purchase_w
+	rename wempo_women_wages_w			w_women_wages_w 
+	rename wempo_visiting_w				w_visiting_w 
+	rename wempo_women_health_w			w_women_health_w 
+	rename wempo_mom_health_w			w_mom_health_w
+					
+					
+	global outcomes progressivenss ///
+					w_childcare_w w_child_health_w w_child_wellbeing_w ///
+					w_major_purchase_w w_women_wages_w w_visiting_w ///
+					w_women_health_w w_mom_health_w
+
+	foreach y of global outcomes {
+		
+		di as text "--------------------------------------------------"
+		di as text "Creating weighted fractional rank for outcome: `y'"
+		di as text "--------------------------------------------------"
+
+		* Clean old variables if re-running
+		capture drop analytic_`y'
+		capture drop obsid_`y'
+		capture drop rankscore_`y'
+		capture drop wtmp_`y'
+		capture drop cumw_`y'
+		capture drop rank_`y'
+		capture drop rcenter_`y'
+		capture drop wnorm_`y'
+
+		* Common analytic sample
+		gen byte analytic_`y' = !missing(`y', weight_var)
+
+		foreach x of global X_raw {
+			replace analytic_`y' = 0 if missing(`x')
+		}
+
+		//keep if analytic_`y' == 1
+		
+		count if analytic_`y' == 1
+		local N_analytic = r(N)
+
+		if `N_analytic' == 0 {
+			di as error "No analytic observations for `y'. Skipping."
+			continue
+		}
+
+		* Preserve original order
+		gen long obsid_`y' = _n
+
+		* Estimate unfairness-score model
+		quietly svy, subpop(analytic_`y'): logit `y' $X_raw
+
+		* Predicted probability = unfairness score
+		predict double rankscore_`y' if e(sample), pr
+
+		* Total analytic sample weight
+		quietly summarize weight_var if analytic_`y' == 1, meanonly
+		scalar total_w_`y' = r(sum)
+
+		if total_w_`y' <= 0 | missing(total_w_`y') {
+			di as error "Total weight is zero/missing for `y'. Skipping."
+			sort obsid_`y'
+			continue
+		}
+
+		* Analytic weight
+		gen double wtmp_`y' = cond(analytic_`y' == 1, weight_var, 0)
+
+		* Sort by predicted probability to create weighted fractional rank
+		sort rankscore_`y' obsid_`y'
+
+		* Cumulative weight ordered by predicted risk
+		gen double cumw_`y' = sum(wtmp_`y')
+
+		* Final weighted fractional rank for conindex
+		gen double rank_`y' = (cumw_`y' - 0.5 * weight_var) / total_w_`y' ///
+			if analytic_`y' == 1
+
+		* Optional supporting variables
+		gen double rcenter_`y' = rank_`y' - 0.5 if analytic_`y' == 1
+		gen double wnorm_`y' = weight_var / total_w_`y' if analytic_`y' == 1
+
+		* Return to original order
+		sort obsid_`y'
+
+		* Quick check
+		summarize rankscore_`y' rank_`y' rcenter_`y' if analytic_`y' == 1
+
+		di as result "Created final conindex rank: rank_`y'"
+		di as result "Analytic N for `y' = `N_analytic'"
+		
+		********************************************************************************
+		* Optional: drop intermediate variables after checking
+		* Keep only final rank_* variables if desired.
+		********************************************************************************
+
+		drop analytic_* obsid_* rankscore_* wtmp_* cumw_* rcenter_* wnorm_*
+		
+		
+		* Creat Quintile Var 
+		xtile `y'_mvq = rank_`y' [pweight = weight_final], nq(5)
+		
+		tab `y'_mvq, m 
+	
+	}
+	
+	
+	****************************************************************************
 	* keep U2 mom sample - merge with U2 mom dataset 
 	drop _merge 
 	
 	merge 1:m _parent_index using "$dta/pnourish_mom_health_analysis_final.dta", assert(1 3) keep(matched) nogen 
-	
-	
-	svy: tab progressivenss_q progressivenss, row
-	svy: tab high_empower_q high_empower, row
-	svy: mean wempo_index, over(wempo_index_q)
-	 
-	foreach var of varlist 	wempo_childcare wempo_child_health wempo_child_wellbeing ///
-							wempo_major_purchase wempo_women_wages wempo_visiting ///
-							wempo_women_health wempo_mom_health  {
-				
-		di "** VAR `var' **" 
-		svy: tab `var'_q `var'_w, row
-		conindex `var'_w, rank(mvr_`var') svy wagstaff bounded limits(0 1)
-		
-	}
-	
-	
-	
 
 	* Adj CI - Multivariate index 
-	conindex wempo_index, rank(mvr_wempo_index) svy wagstaff bounded limits(-2.64 .9)
-	conindex2 wempo_index, 	rank(mvr_wempo_index) ///
+	conindex wempo_index, rank(rank_wempo_index) svy wagstaff bounded limits(-2.64 .9)
+	conindex2 wempo_index, 	rank(rank_wempo_index) ///
 						covars(	i.resp_highedu ///
 								/*i.mom_age_grp*/ ///
 								/*i.respd_chid_num_grp*/ ///
@@ -4148,8 +4250,9 @@ do "$do/00_dir_setting.do"
 								stratum) ///
 						svy wagstaff bounded limits(-2.64 .9)
 				
-	conindex wempo_index, rank(mvr_wempo_index) svy truezero
-	conindex2 wempo_index, 	rank(mvr_wempo_index) ///
+	conindex wempo_index, rank(rank_wempo_index) svy truezero
+	conindex wempo_index_m0, rank(rank_wempo_index) svy truezero
+	conindex2 wempo_index, 	rank(rank_wempo_index) ///
 						covars(	i.resp_highedu ///
 								/*i.mom_age_grp*/ ///
 								/*i.respd_chid_num_grp*/ ///
@@ -4164,8 +4267,8 @@ do "$do/00_dir_setting.do"
 		
 		di "** VAR: `var' **"
 		
-		conindex `var', rank(mvr_`var') svy wagstaff bounded limits(0 1)
-		conindex2 `var', 	rank(mvr_`var') ///
+		conindex `var', rank(rank_`var') svy wagstaff bounded limits(0 1)
+		conindex2 `var', 	rank(rank_`var') ///
 							covars(	i.resp_highedu ///
 									/*i.mom_age_grp*/ ///
 									/*i.respd_chid_num_grp*/ ///
@@ -4175,8 +4278,8 @@ do "$do/00_dir_setting.do"
 									stratum) ///
 							svy wagstaff bounded limits(0 1)	
 		
-		conindex `var', rank(mvr_`var') svy truezero
-		conindex2 `var', 	rank(mvr_`var') ///
+		conindex `var', rank(rank_`var') svy truezero
+		conindex2 `var', 	rank(rank_`var') ///
 							covars(	i.resp_highedu ///
 									/*i.mom_age_grp*/ ///
 									/*i.respd_chid_num_grp*/ ///
@@ -4283,21 +4386,12 @@ do "$do/00_dir_setting.do"
 	
 	
 	* CI multivar index ranking 
-	********************************************************************************
-	* Create conindex-style weighted fractional ranks for multiple outcomes
-	* Permanent intermediate variables are created for checking/debugging.
-	********************************************************************************
+	// wempo_index
+	conindex wempo_index, rank(rank_wempo_index) svy truezero
+	conindex wempo_index_m0, rank(rank_wempo_index) svy truezero
 	
-	rename wempo_childcare_w			w_childcare_w
-	rename wempo_child_health_w 		w_child_health_w
-	rename wempo_child_wellbeing_w		w_child_wellbeing_w 
-	rename wempo_major_purchase_w 		w_major_purchase_w
-	rename wempo_women_wages_w			w_women_wages_w 
-	rename wempo_visiting_w				w_visiting_w 
-	rename wempo_women_health_w			w_women_health_w 
-	rename wempo_mom_health_w			w_mom_health_w
-					
-					
+	svy: mean wempo_index, over(wempo_index_mvq)
+	
 	global outcomes progressivenss ///
 					w_childcare_w w_child_health_w w_child_wellbeing_w ///
 					w_major_purchase_w w_women_wages_w w_visiting_w ///
@@ -4305,113 +4399,24 @@ do "$do/00_dir_setting.do"
 
 	foreach y of global outcomes {
 
-		preserve 
+		di as text "--------------------------------------------------"
+		di as text "CI for outcome: `y'"
+		di as text "--------------------------------------------------"
 		
-			di as text "--------------------------------------------------"
-			di as text "Creating weighted fractional rank for outcome: `y'"
-			di as text "--------------------------------------------------"
-
-			* Clean old variables if re-running
-			capture drop analytic_`y'
-			capture drop obsid_`y'
-			capture drop rankscore_`y'
-			capture drop wtmp_`y'
-			capture drop cumw_`y'
-			capture drop rank_`y'
-			capture drop rcenter_`y'
-			capture drop wnorm_`y'
-
-			* Common analytic sample
-			gen byte analytic_`y' = !missing(`y', weight_var)
-
-			foreach x of global X_raw {
-				replace analytic_`y' = 0 if missing(`x')
-			}
-
-			keep if analytic_`y' == 1
-			
-			count if analytic_`y' == 1
-			local N_analytic = r(N)
-
-			if `N_analytic' == 0 {
-				di as error "No analytic observations for `y'. Skipping."
-				continue
-			}
-
-			* Preserve original order
-			gen long obsid_`y' = _n
-
-			* Estimate unfairness-score model
-			quietly svy, subpop(analytic_`y'): logit `y' $X_raw
-
-			* Predicted probability = unfairness score
-			predict double rankscore_`y' if e(sample), pr
-
-			* Total analytic sample weight
-			quietly summarize weight_var if analytic_`y' == 1, meanonly
-			scalar total_w_`y' = r(sum)
-
-			if total_w_`y' <= 0 | missing(total_w_`y') {
-				di as error "Total weight is zero/missing for `y'. Skipping."
-				sort obsid_`y'
-				continue
-			}
-
-			* Analytic weight
-			gen double wtmp_`y' = cond(analytic_`y' == 1, weight_var, 0)
-
-			* Sort by predicted probability to create weighted fractional rank
-			sort rankscore_`y' obsid_`y'
-
-			* Cumulative weight ordered by predicted risk
-			gen double cumw_`y' = sum(wtmp_`y')
-
-			* Final weighted fractional rank for conindex
-			gen double rank_`y' = (cumw_`y' - 0.5 * weight_var) / total_w_`y' ///
-				if analytic_`y' == 1
-
-			* Optional supporting variables
-			gen double rcenter_`y' = rank_`y' - 0.5 if analytic_`y' == 1
-			gen double wnorm_`y' = weight_var / total_w_`y' if analytic_`y' == 1
-
-			* Return to original order
-			sort obsid_`y'
-
-			* Quick check
-			summarize rankscore_`y' rank_`y' rcenter_`y' if analytic_`y' == 1
-
-			di as result "Created final conindex rank: rank_`y'"
-			di as result "Analytic N for `y' = `N_analytic'"
-			
-			********************************************************************************
-			* Optional: drop intermediate variables after checking
-			* Keep only final rank_* variables if desired.
-			********************************************************************************
-
-			drop analytic_* obsid_* rankscore_* wtmp_* cumw_* rcenter_* wnorm_*
+		conindex `y', rank(rank_`y') svy truezero
 		
-			di as text "--------------------------------------------------"
-			di as text "CI for outcome: `y'"
-			di as text "--------------------------------------------------"
+		conindexadj `y', 	rank(rank_`y') ///
+							covars(	/*i.resp_highedu*/ ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
+									/*i.hfc_distance*/ ///
+									i.org_name_num ///
+									/*stratum*/) ///
+							svy truezero	
+						
+		svy: tab `y'_mvq `y', row
 			
-			conindex `y', rank(rank_`y') svy truezero
-			
-			conindexadj `y', 	rank(rank_`y') ///
-								covars(	/*i.resp_highedu*/ ///
-										/*i.mom_age_grp*/ ///
-										/*i.respd_chid_num_grp*/ ///
-										/*hfc_vill_yes*/ ///
-										/*i.hfc_distance*/ ///
-										i.org_name_num ///
-										/*stratum*/) ///
-								svy truezero	
-							
-			xtile `y'_mvq = rank_`y' [pweight = weight_final], nq(5)
-			svy: tab `y'_mvq `y', row
-			
-			//conindex `y', rank(rank_`y') svy bounded limits(0 1) wagstaff
-	
-		restore 
 	}
 	
 	

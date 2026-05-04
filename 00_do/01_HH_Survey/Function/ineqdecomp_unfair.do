@@ -319,7 +319,8 @@ program define ineqdecomp_unfair, rclass
             di as error "Erreygers correction undefined because outcome has zero range."
             exit 498
         }
-        scalar CI_y = CI_rel_y * (4 * mu_y / (max_y - min_y))
+        scalar CI_y = CI_rel_y * 4 * mu_y // (4 * mu_y / (max_y - min_y)) 
+		// Adam suggest but it different from the r function 
     }
 
     if abs(CI_y) < 1e-12 {
@@ -404,7 +405,8 @@ program define ineqdecomp_unfair, rclass
                     scalar CI_x = .
                 }
                 else {
-                    scalar CI_x = CI_rel_x * (4 * mu_x / (max_x - min_x))
+                    scalar CI_x = CI_rel_x * 4 * mu_x  // (4 * mu_x / (max_x - min_x))
+					// Adam suggest but it different from the r function 
                 }
             }
 

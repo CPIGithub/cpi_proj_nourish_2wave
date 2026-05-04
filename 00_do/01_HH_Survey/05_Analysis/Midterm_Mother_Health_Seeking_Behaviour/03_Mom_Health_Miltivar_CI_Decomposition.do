@@ -105,7 +105,7 @@
 						stratum_1 ///
 						resp_highedu_2 resp_highedu_3 resp_highedu_4
 	
-&
+
 						
 	
 	foreach var of varlist $outcomes {
