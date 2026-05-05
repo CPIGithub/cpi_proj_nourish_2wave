@@ -532,10 +532,29 @@ do "$do/00_dir_setting.do"
 	conindex2 mddw_yes, rank(NationalScore) ///
 						covars(/*i.resp_highedu*/ i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)
 	
+	conindexadj mddw_yes, rank(NationalScore) ///
+						covars(/*i.resp_highedu*/ i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)
+						
 	conindex2 mddw_yes, rank(NationalScore) ///
 						covars(/*i.resp_highedu*/ i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)
 	
+	* test 
+	gen byte cc_mddw = !missing(mddw_yes, NationalScore, weight_var, ///
+		resp_highedu, wempo_category, hfc_distance, org_name_num, stratum)
 
+	conindex2 mddw_yes if cc_mddw == 1, ///
+		rank(NationalScore) ///
+		covars(/*i.resp_highedu*/ i.wempo_category /*i.hfc_distance*/ ///
+			   /*i.org_name_num*/ stratum) ///
+		svy wagstaff bounded limits(0 1)
+
+	conindexadj mddw_yes if cc_mddw == 1, ///
+		rank(NationalScore) ///
+		covars(/*i.resp_highedu*/ i.wempo_category /*i.hfc_distance*/ ///
+			   /*i.org_name_num*/ stratum) ///
+		svy wagstaff bounded limits(0 1)
+	
+	
 	conindex mddw_yes, rank(resp_highedu_ci) svy wagstaff bounded limits(0 1)
 	conindex2 mddw_yes, rank(resp_highedu_ci) ///
 						covars(NationalScore i.wempo_category /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
@@ -548,6 +567,9 @@ do "$do/00_dir_setting.do"
 	conindex2 mddw_yes, rank(wempo_index) ///
 						covars(NationalScore /*i.resp_highedu*/ /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
 
+	conindexadj mddw_yes, rank(wempo_index) ///
+						covars(NationalScore /*i.resp_highedu*/ /*i.hfc_distance*/ /*i.org_name_num*/ stratum) svy wagstaff bounded limits(0 1)	
+						
 	conindex2 mddw_yes, rank(wempo_index) ///
 						covars(NationalScore /*i.resp_highedu*/ /*i.hfc_distance*/ /*i.org_name_num*/ stratum i.wealth_quintile_inc) svy wagstaff bounded limits(0 1)	
 
@@ -4260,6 +4282,16 @@ do "$do/00_dir_setting.do"
 								i.org_name_num ///
 								stratum) ///
 						svy truezero
+		
+	conindexadj wempo_index, 	rank(rank_wempo_index) ///
+						covars(	i.resp_highedu ///
+								/*i.mom_age_grp*/ ///
+								/*i.respd_chid_num_grp*/ ///
+								/*hfc_vill_yes*/ ///
+								i.hfc_distance ///
+								i.org_name_num ///
+								stratum) ///
+						svy truezero
 						
 	conindex wempo_index_m0, rank(rank_wempo_index) svy truezero
 	svy: mean wempo_index
@@ -4348,6 +4380,17 @@ do "$do/00_dir_setting.do"
 									i.org_name_num ///
 									stratum) ///
 						svy truezero
+						
+	conindexadj progressivenss, 	rank(resp_highedu_ci) ///
+							covars(	/*i.resp_highedu*/ ///
+									/*i.mom_age_grp*/ ///
+									/*i.respd_chid_num_grp*/ ///
+									/*hfc_vill_yes*/ ///
+									i.hfc_distance ///
+									i.org_name_num ///
+									stratum) ///
+						svy truezero
+						
 						
 	// Equity Tool rank 
 	conindex wempo_index, rank(NationalScore) svy wagstaff bounded limits(-2.64 .9)
