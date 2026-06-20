@@ -166,7 +166,7 @@ make_equiplot <- function(dat, plot_title,
 #====================================================
 p1 <- make_equiplot(
   df_emp,
-  "(A) Women's empowerment indicators by multivariate index of vulnerability quintile",
+  "Women's empowerment indicators by multivariate index of vulnerability quintile",
   title_align = "center",
   title_size = 15, 
   point_size = 4,
@@ -177,7 +177,7 @@ p1 <- make_equiplot(
 
 p2 <- make_equiplot(
   df_mom,
-  "(B) Perinatal health services utilization by multivariate index of vulnerability quintile", 
+  "Perinatal health services utilization by multivariate index of vulnerability quintile", 
   title_align = "center",
   title_size = 15, 
   point_size = 4,
