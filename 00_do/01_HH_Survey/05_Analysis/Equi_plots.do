@@ -73,7 +73,7 @@ do "$do/00_dir_setting.do"
 		equiplot 	Poorest Poor Medium Wealthy Wealthiest, ///
 					over(indicator) sort(order) dotsize(1.5) ///
 					xtitle("% of Mothers with U2 children") ///
-					legtitle("(A) Women's empowerment indicators by multivariate"  "index of vulnerability quintile") connected ///
+					legtitle("(A) Women's empowerment indicators by multivariate"  "index of vulnerability quintile") connected 
 
 		graph export "$plots/EquiPlot_Women_Empowerment_MVR.png", replace
 	
